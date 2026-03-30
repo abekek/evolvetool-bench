@@ -121,6 +121,10 @@ where LH (library health) receives the highest weight as our primary contributio
 
 \subsection{Domain A: Data Transformation}
 
+Table~\ref{tab:results_a} compares all four systems on Domain A. With heuristic rewards, ARISE creates zero tools regardless of failure threshold---the agent produces long, helpful refusal responses that score 1.0. Only ARISE+Judge triggers evolution, creating 15 tools and achieving the highest ETS (0.467) despite lower task completion (41.8\%) than no-evolution (49.1\%).
+
+Table~\ref{tab:per_session_a} reveals that tool creation correlates with format complexity. Simpler formats (ABR, RLE) are partially solvable by LLM reasoning; complex binary formats (TPACK, GUARDIAN) force tool creation. Sessions where tools are created show 100\% reuse rate and $>$83\% creation efficiency.
+
 \begin{table}[t]
 \centering
 \footnotesize
