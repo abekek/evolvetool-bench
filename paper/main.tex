@@ -94,25 +94,38 @@ Adversarial & 2 & Can agent handle edge cases? \\
 \item \textbf{Code Quality}: Automated static checks---has docstring (1pt), has type hints (1pt), handles exceptions (1pt), no magic numbers (1pt), under 100 lines (1pt), valid syntax (1pt). Score = points / total checks.
 \end{itemize}
 
-$\text{TQS} = \frac{1}{4}(\text{Correctness} + \text{Robustness} + \text{Generality} + \text{CodeQuality})$
+\begin{equation}
+\text{TQS}(t) = \frac{1}{4}\bigl(C(t) + R(t) + G(t) + Q(t)\bigr)
+\label{eq:tqs}
+\end{equation}
+where $C$ is correctness, $R$ robustness, $G$ generality, and $Q$ code quality, each in $[0,1]$.
 
 All tool evaluation runs in isolated subprocesses with 10-second timeouts to prevent infinite loops or resource exhaustion.
 
-\paragraph{Axis 3: Library Diagnostics.} Six metrics at session end:
-\begin{itemize}
-\item \textbf{Reuse Rate}: variant/regress tasks using existing tools.
-\item \textbf{Redundancy}: functionally duplicate tools.
-\item \textbf{Precision}: tools above quality threshold.
-\item \textbf{Efficiency}: created tools actually used.
-\item \textbf{Composition}: compose tasks solved.
-\item \textbf{Regression}: regress tasks that fail.
-\end{itemize}
+\paragraph{Axis 3: Library Diagnostics.} Six metrics measured at session end:
+\begin{align}
+\rho_r &= \frac{|\{t \in \mathcal{T}_{v,r} : \text{reused}\}|}{|\mathcal{T}_{v,r}|} & \text{(Reuse Rate)} \label{eq:reuse} \\[2pt]
+\rho_d &= \frac{|\{(t_i,t_j) : \text{output\_equiv}\}|}{\binom{|\mathcal{L}|}{2}} & \text{(Redundancy)} \label{eq:redund} \\[2pt]
+\pi &= \frac{|\{t \in \mathcal{L} : \text{TQS}(t) \geq 0.5\}|}{|\mathcal{L}|} & \text{(Precision)} \label{eq:prec} \\[2pt]
+\eta &= \frac{|\mathcal{L}_{\text{used}}|}{|\mathcal{L}|} & \text{(Efficiency)} \label{eq:eff} \\[2pt]
+\gamma &= \frac{|\{t \in \mathcal{T}_c : \text{passed}\}|}{|\mathcal{T}_c|} & \text{(Composition)} \label{eq:comp} \\[2pt]
+\delta &= \frac{|\{t \in \mathcal{T}_{reg} : \text{failed}\}|}{|\mathcal{T}_{reg}|} & \text{(Regression)} \label{eq:reg}
+\end{align}
+where $\mathcal{T}_{v,r}$ are variant/regress tasks, $\mathcal{L}$ is the tool library, $\mathcal{T}_c$ are compose tasks, and $\mathcal{T}_{reg}$ are regress tasks.
 
-\paragraph{Composite Score.} The EvolveTool Score (ETS):
+\paragraph{Library Health (LH).} Aggregates the six diagnostics:
 \begin{equation}
-\text{ETS} = .25\text{TC} + .20\text{TQS} + .10(1{-}\text{RC}) + .30\text{LH} + .15\text{SS}
+\text{LH} = \frac{1}{6}\bigl(\rho_r + (1{-}\rho_d) + \pi + \eta + \gamma + (1{-}\delta)\bigr)
+\label{eq:lh}
 \end{equation}
-where LH (library health) receives the highest weight as our primary contribution.
+where $\rho_r$ is reuse rate, $\rho_d$ redundancy rate, $\pi$ library precision, $\eta$ creation efficiency, $\gamma$ composition success, and $\delta$ regression rate.
+
+\paragraph{Composite Score.} The EvolveTool Score (ETS) combines all axes:
+\begin{equation}
+\text{ETS} = \alpha_1 \cdot \text{TC} + \alpha_2 \cdot \overline{\text{TQS}} + \alpha_3 \cdot (1{-}\text{RC}) + \alpha_4 \cdot \text{LH} + \alpha_5 \cdot \text{SS}
+\label{eq:ets}
+\end{equation}
+with $\alpha = (0.25, 0.20, 0.10, 0.30, 0.15)$. TC is task completion, $\overline{\text{TQS}}$ is mean tool quality across synthesized tools, RC is refinement cost (normalized LLM calls), LH is library health (Eq.~\ref{eq:lh}), and SS is safety score. Library health receives the highest weight as our primary contribution.
 
 \section{Experimental Setup}
 
