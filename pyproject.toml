@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "evolvetool-bench"
+version = "0.1.0"
+description = "EvolveTool-Bench: Diagnosing tool library quality in self-evolving LLM agents"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Alibek Kaliyev" },
+]
+keywords = ["benchmark", "agents", "tools", "evaluation", "self-evolving", "llm"]
+dependencies = [
+    "pydantic>=2.0",
+    "litellm>=1.0,!=1.82.8",
+]
+
+[project.optional-dependencies]
+arise = ["arise-ai>=0.2.0"]
+evoskill = []  # TODO: add when running EvoSkill baseline
+dev = ["pytest>=8.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/evolvetool_bench"]
+
+[project.scripts]
+evolvetool = "evolvetool_bench.cli:main"

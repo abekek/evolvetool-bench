@@ -1,0 +1,10 @@
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+bench_skills/
+bench_trajectories/
+results.json
+*.db
