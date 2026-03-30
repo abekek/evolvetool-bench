@@ -97,6 +97,21 @@ class ARISESystem(AgentSystem):
                 return 0.0
             if len(trajectory.outcome) < 20:
                 return 0.0
+            # Must have used a non-seed tool to get credit
+            # (prevents the agent from just reasoning through the answer)
+            seed_names = {t["name"] for t in seed_tools}
+            real_tool_used = any(
+                s.action and s.action not in seed_names
+                for s in trajectory.steps
+            )
+            if not real_tool_used and trajectory.steps:
+                return 0.0
+            # If no tools were called at all, check for failure signals
+            if not trajectory.steps:
+                outcome = trajectory.outcome.lower()
+                fail_signals = ["cannot", "don't have", "unable", "no tool", "not possible"]
+                if any(s in outcome for s in fail_signals):
+                    return 0.0
             return 1.0
 
         self._arise = ARISE(

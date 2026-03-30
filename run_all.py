@@ -18,6 +18,7 @@ def main():
     parser.add_argument("--system", choices=["arise", "no-evolution"], default="arise")
     parser.add_argument("--model", default="gpt-4o-mini")
     parser.add_argument("--output-dir", default="results")
+    parser.add_argument("--failure-threshold", type=int, default=3)
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -35,7 +36,7 @@ def main():
 
         if args.system == "arise":
             from evolvetool_bench.baselines.arise_system import ARISESystem
-            system = ARISESystem(model=args.model, synthesis_model=args.model)
+            system = ARISESystem(model=args.model, synthesis_model=args.model, failure_threshold=args.failure_threshold)
         else:
             from evolvetool_bench.baselines.no_evolution import NoEvolutionSystem
             system = NoEvolutionSystem(model=args.model)
