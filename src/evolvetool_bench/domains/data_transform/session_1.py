@@ -1,221 +1,268 @@
-"""Domain A, Session 1: CSV/JSON transformation with hashing.
+"""Domain A, Session 1: Proprietary format processing.
 
-Session structure (12 tasks):
+Key design principle: tasks use CUSTOM ENCODINGS that the LLM cannot
+solve from training data. The agent MUST create and execute tools.
+
+Session structure (11 tasks):
   Seed 1-3:  Use provided tools (read_csv, write_json, compute_hash)
-  Gap 1:     Parse custom delimiter CSV (pipe-separated)
-  Gap 2:     Convert nested JSON to flat CSV
-  Variant 1: Parse custom delimiter CSV (tab-separated) — should REUSE gap_1's tool
-  Variant 2: Convert nested JSON with arrays to flat CSV — should REUSE gap_2's tool
-  Compose 1: Parse pipe CSV → compute hash of each row → write JSON — chains gap_1 + seed
-  Regress 1: Re-run the pipe CSV task — should still work
-  Adversarial 1: Parse CSV with embedded delimiters in quoted fields — should REFINE gap_1
-  Adversarial 2: Convert JSON with null values and mixed types — should REFINE gap_2
+  Gap 1:     Decode ARISE Binary Record format (custom encoding)
+  Gap 2:     Parse run-length encoded matrix
+  Variant 1: Decode ARISE Binary Records with different field spec
+  Variant 2: Parse RLE matrix with different dimensions
+  Compose 1: Decode binary records → hash each record → output JSON
+  Regress 1: Re-decode the original binary records
+  Adversarial 1: Binary records with escaped delimiters
+  Adversarial 2: RLE matrix with zero-runs and negative values
 """
 
+import base64
+import json
+import struct
 from ...types import Task, TaskType, Session
+from .seed_tools import SEED_TOOLS
 
 
-# ── Seed tools (provided to agent) ──────────────────────────────────
+# ── Custom format: ARISE Binary Records ──────────────────────────────
+# Format: each record is [1-byte field_count][fields...]
+# Each field: [1-byte name_len][name_bytes][2-byte big-endian value_len][value_bytes]
+# Records separated by 0xFF byte
 
-SEED_TOOLS = [
-    {
-        "name": "read_csv",
-        "description": "Read a standard comma-separated CSV string and return list of dicts.",
-        "implementation": '''
-def read_csv(csv_string: str) -> list[dict]:
-    """Read a standard CSV string (comma-separated) into a list of dicts."""
-    import csv
-    import io
-    reader = csv.DictReader(io.StringIO(csv_string))
-    return [dict(row) for row in reader]
-''',
-    },
-    {
-        "name": "write_json",
-        "description": "Convert a list of dicts to a JSON string.",
-        "implementation": '''
-def write_json(data: list[dict]) -> str:
-    """Convert a list of dicts to a formatted JSON string."""
-    import json
-    return json.dumps(data, indent=2)
-''',
-    },
-    {
-        "name": "compute_hash",
-        "description": "Compute SHA-256 hash of a string.",
-        "implementation": '''
-def compute_hash(text: str) -> str:
-    """Compute SHA-256 hash of a string."""
-    import hashlib
-    return hashlib.sha256(text.encode()).hexdigest()
-''',
-    },
+def _encode_abr(records: list[dict[str, str]]) -> str:
+    """Encode records into ARISE Binary Record format, return base64."""
+    buf = bytearray()
+    for i, rec in enumerate(records):
+        if i > 0:
+            buf.append(0xFF)  # record separator
+        buf.append(len(rec))  # field count
+        for name, value in rec.items():
+            name_bytes = name.encode('utf-8')
+            value_bytes = value.encode('utf-8')
+            buf.append(len(name_bytes))
+            buf.extend(name_bytes)
+            buf.extend(struct.pack('>H', len(value_bytes)))
+            buf.extend(value_bytes)
+    return base64.b64encode(bytes(buf)).decode('ascii')
+
+
+def _encode_rle_matrix(matrix: list[list[int]]) -> str:
+    """Run-length encode a matrix. Format: rows,cols;val:count,val:count,..."""
+    rows = len(matrix)
+    cols = len(matrix[0]) if matrix else 0
+    flat = [v for row in matrix for v in row]
+    runs = []
+    i = 0
+    while i < len(flat):
+        val = flat[i]
+        count = 1
+        while i + count < len(flat) and flat[i + count] == val:
+            count += 1
+        runs.append(f"{val}:{count}")
+        i += count
+    return f"{rows},{cols};" + ",".join(runs)
+
+
+# Test data
+RECORDS_1 = [
+    {"name": "Alice", "role": "engineer", "id": "1001"},
+    {"name": "Bob", "role": "designer", "id": "1002"},
+    {"name": "Charlie", "role": "manager", "id": "1003"},
 ]
+ABR_1 = _encode_abr(RECORDS_1)
 
-
-# ── Test data ────────────────────────────────────────────────────────
-
-PIPE_CSV = 'name|age|city\nAlice|30|NYC\nBob|25|SF\nCharlie|35|LA'
-TAB_CSV = 'name\tage\tcity\nAlice\t30\tNYC\nBob\t25\tSF'
-QUOTED_PIPE_CSV = 'name|bio|city\nAlice|"Data|Scientist"|NYC\nBob|"ML|Engineer"|SF'
-
-NESTED_JSON = [
-    {"name": "Alice", "address": {"city": "NYC", "zip": "10001"}, "tags": ["admin", "user"]},
-    {"name": "Bob", "address": {"city": "SF", "zip": "94102"}, "tags": ["user"]},
+RECORDS_2 = [
+    {"city": "NYC", "temp": "72", "humidity": "45"},
+    {"city": "LA", "temp": "85", "humidity": "30"},
 ]
+ABR_2 = _encode_abr(RECORDS_2)
 
-NESTED_JSON_NULLS = [
-    {"name": "Alice", "address": {"city": "NYC", "zip": None}, "tags": []},
-    {"name": None, "address": None, "tags": ["user"]},
-    {"name": "Charlie", "address": {"city": "LA", "zip": "90001"}, "tags": None},
+RECORDS_ESCAPED = [
+    {"name": "Alice\xff", "note": "test"},  # This will need escaping
 ]
+# For adversarial, create records where values contain 0xFF bytes
+ABR_ESCAPED = base64.b64encode(
+    b'\x02'                                    # 2 fields
+    b'\x04name\x00\x0bHello\xfeWorld'          # name = "Hello\xfeWorld" (almost 0xFF)
+    b'\x04note\x00\x04test'                     # note = "test"
+    b'\xff'                                     # separator
+    b'\x01'                                     # 1 field
+    b'\x02id\x00\x031\x002'                     # id with null byte in value
+).decode('ascii')
 
+MATRIX_1 = [
+    [1, 1, 1, 0, 0],
+    [0, 0, 2, 2, 2],
+    [3, 3, 3, 3, 3],
+]
+RLE_1 = _encode_rle_matrix(MATRIX_1)
 
-# ── Tasks ────────────────────────────────────────────────────────────
+MATRIX_2 = [
+    [5, 5, 0, 0, 0, 0],
+    [0, 0, 0, 5, 5, 5],
+]
+RLE_2 = _encode_rle_matrix(MATRIX_2)
+
+MATRIX_ADVERSARIAL = [
+    [0, 0, 0, 0],
+    [-1, -1, 0, 0],
+    [999, 0, 0, 0],
+]
+RLE_ADVERSARIAL = _encode_rle_matrix(MATRIX_ADVERSARIAL)
+
 
 TASKS = [
-    # Seed tasks — use provided tools
+    # ── Seed tasks ───────────────────────────────────────────────
     Task(
         id="seed_1",
         description=(
             "Read this CSV and convert it to JSON:\n"
-            "name,age,city\nAlice,30,NYC\nBob,25,SF"
+            "name,age,city\nAlice,30,NYC\nBob,25,SF\nCharlie,35,LA\nDiana,28,Boston\nEve,32,Seattle"
         ),
         task_type=TaskType.SEED,
-        expected=[{"name": "Alice", "age": "30", "city": "NYC"}, {"name": "Bob", "age": "25", "city": "SF"}],
     ),
     Task(
         id="seed_2",
-        description='Compute the SHA-256 hash of the string "benchmark".',
+        description='Compute the SHA-256 hash of "evolvetool-bench-2026".',
         task_type=TaskType.SEED,
-        expected="54c7460cda2519a31d4ec1b20c03e674e6e00753bbf1f8b4c2e8f35e41003171",
     ),
     Task(
         id="seed_3",
         description=(
-            'Convert this data to JSON: [{"x": 1, "y": 2}, {"x": 3, "y": 4}]'
+            "Read this CSV, then output the data as JSON:\n"
+            "product,price,qty\nWidget,9.99,100\nGadget,24.99,50\nDoohickey,4.99,200"
         ),
         task_type=TaskType.SEED,
     ),
 
-    # Gap tasks — require new tools
+    # ── Gap tasks (require creating new tools) ───────────────────
     Task(
         id="gap_1",
         description=(
-            "Parse this PIPE-SEPARATED CSV (using | as delimiter) and return as list of dicts:\n"
-            f"{PIPE_CSV}"
+            "Decode this ARISE Binary Record (ABR) format data. The format is:\n"
+            "- Base64 encoded binary\n"
+            "- Each record: [1-byte field_count][fields...]\n"
+            "- Each field: [1-byte name_len][name_bytes][2-byte big-endian value_len][value_bytes]\n"
+            "- Records separated by 0xFF byte\n\n"
+            f"Data: {ABR_1}\n\n"
+            "Return the decoded records as a JSON array of objects."
         ),
         task_type=TaskType.GAP,
-        expected=[
-            {"name": "Alice", "age": "30", "city": "NYC"},
-            {"name": "Bob", "age": "25", "city": "SF"},
-            {"name": "Charlie", "age": "35", "city": "LA"},
-        ],
+        expected=RECORDS_1,
         hidden_tests=[
-            {"input": {"csv_string": "a|b\n1|2\n3|4", "delimiter": "|"}, "expected": [{"a": "1", "b": "2"}, {"a": "3", "b": "4"}]},
-            {"input": {"csv_string": "x|y|z\n10|20|30", "delimiter": "|"}, "expected": [{"x": "10", "y": "20", "z": "30"}]},
+            {
+                "input": {"data": ABR_2},
+                "expected": RECORDS_2,
+            },
+            {
+                "input": {"data": _encode_abr([{"x": "1"}])},
+                "expected": [{"x": "1"}],
+            },
         ],
         adversarial_tests=[
-            {"input": {"csv_string": "", "delimiter": "|"}},
-            {"input": {"csv_string": "a|b", "delimiter": "|"}},  # header only
-            {"input": {"csv_string": "a|b\n1|2|3", "delimiter": "|"}},  # extra column
+            {"input": {"data": ""}},                      # empty
+            {"input": {"data": "AAAA"}},                   # invalid (too short)
+            {"input": {"data": base64.b64encode(b'\x00').decode()}},  # zero fields
         ],
     ),
     Task(
         id="gap_2",
         description=(
-            "Convert this nested JSON to a flat CSV string. Flatten nested objects with dot notation "
-            "(e.g., address.city) and join arrays with semicolons:\n"
-            f'{NESTED_JSON}'
+            "Parse this Run-Length Encoded (RLE) matrix format and reconstruct the matrix.\n"
+            "Format: 'rows,cols;val:count,val:count,...'\n"
+            "Each 'val:count' means the value 'val' appears 'count' consecutive times.\n\n"
+            f"Data: {RLE_1}\n\n"
+            "Return the matrix as a list of lists (rows x cols)."
         ),
         task_type=TaskType.GAP,
+        expected=MATRIX_1,
         hidden_tests=[
             {
-                "input": {"data": [{"a": {"b": 1}, "c": [2, 3]}]},
-                "verify": "'a.b' in result and '2;3' in result",
+                "input": {"rle_string": _encode_rle_matrix([[7, 7], [7, 7]])},
+                "expected": [[7, 7], [7, 7]],
+            },
+            {
+                "input": {"rle_string": "1,5;1:1,2:1,3:1,4:1,5:1"},
+                "expected": [[1, 2, 3, 4, 5]],
             },
         ],
         adversarial_tests=[
-            {"input": {"data": []}},
-            {"input": {"data": [{}]}},
-            {"input": {"data": [{"a": {"b": {"c": "deep"}}}]}},  # 3 levels deep
+            {"input": {"rle_string": "0,0;"}},            # empty matrix
+            {"input": {"rle_string": "1,1;0:1"}},         # single element
+            {"input": {"rle_string": "2,3;-1:3,0:3"}},    # negative values
         ],
     ),
 
-    # Variant tasks — should REUSE tools from gap tasks
+    # ── Variant tasks (should REUSE gap tools) ───────────────────
     Task(
         id="variant_1",
         description=(
-            "Parse this TAB-SEPARATED CSV (using tab as delimiter) and return as list of dicts:\n"
-            f"{TAB_CSV}"
+            "Decode this ABR (ARISE Binary Record) format data. Same format as before.\n\n"
+            f"Data: {ABR_2}\n\n"
+            "Return as JSON array of objects."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_1",
-        expected=[
-            {"name": "Alice", "age": "30", "city": "NYC"},
-            {"name": "Bob", "age": "25", "city": "SF"},
-        ],
+        expected=RECORDS_2,
     ),
     Task(
         id="variant_2",
         description=(
-            "Convert this nested JSON (with arrays) to flat CSV. Same rules as before — "
-            "dot notation for nested objects, semicolons for arrays:\n"
-            f'{[{"name": "Dan", "scores": {"math": 95, "english": 88}, "hobbies": ["chess", "coding"]}]}'
+            "Parse this RLE matrix. Same format as before.\n\n"
+            f"Data: {RLE_2}\n\n"
+            "Return as list of lists."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_2",
+        expected=MATRIX_2,
     ),
 
-    # Compose task — chain multiple self-created tools
+    # ── Compose task (chain gap_1 + seed hash tool) ──────────────
     Task(
         id="compose_1",
         description=(
-            "Parse this pipe-separated CSV, then compute the SHA-256 hash of each person's name, "
-            "and return a JSON array with objects containing 'name' and 'name_hash':\n"
-            f"{PIPE_CSV}"
+            "Decode this ABR data, then compute the SHA-256 hash of each record's 'name' field, "
+            "and return a JSON array of objects with 'name' and 'name_hash' fields.\n\n"
+            f"Data: {ABR_1}"
         ),
         task_type=TaskType.COMPOSE,
         composes_tasks=["gap_1", "seed_2"],
     ),
 
-    # Regress task — re-test earlier capability
+    # ── Regress task (re-test gap_1 with different data) ─────────
     Task(
         id="regress_1",
         description=(
-            "Parse this PIPE-SEPARATED CSV and return as list of dicts:\n"
-            "product|price|quantity\nWidget|9.99|100\nGadget|24.99|50"
+            f"Decode this ABR data (same format as before):\n\n"
+            f"Data: {_encode_abr([{'item': 'pen', 'price': '1.50'}, {'item': 'book', 'price': '12.99'}])}\n\n"
+            "Return as JSON array."
         ),
         task_type=TaskType.REGRESS,
         reuses_task="gap_1",
-        expected=[
-            {"product": "Widget", "price": "9.99", "quantity": "100"},
-            {"product": "Gadget", "price": "24.99", "quantity": "50"},
-        ],
+        expected=[{"item": "pen", "price": "1.50"}, {"item": "book", "price": "12.99"}],
     ),
 
-    # Adversarial tasks — break naive implementations
+    # ── Adversarial tasks ────────────────────────────────────────
     Task(
         id="adversarial_1",
         description=(
-            "Parse this PIPE-SEPARATED CSV where values contain pipes inside quoted fields:\n"
-            f"{QUOTED_PIPE_CSV}"
+            "Decode this ABR data. WARNING: some field values may contain bytes "
+            "that look like delimiters (0xFF) or null bytes. Handle encoding edge cases.\n\n"
+            f"Data: {ABR_ESCAPED}\n\n"
+            "Return as JSON array of objects."
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_1",
-        expected=[
-            {"name": "Alice", "bio": "Data|Scientist", "city": "NYC"},
-            {"name": "Bob", "bio": "ML|Engineer", "city": "SF"},
-        ],
     ),
     Task(
         id="adversarial_2",
         description=(
-            "Convert this nested JSON to flat CSV. Handle null values and None entries gracefully:\n"
-            f'{NESTED_JSON_NULLS}'
+            "Parse this RLE matrix. Note: contains zero-length runs, negative values, "
+            "and large values.\n\n"
+            f"Data: {RLE_ADVERSARIAL}\n\n"
+            "Return as list of lists."
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_2",
+        expected=MATRIX_ADVERSARIAL,
     ),
 ]
 
@@ -223,10 +270,10 @@ TASKS = [
 def create_session() -> Session:
     return Session(
         id="data_transform_s1",
-        name="CSV/JSON Transformation with Hashing",
+        name="Proprietary Format Processing (ABR + RLE)",
         domain="data_transform",
         tasks=TASKS,
         seed_tools=SEED_TOOLS,
-        description="Tests tool creation for custom CSV parsing and JSON flattening, "
-                    "with reuse, composition, and adversarial variants.",
+        description="Tests tool creation for custom binary formats that cannot be solved "
+                    "from LLM training data. Agent MUST create and execute tools.",
     )
