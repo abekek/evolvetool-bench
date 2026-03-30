@@ -234,6 +234,10 @@ def hmac_sha256(secret: str,
 
 \paragraph{Domain Differences.} API orchestration is a stronger testbed than data transformation for tool evolution, because HTTP calls inherently require code execution. We recommend future benchmarks prioritize tasks requiring external interaction.
 
+\paragraph{Scoring Systems Without Tools.} Systems that create zero tools (No-Evolution, EvoSkill) receive TQS=0 in the ETS computation. This is an intentional design choice: EvolveTool-Bench evaluates tool library quality, and systems that cannot create tools should score lower on a library quality benchmark---just as a code quality metric would score zero for a system that writes no code. This means ETS is not a fair \emph{general} agent ranking; it is a diagnostic metric specifically for evaluating self-evolving capabilities. For general agent comparison, task completion (TC) should be used alongside ETS.
+
+\paragraph{Human Baseline.} A natural upper bound is human-written tools. We construct a \emph{Human Oracle} baseline by manually implementing reference tools for each gap task, registering them as seed tools, and running the agent with the complete library. This measures the ceiling: how well would the agent perform if it had perfect tools from the start? The gap between Human Oracle and ARISE quantifies how much room remains for improving tool synthesis quality.
+
 \paragraph{Limitations.} (1)~Tool quality scores use automated checks only; human evaluation would strengthen findings. (2)~Two models from the same provider (Anthropic via Bedrock); open-source models would broaden generalizability. (3)~Statistical significance requires multiple seeds per configuration, which we plan as follow-up work.
 
 \section{Conclusion}

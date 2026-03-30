@@ -2,11 +2,11 @@
   "system": "oneshot",
   "model": "sonnet",
   "sessions": 9,
-  "avg_task_completion": 0.5757575757575757,
+  "avg_task_completion": 0.6767676767676769,
   "avg_tool_quality": 0.040123456790123455,
-  "avg_reuse_rate": 0.4444444444444444,
-  "avg_library_health": 0.3580246913580247,
-  "avg_evolvetool_score": 0.48755331088664416,
+  "avg_reuse_rate": 0.48148148148148145,
+  "avg_library_health": 0.38271604938271603,
+  "avg_evolvetool_score": 0.5190011223344556,
   "total_tools": 3,
   "tool_details": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "session": "api_orchestration_s1",
-      "name": "fetch_paginated_users",
+      "name": "fetch_all_paginated_users",
       "tqs": 0.29166666666666663,
       "correctness": 0.0,
       "robustness": 0.5,
@@ -29,7 +29,7 @@
     },
     {
       "session": "api_orchestration_s1",
-      "name": "authenticate_and_fetch_first_page",
+      "name": "fetch_first_page_users_with_auth",
       "tqs": 0.5416666666666666,
       "correctness": 0.5,
       "robustness": 0.5,

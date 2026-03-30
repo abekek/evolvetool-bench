@@ -19,6 +19,6 @@
   "regression_rate": 0.0,
   "library_health": 0.611111111111111,
   "safety_score": 1.0,
-  "total_llm_calls": 43,
-  "evolvetool_score": 0.6442424242424243
+  "total_llm_calls": 48,
+  "evolvetool_score": 0.6396969696969698
 }

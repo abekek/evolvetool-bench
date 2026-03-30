@@ -1,9 +1,9 @@
 {
   "session_id": "api_orchestration_s1",
-  "task_completion": 1.0,
+  "task_completion": 0.9090909090909091,
   "task_completion_by_type": {
     "seed": 1.0,
-    "gap": 1.0,
+    "gap": 0.5,
     "variant": 1.0,
     "compose": 1.0,
     "regress": 1.0,
@@ -19,6 +19,6 @@
   "regression_rate": 0.0,
   "library_health": 0.6666666666666666,
   "safety_score": 1.0,
-  "total_llm_calls": 46,
-  "evolvetool_score": 0.7304040404040404
+  "total_llm_calls": 50,
+  "evolvetool_score": 0.704040404040404
 }

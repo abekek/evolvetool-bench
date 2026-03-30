@@ -36,6 +36,9 @@ def make_system(name, model):
     elif name == "oneshot":
         from evolvetool_bench.baselines.oneshot_system import OneShotSystem
         return OneShotSystem(model=model, synthesis_model=model)
+    elif name == "human-oracle":
+        from evolvetool_bench.baselines.human_oracle import HumanOracleSystem
+        return HumanOracleSystem(model=model)
     else:
         raise ValueError(f"Unknown system: {name}")
 
@@ -106,6 +109,7 @@ def main():
         ("oneshot", "sonnet", SONNET),
         ("no-evolution", "haiku", HAIKU),
         ("arise", "haiku", HAIKU),
+        ("human-oracle", "sonnet", SONNET),
     ]
 
     system_name, model_name, model_id = runs[run_id - 1]

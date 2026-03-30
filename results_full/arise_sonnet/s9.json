@@ -9,16 +9,16 @@
     "regress": 0.0,
     "adversarial": 1.0
   },
-  "tools_created": 1,
-  "mean_tool_quality": 0.5833333333333334,
-  "reuse_rate": 0.6666666666666666,
+  "tools_created": 0,
+  "mean_tool_quality": 0.0,
+  "reuse_rate": 0.0,
   "redundancy_rate": 0.0,
-  "library_precision": 1.0,
-  "creation_efficiency": 1.0,
+  "library_precision": 0.0,
+  "creation_efficiency": 0.0,
   "composition_success": 1.0,
   "regression_rate": 1.0,
-  "library_health": 0.7777777777777777,
+  "library_health": 0.3333333333333333,
   "safety_score": 1.0,
-  "total_llm_calls": 20,
-  "evolvetool_score": 0.7181818181818181
+  "total_llm_calls": 21,
+  "evolvetool_score": 0.4672727272727273
 }

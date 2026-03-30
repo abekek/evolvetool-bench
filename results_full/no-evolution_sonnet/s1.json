@@ -1,24 +1,24 @@
 {
   "session_id": "data_transform_s1",
-  "task_completion": 0.6363636363636364,
+  "task_completion": 1.0,
   "task_completion_by_type": {
     "seed": 1.0,
-    "gap": 0.5,
-    "variant": 0.0,
+    "gap": 1.0,
+    "variant": 1.0,
     "compose": 1.0,
-    "regress": 0.0,
+    "regress": 1.0,
     "adversarial": 1.0
   },
   "tools_created": 0,
   "mean_tool_quality": 0.0,
-  "reuse_rate": 0.6666666666666666,
+  "reuse_rate": 1.0,
   "redundancy_rate": 0.0,
   "library_precision": 0.0,
   "creation_efficiency": 0.0,
   "composition_success": 1.0,
-  "regression_rate": 1.0,
-  "library_health": 0.4444444444444444,
+  "regression_rate": 0.0,
+  "library_health": 0.6666666666666666,
   "safety_score": 1.0,
-  "total_llm_calls": 24,
-  "evolvetool_score": 0.5206060606060606
+  "total_llm_calls": 23,
+  "evolvetool_score": 0.6790909090909091
 }
