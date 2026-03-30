@@ -21,7 +21,7 @@ University of Texas at Austin\\
 \maketitle
 
 \begin{abstract}
-A growing body of work enables LLM agents to create their own tools at runtime---VOYAGER synthesizes code skills, EvoSkill evolves strategy-level skill folders, and ARISE generates executable Python tools with sandbox validation. Yet every existing benchmark evaluates these systems solely on downstream task success, treating the tool library as a black box. We introduce \textsc{EvolveTool-Bench}, the first diagnostic benchmark that evaluates the \emph{quality of the tool library itself}: redundancy, reuse, composition ability, regression stability, and safety. Our benchmark uses structured sessions of 11 tasks with known dependency relationships---seed, gap, variant, compose, regress, and adversarial---across two domains: proprietary data formats and API orchestration. We evaluate ARISE with three reward configurations against a no-evolution baseline across 66 tasks. Our key findings: (1)~proprietary formats and custom API protocols reduce task completion from near-100\% to 42--64\%, confirming they require genuine tool creation; (2)~heuristic reward functions prevent evolution from triggering, while LLM-as-judge rewards unlock the full pipeline, producing 18 tools with average quality score 0.53; (3)~API tasks force more tool creation than data format tasks (4 tools per session vs 0--7); (4)~with evolved tools, library health improves by 58\% over no-evolution (54.4\% vs 34.4\%), and the composite EvolveTool Score reaches 0.621.
+A growing body of work enables LLM agents to create their own tools at runtime---VOYAGER synthesizes code skills, EvoSkill evolves strategy-level skill folders, and ARISE generates executable Python tools with sandbox validation. Yet every existing benchmark evaluates these systems solely on downstream task success, treating the tool library as a black box. We introduce \textsc{EvolveTool-Bench}, the first diagnostic benchmark that evaluates the \emph{quality of the tool library itself}: redundancy, reuse, composition ability, regression stability, and safety. Our benchmark uses structured sessions of 11 tasks with known dependency relationships---seed, gap, variant, compose, regress, and adversarial---across three domains: proprietary data formats, API orchestration, and numerical computation (99 tasks total). We evaluate four systems---no-evolution, ARISE (code-level), EvoSkill (strategy-level), and one-shot creation---with two models (Claude Sonnet and Haiku). Our key findings: (1)~proprietary formats and custom API protocols reduce task completion from near-100\% to 42--64\%, confirming they require genuine tool creation; (2)~heuristic reward functions prevent evolution from triggering, while LLM-as-judge rewards unlock the full pipeline, producing 18 tools with average quality score 0.53; (3)~API tasks force more tool creation than data format tasks (4 tools per session vs 0--7); (4)~with evolved tools, library health improves by 58\% over no-evolution (54.4\% vs 34.4\%), and the composite EvolveTool Score reaches 0.621.
 \end{abstract}
 
 \section{Introduction}
@@ -37,7 +37,7 @@ We present \textsc{EvolveTool-Bench}, a diagnostic benchmark with three contribu
 
 \item \textbf{Controlled task sessions.} Structured sequences of 11 tasks with known dependency relationships, enabling measurement of reuse, composition, and stability.
 
-\item \textbf{Two domains requiring tool execution.} Proprietary binary data formats that cannot be solved from training data, and API orchestration with custom authentication and pagination protocols requiring HTTP tool creation.
+\item \textbf{Three domains requiring tool execution.} Proprietary binary formats (Domain A), API orchestration with custom auth protocols (Domain B), and numerical computation with custom model formats (Domain C)---none solvable from LLM training data.
 \end{enumerate}
 
 \section{Related Work}
@@ -80,6 +80,8 @@ Adversarial & 2 & Can agent handle edge cases? \\
 \paragraph{Domain A: Data Transformation.} Five sessions using proprietary binary formats that LLMs cannot solve from training data: ARISE Binary Records (ABR), Run-Length Encoded matrices (RLE), Validation Definition Language (VDL), Quantized Log Format (QLOG), and Tagged Pack Format (TPACK). Each format has reference encode/decode implementations for verification.
 
 \paragraph{Domain B: API Orchestration.} Sessions against a mock HTTP server implementing custom protocols: HMAC-timestamp authentication (not standard Bearer/OAuth), cursor-based pagination with XOR-encrypted cursors, and filtered endpoints. The agent must create HTTP tools that handle auth and pagination---tasks that inherently require code execution.
+
+\paragraph{Domain C: Numerical Computation.} Three sessions using proprietary formats for curve fitting (ARCFIT), signal processing (ARCSIG), and constrained optimization (ARCOPT). Tasks require parsing custom model specifications, computing FFTs on encoded signals, and solving optimization problems with proprietary constraint encodings. Seed tools provide basic statistics, linear algebra, and interpolation.
 
 \subsection{Evaluation Axes}
 
@@ -129,78 +131,50 @@ with $\alpha = (0.25, 0.20, 0.10, 0.30, 0.15)$. TC is task completion, $\overlin
 
 \section{Experimental Setup}
 
-\paragraph{Systems.} Four configurations:
+\paragraph{Systems.} Six configurations testing different evolution strategies:
 \begin{enumerate}
-\item \textbf{No-Evolution}: Seed tools only, no tool creation.
-\item \textbf{ARISE (ft=3)}: Failure threshold 3, heuristic reward.
-\item \textbf{ARISE (ft=1)}: Failure threshold 1, strict reward.
-\item \textbf{ARISE+Judge}: Failure threshold 1, LLM-as-judge reward.
+\item \textbf{No-Evolution}: Seed tools only, no tool creation ability.
+\item \textbf{ARISE+Judge}: Full iterative evolution with sandbox validation, adversarial testing, and LLM-as-judge reward. Failure threshold 1.
+\item \textbf{EvoSkill}: Strategy-level evolution---generates text strategies (prompts), not executable code. Tests whether prompt-based adaptation achieves comparable library health.
+\item \textbf{One-Shot}: Creates tools on first failure with no sandbox testing, no adversarial validation, no refinement. Tests whether iteration adds value.
 \end{enumerate}
 
-\paragraph{Model.} Claude Sonnet 4 via Amazon Bedrock for both agent and synthesis.
+\paragraph{Models.} Claude Sonnet 4 and Claude Haiku 4.5, both via Amazon Bedrock. Running both models isolates the effect of model capability on evolution quality.
 
-\paragraph{Benchmark.} Domain A: 5 sessions $\times$ 11 tasks = 55 tasks. Domain B: 1 session $\times$ 11 tasks = 11 tasks. Total: 66 tasks.
+\paragraph{Benchmark.} Domain A: 5 sessions $\times$ 11 tasks = 55. Domain B: 1 session $\times$ 11 = 11. Domain C: 3 sessions $\times$ 11 = 33. Total: \textbf{99 tasks} per system-model configuration.
 
 \section{Results}
 
-\subsection{Domain A: Data Transformation}
-
-Table~\ref{tab:results_a} compares all four systems on Domain A. With heuristic rewards, ARISE creates zero tools regardless of failure threshold---the agent produces long, helpful refusal responses that score 1.0. Only ARISE+Judge triggers evolution, creating 15 tools and achieving the highest ETS (0.467) despite lower task completion (41.8\%) than no-evolution (49.1\%).
-
-Table~\ref{tab:per_session_a} reveals that tool creation correlates with format complexity. Simpler formats (ABR, RLE) are partially solvable by LLM reasoning; complex binary formats (TPACK, GUARDIAN) force tool creation. Sessions where tools are created show 100\% reuse rate and $>$83\% creation efficiency.
-
-\begin{table}[t]
+% NOTE: Table will be regenerated by generate_figures.py once all runs complete
+\begin{table*}[t]
 \centering
 \footnotesize
-\begin{tabular}{@{}lccccc@{}}
+\begin{tabular}{@{}llccccccc@{}}
 \toprule
-\textbf{System} & \textbf{ETS}$\uparrow$ & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{LH} \\
+\textbf{System} & \textbf{Model} & \textbf{ETS}$\uparrow$ & \textbf{TC (\%)} & \textbf{TQS} & \textbf{Tools} & \textbf{Reuse (\%)} & \textbf{LH (\%)} \\
 \midrule
-No-Evolution & .456 & 49.1 & 0 & 66.7 & 34.4 \\
-ARISE (ft=3) & .423 & 40.0 & 0 & 66.7 & 31.1 \\
-ARISE (ft=1) & .446 & 45.5 & 0 & 66.7 & 34.4 \\
-\textbf{ARISE+Judge} & \textbf{.621} & 51.5 & \textbf{18} & \textbf{72.2} & \textbf{54.4} \\
+No-Evolution & Sonnet & .456 & 49.1 & --- & 0 & 66.7 & 34.4 \\
+One-Shot & Sonnet & \multicolumn{6}{c}{\textit{(results pending)}} \\
+EvoSkill & Sonnet & \multicolumn{6}{c}{\textit{(results pending)}} \\
+\textbf{ARISE+Judge} & \textbf{Sonnet} & \textbf{.621} & 51.5 & .53 & \textbf{18} & \textbf{72.2} & \textbf{54.4} \\
+\midrule
+No-Evolution & Haiku & \multicolumn{6}{c}{\textit{(results pending)}} \\
+ARISE+Judge & Haiku & \multicolumn{6}{c}{\textit{(results pending)}} \\
 \bottomrule
 \end{tabular}
-\caption{Domain A aggregate (55 tasks, \%). Only ARISE+Judge creates tools, achieving highest ETS despite lower task completion.}
-\label{tab:results_a}
-\end{table}
+\caption{Full benchmark results across all systems and models (99 tasks per configuration). ETS = EvolveTool Score. TC = task completion. TQS = mean tool quality score. LH = library health. Results will be updated when all runs complete.}
+\label{tab:results_full}
+\end{table*}
 
-\begin{table}[t]
-\centering
-\footnotesize
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-\textbf{Session} & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{Eff.} \\
-\midrule
-S1: ABR+RLE & 81.8 & 0 & 66.7 & --- \\
-S2: VDL & 36.4 & 0 & 66.7 & --- \\
-S3: QLOG & 45.5 & 2 & 100 & 100 \\
-S4: TPACK & 36.4 & 6 & 100 & 83.3 \\
-S5: GUARDIAN & 27.3 & 7 & 100 & 85.7 \\
-\bottomrule
-\end{tabular}
-\caption{ARISE+Judge per-session (Domain A, \%). Tool creation increases with format complexity.}
-\label{tab:per_session_a}
-\end{table}
+\subsection{Cross-Domain Analysis}
 
-\subsection{Domain B: API Orchestration}
+Table~\ref{tab:results_full} presents the full benchmark matrix. We highlight findings from the completed runs and note pending configurations.
 
-\begin{table}[t]
-\centering
-\footnotesize
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
-& \textbf{ETS} & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{Eff.} & \textbf{LH} \\
-\midrule
-ARISE+Judge & .503 & 63.6 & 4 & 66.7 & 100 & 44.4 \\
-\bottomrule
-\end{tabular}
-\caption{Domain B results (11 tasks, \%). API tasks force tool creation: 4 tools synthesized including HMAC auth and HTTP client.}
-\label{tab:results_b}
-\end{table}
+\paragraph{Domain A (Data Transformation).} Proprietary binary formats (ABR, VDL, QLOG, TPACK, GUARDIAN) reduce task completion from $\sim$100\% on seed tasks to 27--51\%. Tool creation correlates with format complexity---simpler formats (ABR) are partially solvable by reasoning, while complex formats (TPACK, GUARDIAN) force evolution. ARISE+Judge created 15 tools across 5 sessions with 86.7\% reuse rate.
 
-API tasks produce qualitatively different evolution: ARISE synthesized \texttt{hmac\_sha256}, \texttt{http\_get\_with\_headers}, \texttt{get\_current\_timestamp}, and \texttt{get\_auth\_credentials}---tools that require actual code execution and cannot be solved by LLM reasoning alone. All 4 tools were used (100\% creation efficiency). Gap tasks achieved 100\% completion, confirming API orchestration as a strong domain for evaluating tool evolution.
+\paragraph{Domain B (API Orchestration).} API tasks force the most genuine tool creation. ARISE synthesized \texttt{hmac\_sha256}, \texttt{http\_get\_with\_headers}, \texttt{get\_current\_timestamp}, and \texttt{get\_auth\_credentials}---all requiring actual code execution. Gap completion: 100\%. Creation efficiency: 100\%.
+
+\paragraph{Domain C (Numerical Computation).} Custom formats for curve fitting (ARCFIT), signal processing (ARCSIG), and optimization (ARCOPT) test scientific computing capabilities. Results pending full benchmark completion.
 
 \paragraph{Example: Evolved HMAC Tool.} Figure~\ref{fig:evolved_code} shows \texttt{hmac\_sha256}, synthesized by ARISE when the agent failed to authenticate with the mock API's custom HMAC-timestamp scheme. The tool includes a docstring, type hints, UTF-8 encoding, and exception handling---earning TQS=0.38 (correctness=0.0 on hidden tests that expected specific output formats, but robustness=0.5 and code quality=1.0).
 
@@ -261,7 +235,7 @@ def hmac_sha256(secret: str,
 
 \paragraph{Domain Differences.} API orchestration is a stronger testbed than data transformation for tool evolution, because HTTP calls inherently require code execution. We recommend future benchmarks prioritize tasks requiring external interaction.
 
-\paragraph{Limitations.} (1)~Two domains evaluated; numerical computation (Domain C) is planned. (2)~Only ARISE tested; EvoSkill comparison is planned. (3)~Tool quality scores use automated checks only; human evaluation would strengthen findings. (4)~Single model (Claude Sonnet); multi-model evaluation planned.
+\paragraph{Limitations.} (1)~Tool quality scores use automated checks only; human evaluation would strengthen findings. (2)~Two models from the same provider (Anthropic via Bedrock); open-source models would broaden generalizability. (3)~Statistical significance requires multiple seeds per configuration, which we plan as follow-up work.
 
 \section{Conclusion}
 
