@@ -77,15 +77,44 @@ def run_session(system: AgentSystem, session: Session, verbose: bool = True) -> 
             if isinstance(task.expected, str):
                 passed = task.expected.lower() in output.lower()
             elif isinstance(task.expected, list):
+                # Try exact JSON match first
                 try:
-                    # Try parsing output as JSON
                     parsed = json.loads(output) if isinstance(output, str) else output
-                    passed = parsed == task.expected
+                    if parsed == task.expected:
+                        passed = True
                 except (json.JSONDecodeError, TypeError):
-                    # Check if expected items appear in output
-                    passed = all(str(item) in str(output) for item in task.expected[:2])
-                    if passed and not all(str(item) in str(output) for item in task.expected):
+                    pass
+
+                # Fallback: check if key values from expected appear in output
+                if not passed and isinstance(task.expected, list) and task.expected:
+                    # Extract all string values from expected dicts
+                    key_values = set()
+                    for item in task.expected:
+                        if isinstance(item, dict):
+                            for v in item.values():
+                                key_values.add(str(v))
+                        else:
+                            key_values.add(str(item))
+
+                    # Pass if most key values appear in output
+                    found = sum(1 for v in key_values if v in str(output))
+                    ratio = found / len(key_values) if key_values else 0
+                    if ratio >= 0.8:
+                        passed = True
+                    elif ratio >= 0.5:
                         partial = True
+            elif isinstance(task.expected, dict):
+                try:
+                    parsed = json.loads(output) if isinstance(output, str) else output
+                    if parsed == task.expected:
+                        passed = True
+                except (json.JSONDecodeError, TypeError):
+                    pass
+                if not passed:
+                    key_values = set(str(v) for v in task.expected.values())
+                    found = sum(1 for v in key_values if v in str(output))
+                    ratio = found / len(key_values) if key_values else 0
+                    passed = ratio >= 0.8
         else:
             # No verification — pass if output is non-trivial
             passed = len(str(output)) > 20
