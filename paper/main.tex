@@ -135,7 +135,7 @@ Table~\ref{tab:per_session_a} reveals that tool creation correlates with format 
 No-Evolution & .456 & 49.1 & 0 & 66.7 & 34.4 \\
 ARISE (ft=3) & .423 & 40.0 & 0 & 66.7 & 31.1 \\
 ARISE (ft=1) & .446 & 45.5 & 0 & 66.7 & 34.4 \\
-\textbf{ARISE+Judge} & \textbf{.467} & 41.8 & \textbf{15} & \textbf{86.7} & \textbf{46.5} \\
+\textbf{ARISE+Judge} & \textbf{.621} & 51.5 & \textbf{18} & \textbf{72.2} & \textbf{54.4} \\
 \bottomrule
 \end{tabular}
 \caption{Domain A aggregate (55 tasks, \%). Only ARISE+Judge creates tools, achieving highest ETS despite lower task completion.}
@@ -177,6 +177,20 @@ ARISE+Judge & .503 & 63.6 & 4 & 66.7 & 100 & 44.4 \\
 \end{table}
 
 API tasks produce qualitatively different evolution: ARISE synthesized \texttt{hmac\_sha256}, \texttt{http\_get\_with\_headers}, \texttt{get\_current\_timestamp}, and \texttt{get\_auth\_credentials}---tools that require actual code execution and cannot be solved by LLM reasoning alone. All 4 tools were used (100\% creation efficiency). Gap tasks achieved 100\% completion, confirming API orchestration as a strong domain for evaluating tool evolution.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_comparison.pdf}
+\caption{System comparison across four metrics (\%). ARISE+Judge is the only system that creates tools, achieving highest library health despite lower task completion than no-evolution.}
+\label{fig:comparison}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_tool_quality.pdf}
+\caption{Tool Quality Score (TQS) for each of the 18 synthesized tools. Red line marks the quality threshold (0.5). 12 of 18 tools (67\%) pass the threshold.}
+\label{fig:tool_quality}
+\end{figure}
 
 \subsection{Key Findings}
 
