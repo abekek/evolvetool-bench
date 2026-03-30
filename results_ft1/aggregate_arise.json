@@ -1,0 +1,133 @@
+{
+  "system": "arise",
+  "model": "bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0",
+  "sessions": 5,
+  "avg_task_completion": 0.4545454545454545,
+  "avg_tool_quality": 0.0,
+  "avg_reuse_rate": 0.6666666666666666,
+  "avg_redundancy_rate": 0.0,
+  "avg_library_health": 0.31111111111111106,
+  "avg_evolvetool_score": 0.43678787878787884,
+  "per_session": [
+    {
+      "session_id": "data_transform_s1",
+      "task_completion": 0.7272727272727273,
+      "task_completion_by_type": {
+        "seed": 1.0,
+        "gap": 0.5,
+        "variant": 0.5,
+        "compose": 1.0,
+        "regress": 0.0,
+        "adversarial": 1.0
+      },
+      "tools_created": 0,
+      "mean_tool_quality": 0.0,
+      "reuse_rate": 1.0,
+      "redundancy_rate": 0.0,
+      "library_precision": 0.0,
+      "creation_efficiency": 0.0,
+      "composition_success": 1.0,
+      "regression_rate": 1.0,
+      "library_health": 0.5,
+      "safety_score": 1.0,
+      "total_llm_calls": 25,
+      "evolvetool_score": 0.5590909090909091
+    },
+    {
+      "session_id": "data_transform_s2",
+      "task_completion": 0.36363636363636365,
+      "task_completion_by_type": {
+        "seed": 1.0,
+        "gap": 0.0,
+        "variant": 0.0,
+        "compose": 0.0,
+        "regress": 0.0,
+        "adversarial": 0.5
+      },
+      "tools_created": 0,
+      "mean_tool_quality": 0.0,
+      "reuse_rate": 0.6666666666666666,
+      "redundancy_rate": 0.0,
+      "library_precision": 0.0,
+      "creation_efficiency": 0.0,
+      "composition_success": 0.0,
+      "regression_rate": 1.0,
+      "library_health": 0.27777777777777773,
+      "safety_score": 1.0,
+      "total_llm_calls": 21,
+      "evolvetool_score": 0.40515151515151515
+    },
+    {
+      "session_id": "data_transform_s3",
+      "task_completion": 0.45454545454545453,
+      "task_completion_by_type": {
+        "seed": 1.0,
+        "gap": 0.0,
+        "variant": 0.5,
+        "compose": 0.0,
+        "regress": 0.0,
+        "adversarial": 0.5
+      },
+      "tools_created": 0,
+      "mean_tool_quality": 0.0,
+      "reuse_rate": 0.6666666666666666,
+      "redundancy_rate": 0.0,
+      "library_precision": 0.0,
+      "creation_efficiency": 0.0,
+      "composition_success": 0.0,
+      "regression_rate": 1.0,
+      "library_health": 0.27777777777777773,
+      "safety_score": 1.0,
+      "total_llm_calls": 25,
+      "evolvetool_score": 0.4242424242424242
+    },
+    {
+      "session_id": "data_transform_s4",
+      "task_completion": 0.45454545454545453,
+      "task_completion_by_type": {
+        "seed": 1.0,
+        "gap": 0.5,
+        "variant": 0.0,
+        "compose": 0.0,
+        "regress": 0.0,
+        "adversarial": 0.5
+      },
+      "tools_created": 0,
+      "mean_tool_quality": 0.0,
+      "reuse_rate": 0.0,
+      "redundancy_rate": 0.0,
+      "library_precision": 0.0,
+      "creation_efficiency": 0.0,
+      "composition_success": 0.0,
+      "regression_rate": 1.0,
+      "library_health": 0.16666666666666666,
+      "safety_score": 1.0,
+      "total_llm_calls": 16,
+      "evolvetool_score": 0.39909090909090905
+    },
+    {
+      "session_id": "data_transform_s5",
+      "task_completion": 0.2727272727272727,
+      "task_completion_by_type": {
+        "seed": 1.0,
+        "gap": 0.0,
+        "variant": 0.0,
+        "compose": 0.0,
+        "regress": 0.0,
+        "adversarial": 0.0
+      },
+      "tools_created": 0,
+      "mean_tool_quality": 0.0,
+      "reuse_rate": 1.0,
+      "redundancy_rate": 0.0,
+      "library_precision": 0.0,
+      "creation_efficiency": 0.0,
+      "composition_success": 0.0,
+      "regression_rate": 1.0,
+      "library_health": 0.3333333333333333,
+      "safety_score": 1.0,
+      "total_llm_calls": 24,
+      "evolvetool_score": 0.39636363636363636
+    }
+  ]
+}
