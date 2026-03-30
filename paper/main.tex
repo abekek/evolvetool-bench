@@ -21,7 +21,7 @@ University of Texas at Austin\\
 \maketitle
 
 \begin{abstract}
-A growing body of work enables LLM agents to create their own tools at runtime---VOYAGER synthesizes code skills, EvoSkill evolves strategy-level skill folders, and ARISE generates executable Python tools with sandbox validation. Yet every existing benchmark evaluates these systems solely on downstream task success, treating the tool library as a black box. We introduce \textsc{EvolveTool-Bench}, the first diagnostic benchmark that evaluates the \emph{quality of the tool library itself}: redundancy, reuse, composition ability, regression stability, and safety. Our benchmark uses structured sessions of 11 tasks with known dependency relationships---seed, gap, variant, compose, regress, and adversarial---across two domains: proprietary data formats and API orchestration. We evaluate ARISE with three reward configurations against a no-evolution baseline across 66 tasks. Our key findings: (1)~proprietary formats and custom API protocols reduce task completion from near-100\% to 42--64\%, confirming they require genuine tool creation; (2)~heuristic reward functions prevent evolution from triggering, while LLM-as-judge rewards unlock the full pipeline, producing 19 tools across 6 sessions; (3)~API tasks force more tool creation than data format tasks (4 tools vs 0--7 per session); (4)~with evolved tools, reuse rate reaches 86.7\% and library health improves by 35\% over the no-evolution baseline.
+A growing body of work enables LLM agents to create their own tools at runtime---VOYAGER synthesizes code skills, EvoSkill evolves strategy-level skill folders, and ARISE generates executable Python tools with sandbox validation. Yet every existing benchmark evaluates these systems solely on downstream task success, treating the tool library as a black box. We introduce \textsc{EvolveTool-Bench}, the first diagnostic benchmark that evaluates the \emph{quality of the tool library itself}: redundancy, reuse, composition ability, regression stability, and safety. Our benchmark uses structured sessions of 11 tasks with known dependency relationships---seed, gap, variant, compose, regress, and adversarial---across two domains: proprietary data formats and API orchestration. We evaluate ARISE with three reward configurations against a no-evolution baseline across 66 tasks. Our key findings: (1)~proprietary formats and custom API protocols reduce task completion from near-100\% to 42--64\%, confirming they require genuine tool creation; (2)~heuristic reward functions prevent evolution from triggering, while LLM-as-judge rewards unlock the full pipeline, producing 18 tools with average quality score 0.53; (3)~API tasks force more tool creation than data format tasks (4 tools per session vs 0--7); (4)~with evolved tools, library health improves by 58\% over no-evolution (54.4\% vs 34.4\%), and the composite EvolveTool Score reaches 0.621.
 \end{abstract}
 
 \section{Introduction}
@@ -85,7 +85,18 @@ Adversarial & 2 & Can agent handle edge cases? \\
 
 \paragraph{Axis 1: Task Completion.} Binary pass/fail via deterministic verification. Reported overall and by task type.
 
-\paragraph{Axis 2: Tool Quality Score (TQS).} Each tool scored on correctness (hidden tests), robustness (adversarial tests), generality (held-out inputs), and code quality (docstrings, types, error handling).
+\paragraph{Axis 2: Tool Quality Score (TQS).} Each synthesized tool is evaluated on four dimensions, each scored 0--1:
+
+\begin{itemize}
+\item \textbf{Correctness}: Tool is executed on $N$ hidden unit tests (not shown to agent). Score = proportion passing.
+\item \textbf{Robustness}: Tool is executed on $M$ adversarial inputs (empty strings, null values, type errors, malformed data). Score = proportion handled without crashing.
+\item \textbf{Generality}: Tool is executed on held-out inputs from the same distribution but different parameters. Score = proportion producing valid output.
+\item \textbf{Code Quality}: Automated static checks---has docstring (1pt), has type hints (1pt), handles exceptions (1pt), no magic numbers (1pt), under 100 lines (1pt), valid syntax (1pt). Score = points / total checks.
+\end{itemize}
+
+$\text{TQS} = \frac{1}{4}(\text{Correctness} + \text{Robustness} + \text{Generality} + \text{CodeQuality})$
+
+All tool evaluation runs in isolated subprocesses with 10-second timeouts to prevent infinite loops or resource exhaustion.
 
 \paragraph{Axis 3: Library Diagnostics.} Six metrics at session end:
 \begin{itemize}
@@ -178,6 +189,31 @@ ARISE+Judge & .503 & 63.6 & 4 & 66.7 & 100 & 44.4 \\
 
 API tasks produce qualitatively different evolution: ARISE synthesized \texttt{hmac\_sha256}, \texttt{http\_get\_with\_headers}, \texttt{get\_current\_timestamp}, and \texttt{get\_auth\_credentials}---tools that require actual code execution and cannot be solved by LLM reasoning alone. All 4 tools were used (100\% creation efficiency). Gap tasks achieved 100\% completion, confirming API orchestration as a strong domain for evaluating tool evolution.
 
+\paragraph{Example: Evolved HMAC Tool.} Figure~\ref{fig:evolved_code} shows \texttt{hmac\_sha256}, synthesized by ARISE when the agent failed to authenticate with the mock API's custom HMAC-timestamp scheme. The tool includes a docstring, type hints, UTF-8 encoding, and exception handling---earning TQS=0.38 (correctness=0.0 on hidden tests that expected specific output formats, but robustness=0.5 and code quality=1.0).
+
+\begin{figure}[t]
+\centering
+\footnotesize
+\begin{verbatim}
+def hmac_sha256(secret: str,
+                message: str) -> str:
+    """Generate HMAC-SHA256 hash."""
+    import hmac
+    import hashlib
+    try:
+        secret_bytes = secret.encode('utf-8')
+        message_bytes = message.encode('utf-8')
+        h = hmac.new(secret_bytes,
+                     message_bytes,
+                     hashlib.sha256)
+        return h.hexdigest()
+    except Exception as e:
+        return f"Error: {str(e)}"
+\end{verbatim}
+\caption{Tool synthesized by ARISE for HMAC-timestamp auth. Generated, tested (5/5 sandbox tests passed), and promoted in $<$60 seconds.}
+\label{fig:evolved_code}
+\end{figure}
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{fig_comparison.pdf}
@@ -200,7 +236,7 @@ API tasks produce qualitatively different evolution: ARISE synthesized \texttt{h
 
 \paragraph{Finding 3: API tasks force more tool creation.} Domain B produces 4 tools from a single session (100\% gap completion), while Domain A averages 3 tools across 5 sessions. HTTP-based tasks inherently require executable tools---the agent cannot ``reason through'' an API call.
 
-\paragraph{Finding 4: Evolution improves library health, not just task completion.} ARISE+Judge achieves the highest ETS despite lower task completion than no-evolution. Reuse rate jumps from 66.7\% to 86.7\%, and library health improves by 35\%. \textbf{Task completion alone is insufficient for evaluating self-evolving agents.}
+\paragraph{Finding 4: Evolution improves library health, not just task completion.} ARISE+Judge achieves the highest ETS (0.621) with 18 tools averaging TQS=0.53. Library health improves by 58\% over no-evolution (54.4\% vs 34.4\%). 12 of 18 tools (67\%) pass the quality threshold (Figure~\ref{fig:tool_quality}). \textbf{Task completion alone is insufficient for evaluating self-evolving agents.}
 
 \paragraph{Finding 5: Tool reuse emerges when tools are available.} Without evolved tools, reuse is limited to applying seed tools. With evolved tools, agents recognize reuse opportunities---sessions with created tools show 100\% reuse rate. The bottleneck is tool creation, not retrieval.
 
