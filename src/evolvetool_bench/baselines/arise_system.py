@@ -92,27 +92,41 @@ class ARISESystem(AgentSystem):
                     messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
             return msg.content or ""
 
+        _judge_model = self.synthesis_model
+
         def reward_fn(trajectory):
+            """LLM judge reward — asks the model if the task was actually completed."""
             if any(s.error for s in trajectory.steps):
                 return 0.0
-            if len(trajectory.outcome) < 20:
+            if len(trajectory.outcome) < 10:
                 return 0.0
-            # Must have used a non-seed tool to get credit
-            # (prevents the agent from just reasoning through the answer)
-            seed_names = {t["name"] for t in seed_tools}
-            real_tool_used = any(
-                s.action and s.action not in seed_names
-                for s in trajectory.steps
+
+            import litellm, re as _re
+            prompt = (
+                "You are evaluating whether an AI agent successfully completed a task.\n\n"
+                f"TASK: {trajectory.task}\n\n"
+                f"AGENT OUTPUT: {trajectory.outcome[:1500]}\n\n"
+                "Did the agent produce a CORRECT, CONCRETE answer to the task? "
+                "Not just an explanation of how to solve it, but the actual result?\n\n"
+                "Score 0.0 if the agent said it cannot do it, gave instructions instead of a result, "
+                "or produced an incorrect answer.\n"
+                "Score 0.5 if the agent produced a partial or approximately correct answer.\n"
+                "Score 1.0 if the agent produced the complete correct answer.\n\n"
+                "Return ONLY a number: 0.0, 0.5, or 1.0"
             )
-            if not real_tool_used and trajectory.steps:
-                return 0.0
-            # If no tools were called at all, check for failure signals
-            if not trajectory.steps:
-                outcome = trajectory.outcome.lower()
-                fail_signals = ["cannot", "don't have", "unable", "no tool", "not possible"]
-                if any(s in outcome for s in fail_signals):
-                    return 0.0
-            return 1.0
+            try:
+                resp = litellm.completion(
+                    model=_judge_model,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=10,
+                )
+                text = resp.choices[0].message.content.strip()
+                match = _re.search(r'(\d+\.?\d*)', text)
+                if match:
+                    return max(0.0, min(1.0, float(match.group(1))))
+            except Exception:
+                pass
+            return 0.5
 
         self._arise = ARISE(
             agent_fn=agent_fn,
