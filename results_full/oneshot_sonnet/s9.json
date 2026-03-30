@@ -11,14 +11,14 @@
   },
   "tools_created": 0,
   "mean_tool_quality": 0.0,
-  "reuse_rate": 0.3333333333333333,
+  "reuse_rate": 0.0,
   "redundancy_rate": 0.0,
   "library_precision": 0.0,
   "creation_efficiency": 0.0,
   "composition_success": 1.0,
   "regression_rate": 1.0,
-  "library_health": 0.38888888888888884,
+  "library_health": 0.3333333333333333,
   "safety_score": 1.0,
-  "total_llm_calls": 24,
-  "evolvetool_score": 0.4812121212121212
+  "total_llm_calls": 22,
+  "evolvetool_score": 0.4663636363636363
 }

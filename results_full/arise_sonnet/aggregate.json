@@ -2,12 +2,12 @@
   "system": "arise",
   "model": "sonnet",
   "sessions": 9,
-  "avg_task_completion": 0.5454545454545455,
-  "avg_tool_quality": 0.4459876543209877,
-  "avg_reuse_rate": 0.7407407407407408,
-  "avg_library_health": 0.5339506172839505,
-  "avg_evolvetool_score": 0.6084736251402918,
-  "total_tools": 20,
+  "avg_task_completion": 0.6363636363636362,
+  "avg_tool_quality": 0.33994708994709,
+  "avg_reuse_rate": 0.7037037037037037,
+  "avg_library_health": 0.5174162257495589,
+  "avg_evolvetool_score": 0.602507215007215,
+  "total_tools": 22,
   "tool_details": [
     {
       "session": "data_transform_s1",
@@ -19,22 +19,13 @@
       "code_quality": 1.0
     },
     {
-      "session": "data_transform_s1",
-      "name": "parse_rle",
+      "session": "data_transform_s3",
+      "name": "parse_qlog",
       "tqs": 0.625,
       "correctness": 0.5,
       "robustness": 0.5,
       "generality": 0.5,
       "code_quality": 1.0
-    },
-    {
-      "session": "data_transform_s1",
-      "name": "parse_binary_records",
-      "tqs": 0.5833333333333334,
-      "correctness": 0.5,
-      "robustness": 0.5,
-      "generality": 0.5,
-      "code_quality": 0.8333333333333334
     },
     {
       "session": "data_transform_s3",
@@ -47,7 +38,16 @@
     },
     {
       "session": "data_transform_s3",
-      "name": "parse_binary_struct",
+      "name": "count_by_field",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "parse_qlog_extended",
       "tqs": 0.5833333333333334,
       "correctness": 0.5,
       "robustness": 0.5,
@@ -56,7 +56,7 @@
     },
     {
       "session": "data_transform_s4",
-      "name": "deserialize_binary",
+      "name": "parse_binary_format",
       "tqs": 0.33333333333333337,
       "correctness": 0.0,
       "robustness": 0.5,
@@ -65,25 +65,16 @@
     },
     {
       "session": "data_transform_s4",
-      "name": "deserialize_tpack",
-      "tqs": 0.5833333333333334,
+      "name": "decode_base64",
+      "tqs": 0.625,
       "correctness": 0.5,
       "robustness": 0.5,
       "generality": 0.5,
-      "code_quality": 0.8333333333333334
-    },
-    {
-      "session": "data_transform_s5",
-      "name": "compute_crc",
-      "tqs": 0.75,
-      "correctness": 0.0,
-      "robustness": 1.0,
-      "generality": 1.0,
       "code_quality": 1.0
     },
     {
       "session": "data_transform_s5",
-      "name": "decode_base64",
+      "name": "calculate_parity",
       "tqs": 0.375,
       "correctness": 0.0,
       "robustness": 0.5,
@@ -92,11 +83,47 @@
     },
     {
       "session": "data_transform_s5",
-      "name": "xor_data",
-      "tqs": 0.625,
-      "correctness": 0.5,
+      "name": "calculate_crc",
+      "tqs": 0.375,
+      "correctness": 0.0,
       "robustness": 0.5,
-      "generality": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_binary_data",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "parse_structured_binary",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "repair_with_parity",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "verify_data_integrity",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
       "code_quality": 1.0
     },
     {
@@ -109,35 +136,8 @@
       "code_quality": 0.8333333333333334
     },
     {
-      "session": "data_transform_s5",
-      "name": "parse_binary_format",
-      "tqs": 0.5833333333333334,
-      "correctness": 0.5,
-      "robustness": 0.5,
-      "generality": 0.5,
-      "code_quality": 0.8333333333333334
-    },
-    {
-      "session": "data_transform_s5",
-      "name": "reconstruct_text_from_blocks",
-      "tqs": 0.5833333333333334,
-      "correctness": 0.5,
-      "robustness": 0.5,
-      "generality": 0.5,
-      "code_quality": 0.8333333333333334
-    },
-    {
       "session": "api_orchestration_s1",
-      "name": "get_unix_timestamp",
-      "tqs": 0.33333333333333337,
-      "correctness": 0.0,
-      "robustness": 0.5,
-      "generality": 0.0,
-      "code_quality": 0.8333333333333334
-    },
-    {
-      "session": "api_orchestration_s1",
-      "name": "hmac_sha256",
+      "name": "generate_hmac",
       "tqs": 0.375,
       "correctness": 0.0,
       "robustness": 0.5,
@@ -146,7 +146,16 @@
     },
     {
       "session": "api_orchestration_s1",
-      "name": "http_get_with_headers",
+      "name": "get_timestamp",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "http_get_authenticated",
       "tqs": 0.625,
       "correctness": 0.5,
       "robustness": 0.5,
@@ -154,8 +163,8 @@
       "code_quality": 1.0
     },
     {
-      "session": "numerical_s1",
-      "name": "compute_population_stats",
+      "session": "api_orchestration_s1",
+      "name": "get_config_value",
       "tqs": 0.625,
       "correctness": 0.5,
       "robustness": 0.5,
@@ -172,8 +181,8 @@
       "code_quality": 0.8333333333333334
     },
     {
-      "session": "numerical_s2",
-      "name": "process_signal",
+      "session": "numerical_s1",
+      "name": "parse_structured_text",
       "tqs": 0.33333333333333337,
       "correctness": 0.0,
       "robustness": 0.5,
@@ -181,13 +190,22 @@
       "code_quality": 0.8333333333333334
     },
     {
-      "session": "numerical_s3",
-      "name": "parse_linear_system",
-      "tqs": 0.5833333333333334,
-      "correctness": 0.5,
+      "session": "numerical_s2",
+      "name": "compute_fft_spectrum",
+      "tqs": 0.375,
+      "correctness": 0.0,
       "robustness": 0.5,
-      "generality": 0.5,
-      "code_quality": 0.8333333333333334
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_binary_data",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
     }
   ]
 }

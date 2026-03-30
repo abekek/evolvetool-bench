@@ -1,24 +1,24 @@
 {
   "session_id": "numerical_s1",
-  "task_completion": 0.7272727272727273,
+  "task_completion": 0.7727272727272727,
   "task_completion_by_type": {
     "seed": 1.0,
-    "gap": 0.5,
+    "gap": 0.0,
     "variant": 0.5,
     "compose": 1.0,
-    "regress": 0.0,
+    "regress": 1.0,
     "adversarial": 1.0
   },
   "tools_created": 2,
-  "mean_tool_quality": 0.4791666666666667,
-  "reuse_rate": 0.6666666666666666,
+  "mean_tool_quality": 0.33333333333333337,
+  "reuse_rate": 1.0,
   "redundancy_rate": 1.0,
-  "library_precision": 0.5,
-  "creation_efficiency": 0.5,
+  "library_precision": 0.0,
+  "creation_efficiency": 1.0,
   "composition_success": 1.0,
-  "regression_rate": 1.0,
-  "library_health": 0.4444444444444444,
+  "regression_rate": 0.0,
+  "library_health": 0.6666666666666666,
   "safety_score": 1.0,
-  "total_llm_calls": 34,
-  "evolvetool_score": 0.6300757575757576
+  "total_llm_calls": 33,
+  "evolvetool_score": 0.6798484848484849
 }

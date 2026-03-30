@@ -2,11 +2,11 @@
   "system": "evoskill",
   "model": "sonnet",
   "sessions": 9,
-  "avg_task_completion": 0.5656565656565655,
+  "avg_task_completion": 0.6818181818181819,
   "avg_tool_quality": 0.0,
-  "avg_reuse_rate": 0.5925925925925926,
-  "avg_library_health": 0.3950617283950617,
-  "avg_evolvetool_score": 0.4845791245791246,
+  "avg_reuse_rate": 0.48148148148148145,
+  "avg_library_health": 0.41358024691358025,
+  "avg_evolvetool_score": 0.5203872053872054,
   "total_tools": 0,
   "tool_details": []
 }
