@@ -1,15 +1,10 @@
-"""Run EvolveTool-Bench across all 5 sessions for a given system."""
+"""Run EvolveTool-Bench across sessions for a given system."""
 
 import argparse
 import json
 import os
 import shutil
 
-from evolvetool_bench.domains.data_transform.session_1 import create_session as s1
-from evolvetool_bench.domains.data_transform.session_2 import create_session as s2
-from evolvetool_bench.domains.data_transform.session_3 import create_session as s3
-from evolvetool_bench.domains.data_transform.session_4 import create_session as s4
-from evolvetool_bench.domains.data_transform.session_5 import create_session as s5
 from evolvetool_bench.harness.runner import run_session
 
 
@@ -19,10 +14,29 @@ def main():
     parser.add_argument("--model", default="gpt-4o-mini")
     parser.add_argument("--output-dir", default="results")
     parser.add_argument("--failure-threshold", type=int, default=3)
+    parser.add_argument("--domain", choices=["data_transform", "api_orchestration", "all"], default="all")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
-    sessions = [s1(), s2(), s3(), s4(), s5()]
+
+    sessions = []
+    mock_server = None
+
+    if args.domain in ("data_transform", "all"):
+        from evolvetool_bench.domains.data_transform.session_1 import create_session as dt1
+        from evolvetool_bench.domains.data_transform.session_2 import create_session as dt2
+        from evolvetool_bench.domains.data_transform.session_3 import create_session as dt3
+        from evolvetool_bench.domains.data_transform.session_4 import create_session as dt4
+        from evolvetool_bench.domains.data_transform.session_5 import create_session as dt5
+        sessions.extend([dt1(), dt2(), dt3(), dt4(), dt5()])
+
+    if args.domain in ("api_orchestration", "all"):
+        from evolvetool_bench.domains.api_orchestration.session_1 import create_session as api1
+        from evolvetool_bench.domains.api_orchestration.mock_server import start_mock_server, stop_mock_server
+        sessions.append(api1())
+        mock_server_obj, _ = start_mock_server(port=18080)
+        mock_server = mock_server_obj
+        print("Mock API server started on port 18080")
     all_results = []
 
     for i, session in enumerate(sessions, 1):
@@ -73,6 +87,12 @@ def main():
         if k == "per_session":
             continue
         print(f"  {k}: {v:.3f}" if isinstance(v, float) else f"  {k}: {v}")
+
+    # Cleanup
+    if mock_server:
+        from evolvetool_bench.domains.api_orchestration.mock_server import stop_mock_server
+        stop_mock_server(mock_server)
+        print("Mock server stopped")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,61 @@
+\begin{thebibliography}{10}
+
+\bibitem{alzubi2026evoskill}
+Ayman Alzubi et~al.
+\newblock Evoskill: Evolving skill libraries for open-domain agents.
+\newblock {\em arXiv preprint arXiv:2603.02766}, 2026.
+
+\bibitem{toolcomp2025}
+Anonymous.
+\newblock Toolcomp: Evaluating multi-tool composition in llm agents.
+\newblock {\em arXiv preprint arXiv:2501.01290}, 2025.
+
+\bibitem{skillsbench2026}
+Anonymous.
+\newblock Skillsbench: Evaluating skill reusability in llm agents.
+\newblock {\em arXiv preprint arXiv:2602.12670}, 2026.
+
+\bibitem{backlund2025vendingbench}
+Erik Backlund and Lars Petersson.
+\newblock Vending-bench: Evaluating long-horizon agent coherence.
+\newblock {\em arXiv preprint}, 2025.
+
+\bibitem{cai2023latm}
+Tianle Cai, Xuezhi Wang, Tengyu Ma, Xinyun Chen, and Denny Zhou.
+\newblock Large language models as tool makers.
+\newblock {\em arXiv preprint arXiv:2305.17126}, 2023.
+
+\bibitem{kaliyev2026arise}
+Alibek~T. Kaliyev.
+\newblock Arise: Adaptive runtime improvement through self-evolution.
+\newblock {\em arXiv preprint}, 2026.
+
+\bibitem{liu2024agentbench}
+Xiao Liu et~al.
+\newblock Agentbench: Evaluating llms as agents.
+\newblock {\em ICLR}, 2024.
+
+\bibitem{qian2023creator}
+Cheng Qian, Chi Han, Yi~R Fung, Yujia Qin, Zhiyuan Liu, and Heng Ji.
+\newblock Creator: Tool creation for disentangling abstract and concrete
+  reasoning of large language models.
+\newblock {\em Findings of EMNLP}, 2023.
+
+\bibitem{qin2023toolbench}
+Yujia Qin et~al.
+\newblock Toolllm: Facilitating large language models to master 16000+
+  real-world apis.
+\newblock {\em arXiv preprint arXiv:2307.16789}, 2023.
+
+\bibitem{wang2023voyager}
+Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu,
+  Linxi Fan, and Anima Anandkumar.
+\newblock Voyager: An open-ended embodied agent with large language models.
+\newblock {\em Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem{xia2026toolgenesis}
+Congying Xia et~al.
+\newblock Tool-genesis: Evaluating tool creation capabilities of llms.
+\newblock {\em arXiv preprint arXiv:2603.05578}, 2026.
+
+\end{thebibliography}
