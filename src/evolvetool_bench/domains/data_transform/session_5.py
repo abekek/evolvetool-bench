@@ -1,297 +1,507 @@
-"""Domain A, Session 5: Format Conversion & Encoding.
+"""Domain A, Session 5: Custom Checksum & Integrity Format (GUARDIAN blocks).
+
+Key design principle: tasks use CUSTOM ENCODINGS that the LLM cannot
+solve from training data. The agent MUST create and execute tools.
+
+GUARDIAN (Guarded Data Integrity Archive) block format:
+  - Data is split into fixed-size blocks (default 16 bytes)
+  - Each block is encoded as:
+    [2-byte block_id big-endian]
+    [1-byte data_length]  (actual data bytes in this block, <= block_size)
+    [data bytes, padded to block_size with 0x00]
+    [2-byte CRC-16/CCITT checksum of the unpadded data]
+    [1-byte parity byte: XOR of all data bytes]
+  - After all data blocks, there are parity blocks for error correction:
+    [2-byte block_id = 0xFFnn where nn = parity group index]
+    [1-byte = block_size]
+    [block_size bytes: XOR of all data blocks in the parity group]
+    [2-byte CRC of the parity data]
+    [1-byte = 0x00 (unused)]
+  - Parity groups: blocks are grouped by (block_id % parity_group_size)
+  - File header (6 bytes):
+    [2-byte magic = 0x47 0x44 ("GD")]
+    [1-byte version = 0x01]
+    [1-byte block_size]
+    [1-byte parity_group_size]
+    [1-byte total_data_blocks]
+  - Entire payload is base64-encoded for transport
 
 Session structure (11 tasks):
   Seed 1-3:  Use provided tools (read_csv, write_json, compute_hash)
-  Gap 1:     Base64 encode/decode with metadata (content type, original size)
-  Gap 2:     XML to JSON conversion (attributes, nested elements, text content)
-  Variant 1: Hex encoding — should REUSE gap_1's tool (different encoding param)
-  Variant 2: Different XML structure — should REUSE gap_2's tool
-  Compose 1: Convert XML to JSON then base64 encode the result
-  Regress 1: Re-run base64 encoding — should still work
-  Adversarial 1: Malformed XML with unclosed tags, CDATA, special entities
-  Adversarial 2: Binary-like data in base64, padding edge cases
+  Gap 1:     Decode and verify GUARDIAN block integrity (check CRC + parity)
+  Gap 2:     Repair corrupted blocks using parity data
+  Variant 1: Decode different GUARDIAN data — should REUSE gap_1
+  Variant 2: Repair different corrupted data — should REUSE gap_2
+  Compose 1: Decode, verify, and repair in one pipeline
+  Regress 1: Re-decode original GUARDIAN data
+  Adversarial 1: Data with multiple corrupted blocks in same parity group
+  Adversarial 2: Edge case: single-block data, max block size, empty payload
 """
 
+import base64
+import struct
 from ...types import Task, TaskType, Session
 from .seed_tools import SEED_TOOLS
 
 
-# ── Test data ────────────────────────────────────────────────────────
+# ── CRC-16/CCITT implementation ─────────────────────────────────────
 
-SIMPLE_XML = """<?xml version="1.0" encoding="UTF-8"?>
-<catalog>
-  <book id="1">
-    <title>Python Cookbook</title>
-    <author>David Beazley</author>
-    <price currency="USD">49.99</price>
-  </book>
-  <book id="2">
-    <title>Fluent Python</title>
-    <author>Luciano Ramalho</author>
-    <price currency="USD">59.99</price>
-  </book>
-</catalog>"""
+def _crc16_ccitt(data: bytes) -> int:
+    """CRC-16/CCITT (XModem variant) — poly 0x1021, init 0xFFFF."""
+    crc = 0xFFFF
+    for byte in data:
+        crc ^= byte << 8
+        for _ in range(8):
+            if crc & 0x8000:
+                crc = (crc << 1) ^ 0x1021
+            else:
+                crc <<= 1
+            crc &= 0xFFFF
+    return crc
 
-CONFIG_XML = """<?xml version="1.0"?>
-<config>
-  <database>
-    <host>localhost</host>
-    <port>5432</port>
-    <name>myapp</name>
-    <credentials>
-      <username>admin</username>
-      <password>secret123</password>
-    </credentials>
-  </database>
-  <cache>
-    <enabled>true</enabled>
-    <ttl>3600</ttl>
-  </cache>
-</config>"""
 
-MALFORMED_XML = """<?xml version="1.0"?>
-<root>
-  <item id="1">
-    <name>Valid Item</name>
-    <description><![CDATA[This contains <special> & "characters"]]></description>
-  </item>
-  <item id="2">
-    <name>Unclosed Tag
-    <value>42</value>
-  </item>
-  <item id="3">
-    <name>Entity Test &amp; &lt;more&gt;</name>
-    <data>Normal text</data>
-  </item>
-</root>"""
+# ── GUARDIAN Format Encoder ──────────────────────────────────────────
 
-MIXED_CONTENT_XML = """<?xml version="1.0"?>
-<messages>
-  <message from="alice" to="bob" timestamp="2025-01-01T10:00:00">
-    Hello Bob!
-  </message>
-  <message from="bob" to="alice" timestamp="2025-01-01T10:01:00">
-    Hi Alice, how are you?
-  </message>
-</messages>"""
+def _encode_guardian(
+    data: bytes,
+    block_size: int = 16,
+    parity_group_size: int = 3,
+) -> str:
+    """Encode data into GUARDIAN block format, return base64."""
+    # Split data into blocks
+    blocks = []
+    for i in range(0, len(data), block_size):
+        chunk = data[i:i + block_size]
+        blocks.append(chunk)
+
+    total_data_blocks = len(blocks)
+    buf = bytearray()
+
+    # Header
+    buf.extend(b'\x47\x44')          # magic "GD"
+    buf.append(0x01)                  # version
+    buf.append(block_size)
+    buf.append(parity_group_size)
+    buf.append(total_data_blocks)
+
+    # Data blocks
+    for block_id, chunk in enumerate(blocks):
+        data_len = len(chunk)
+        padded = chunk + b'\x00' * (block_size - data_len)
+        crc = _crc16_ccitt(chunk)     # CRC of unpadded data
+        parity_byte = 0
+        for b in chunk:
+            parity_byte ^= b
+
+        buf.extend(struct.pack('>H', block_id))
+        buf.append(data_len)
+        buf.extend(padded)
+        buf.extend(struct.pack('>H', crc))
+        buf.append(parity_byte)
+
+    # Parity blocks — XOR of all blocks in each parity group
+    num_parity_groups = parity_group_size  # groups 0..parity_group_size-1
+    for group_idx in range(num_parity_groups):
+        parity_data = bytearray(block_size)
+        group_blocks = [i for i in range(total_data_blocks) if i % parity_group_size == group_idx]
+        for bid in group_blocks:
+            chunk = blocks[bid]
+            padded = chunk + b'\x00' * (block_size - len(chunk))
+            for j in range(block_size):
+                parity_data[j] ^= padded[j]
+
+        parity_crc = _crc16_ccitt(bytes(parity_data))
+        buf.extend(struct.pack('>H', 0xFF00 | group_idx))
+        buf.append(block_size)
+        buf.extend(parity_data)
+        buf.extend(struct.pack('>H', parity_crc))
+        buf.append(0x00)
+
+    return base64.b64encode(bytes(buf)).decode('ascii')
+
+
+def _corrupt_block(b64_data: str, block_id: int, corrupt_byte_offset: int = 0) -> str:
+    """Corrupt a single byte in a specific data block for testing repair."""
+    raw = bytearray(base64.b64decode(b64_data))
+    # Parse header
+    block_size = raw[3]
+    # Each data block: 2 (id) + 1 (len) + block_size + 2 (crc) + 1 (parity) = block_size + 6
+    block_total = block_size + 6
+    header_size = 6
+    block_start = header_size + block_id * block_total
+    data_offset = block_start + 3  # skip id (2) + len (1)
+
+    # Flip a byte in the data
+    raw[data_offset + corrupt_byte_offset] ^= 0xAA
+
+    # Recompute CRC with corrupted data (to make it a detectable corruption)
+    # Actually, we want the CRC to NOT match, so don't recompute
+    return base64.b64encode(bytes(raw)).decode('ascii')
+
+
+def _decode_guardian(b64_data: str) -> dict:
+    """Reference decoder for GUARDIAN format."""
+    raw = base64.b64decode(b64_data)
+    if len(raw) < 6 or raw[0:2] != b'\x47\x44':
+        raise ValueError("Invalid GUARDIAN header")
+
+    version = raw[2]
+    block_size = raw[3]
+    parity_group_size = raw[4]
+    total_data_blocks = raw[5]
+
+    block_total = block_size + 6  # id(2) + len(1) + data(block_size) + crc(2) + parity(1)
+    offset = 6
+
+    data_blocks = {}
+    parity_blocks = {}
+    integrity_results = []
+
+    # Read data blocks
+    for _ in range(total_data_blocks):
+        if offset + block_total > len(raw):
+            break
+        block_id = struct.unpack('>H', raw[offset:offset + 2])[0]
+        data_len = raw[offset + 2]
+        block_data = raw[offset + 3:offset + 3 + data_len]
+        padded_data = raw[offset + 3:offset + 3 + block_size]
+        stored_crc = struct.unpack('>H', raw[offset + 3 + block_size:offset + 5 + block_size])[0]
+        stored_parity = raw[offset + 5 + block_size]
+
+        computed_crc = _crc16_ccitt(block_data)
+        computed_parity = 0
+        for b in block_data:
+            computed_parity ^= b
+
+        crc_ok = computed_crc == stored_crc
+        parity_ok = computed_parity == stored_parity
+
+        data_blocks[block_id] = {
+            "data": bytes(padded_data),
+            "data_len": data_len,
+            "crc_ok": crc_ok,
+            "parity_ok": parity_ok,
+        }
+        integrity_results.append({
+            "block_id": block_id,
+            "crc_valid": crc_ok,
+            "parity_valid": parity_ok,
+        })
+        offset += block_total
+
+    # Read parity blocks
+    while offset + block_total <= len(raw):
+        block_id = struct.unpack('>H', raw[offset:offset + 2])[0]
+        if (block_id & 0xFF00) != 0xFF00:
+            break
+        group_idx = block_id & 0xFF
+        parity_len = raw[offset + 2]
+        parity_data = raw[offset + 3:offset + 3 + parity_len]
+        parity_blocks[group_idx] = bytes(parity_data)
+        offset += block_total
+
+    # Reconstruct data
+    reconstructed = bytearray()
+    for bid in range(total_data_blocks):
+        block = data_blocks.get(bid)
+        if block:
+            reconstructed.extend(block["data"][:block["data_len"]])
+
+    return {
+        "data": bytes(reconstructed),
+        "text": reconstructed.decode('utf-8', errors='replace'),
+        "blocks": total_data_blocks,
+        "integrity": integrity_results,
+        "parity_groups": len(parity_blocks),
+    }
+
+
+# ── Test Data ────────────────────────────────────────────────────────
+
+TEXT_1 = "Hello, GUARDIAN format! This is a test of integrity checking with CRC-16 and XOR parity."
+GUARDIAN_1 = _encode_guardian(TEXT_1.encode('utf-8'), block_size=16, parity_group_size=3)
+
+TEXT_2 = "Short message for variant test with different content."
+GUARDIAN_2 = _encode_guardian(TEXT_2.encode('utf-8'), block_size=16, parity_group_size=3)
+
+TEXT_3 = "Repair me! This data has a corrupted block that needs fixing."
+GUARDIAN_3_CLEAN = _encode_guardian(TEXT_3.encode('utf-8'), block_size=16, parity_group_size=3)
+# Corrupt block 1 (second block)
+GUARDIAN_3_CORRUPT = _corrupt_block(GUARDIAN_3_CLEAN, block_id=1, corrupt_byte_offset=2)
+
+TEXT_4 = "Another repair test with different corruption location."
+GUARDIAN_4_CLEAN = _encode_guardian(TEXT_4.encode('utf-8'), block_size=16, parity_group_size=3)
+GUARDIAN_4_CORRUPT = _corrupt_block(GUARDIAN_4_CLEAN, block_id=2, corrupt_byte_offset=5)
+
+# Adversarial: corrupt two blocks in the SAME parity group (unrepairable with simple XOR)
+TEXT_ADV = "This tests double corruption in a parity group which cannot be repaired by XOR alone."
+GUARDIAN_ADV_CLEAN = _encode_guardian(TEXT_ADV.encode('utf-8'), block_size=16, parity_group_size=3)
+GUARDIAN_ADV_DOUBLE = _corrupt_block(
+    _corrupt_block(GUARDIAN_ADV_CLEAN, block_id=0, corrupt_byte_offset=0),
+    block_id=3, corrupt_byte_offset=0
+)  # blocks 0 and 3 are in the same parity group (0 % 3 == 0, 3 % 3 == 0)
+
+# Single-block edge case
+TEXT_TINY = "Hi"
+GUARDIAN_TINY = _encode_guardian(TEXT_TINY.encode('utf-8'), block_size=16, parity_group_size=3)
+
+# Expected integrity results for clean data
+INTEGRITY_1 = [{"block_id": i, "crc_valid": True, "parity_valid": True}
+               for i in range(len(range(0, len(TEXT_1.encode('utf-8')), 16)))]
+
+INTEGRITY_3_CORRUPT = []
+_t3_bytes = TEXT_3.encode('utf-8')
+for i in range(len(range(0, len(_t3_bytes), 16))):
+    if i == 1:
+        INTEGRITY_3_CORRUPT.append({"block_id": i, "crc_valid": False, "parity_valid": False})
+    else:
+        INTEGRITY_3_CORRUPT.append({"block_id": i, "crc_valid": True, "parity_valid": True})
 
 
 # ── Tasks ────────────────────────────────────────────────────────────
 
 TASKS = [
-    # Seed tasks — use provided tools
+    # ── Seed tasks ───────────────────────────────────────────────
     Task(
         id="seed_1",
         description=(
-            "Read this CSV and convert to JSON:\n"
-            "format,size,encoding\nxml,1024,utf-8\njson,512,ascii"
+            "Read this CSV and convert it to JSON:\n"
+            "block_id,crc_valid,parity_valid\n0,true,true\n1,false,false\n2,true,true"
         ),
         task_type=TaskType.SEED,
-        expected=[
-            {"format": "xml", "size": "1024", "encoding": "utf-8"},
-            {"format": "json", "size": "512", "encoding": "ascii"},
-        ],
     ),
     Task(
         id="seed_2",
-        description='Compute the SHA-256 hash of the string "format_conversion".',
+        description='Compute the SHA-256 hash of "guardian-format-v1".',
         task_type=TaskType.SEED,
     ),
     Task(
         id="seed_3",
         description=(
-            'Convert to JSON:\n'
-            '[{"input": "xml", "output": "json", "status": "ok"}]'
+            "Read this CSV, then output the data as JSON:\n"
+            "group,block_count\n0,2\n1,2\n2,2"
         ),
         task_type=TaskType.SEED,
     ),
 
-    # Gap tasks — require new tools
+    # ── Gap tasks (require creating new tools) ───────────────────
     Task(
         id="gap_1",
         description=(
-            "Base64-encode the given string and return a dict with:\n"
-            "- 'encoded': the base64-encoded string\n"
-            "- 'original_size': byte length of the original string\n"
-            "- 'encoded_size': length of the encoded string\n"
-            "- 'encoding': 'base64'\n\n"
-            "Input string: 'Hello, World! This is a test of base64 encoding.'"
+            "Decode and verify this GUARDIAN (Guarded Data Integrity Archive) block format data.\n\n"
+            "GUARDIAN format specification:\n"
+            "- Base64 encoded binary data\n"
+            "- File header (6 bytes):\n"
+            "  [2-byte magic = 0x47 0x44 ('GD')]\n"
+            "  [1-byte version = 0x01]\n"
+            "  [1-byte block_size]\n"
+            "  [1-byte parity_group_size]\n"
+            "  [1-byte total_data_blocks]\n"
+            "- Each data block:\n"
+            "  [2-byte block_id big-endian]\n"
+            "  [1-byte data_length (actual bytes, <= block_size)]\n"
+            "  [data bytes, zero-padded to block_size]\n"
+            "  [2-byte CRC-16/CCITT checksum of UNpadded data (poly=0x1021, init=0xFFFF)]\n"
+            "  [1-byte XOR parity of all unpadded data bytes]\n"
+            "- After data blocks, parity blocks for error correction:\n"
+            "  [2-byte block_id = 0xFFnn where nn = parity group index]\n"
+            "  [1-byte = block_size]\n"
+            "  [block_size bytes: XOR of all padded data blocks in the parity group]\n"
+            "  [2-byte CRC of parity data]\n"
+            "  [1-byte = 0x00]\n"
+            "- Parity grouping: block belongs to group (block_id %% parity_group_size)\n\n"
+            f"Data: {GUARDIAN_1}\n\n"
+            "Return a dict with:\n"
+            "- 'text': the decoded UTF-8 text\n"
+            "- 'blocks': total number of data blocks\n"
+            "- 'integrity': list of dicts with block_id, crc_valid (bool), parity_valid (bool)\n"
+            "All blocks should have valid CRC and parity."
         ),
         task_type=TaskType.GAP,
         expected={
-            "encoded": "SGVsbG8sIFdvcmxkISBUaGlzIGlzIGEgdGVzdCBvZiBiYXNlNjQgZW5jb2Rpbmcu",
-            "original_size": 50,
-            "encoded_size": 68,
-            "encoding": "base64",
+            "text": TEXT_1,
+            "blocks": len(list(range(0, len(TEXT_1.encode('utf-8')), 16))),
+            "integrity": INTEGRITY_1,
         },
         hidden_tests=[
             {
-                "input": {"text": "", "encoding": "base64"},
-                "expected": {"encoded": "", "original_size": 0, "encoded_size": 0, "encoding": "base64"},
+                "input": {"data": GUARDIAN_TINY},
+                "expected": {
+                    "text": TEXT_TINY,
+                    "blocks": 1,
+                    "integrity": [{"block_id": 0, "crc_valid": True, "parity_valid": True}],
+                },
             },
             {
-                "input": {"text": "a", "encoding": "base64"},
-                "expected": {"encoded": "YQ==", "original_size": 1, "encoded_size": 4, "encoding": "base64"},
+                "input": {"data": GUARDIAN_3_CORRUPT},
+                "verify": ("any(not b['crc_valid'] for b in result['integrity'])"
+                           " and result['blocks'] > 0"),
             },
         ],
         adversarial_tests=[
-            {"input": {"text": "\x00\x01\x02\xff", "encoding": "base64"}},
-            {"input": {"text": "a" * 10000, "encoding": "base64"}},
+            {"input": {"data": ""}},                                    # empty
+            {"input": {"data": base64.b64encode(b'\x47\x44').decode()}},  # truncated header
+            {"input": {"data": base64.b64encode(b'\x00\x00\x01\x10\x03\x00').decode()}},  # wrong magic
         ],
     ),
     Task(
         id="gap_2",
         description=(
-            "Convert this XML to a JSON-compatible dict. Rules:\n"
-            "- Element attributes become keys prefixed with '@' (e.g., @id)\n"
-            "- Text content uses the key '#text'\n"
-            "- Repeated child elements become lists\n"
-            "- Nested elements become nested dicts\n\n"
-            f"{SIMPLE_XML}"
+            "Repair a corrupted GUARDIAN block using parity data.\n\n"
+            "Given GUARDIAN data with one corrupted block (CRC mismatch), use the XOR parity block "
+            "for that block's parity group to reconstruct the correct data.\n\n"
+            "Repair algorithm:\n"
+            "1. Find the corrupted block (CRC mismatch)\n"
+            "2. Determine its parity group: group = block_id %% parity_group_size\n"
+            "3. XOR the parity block with all OTHER valid blocks in the same group\n"
+            "4. The result is the original data for the corrupted block\n"
+            "5. Verify the repaired block's CRC matches\n\n"
+            f"Corrupted data: {GUARDIAN_3_CORRUPT}\n\n"
+            "Return a dict with:\n"
+            "- 'repaired_text': the fully repaired UTF-8 text\n"
+            "- 'corrupted_blocks': list of block_ids that were corrupted\n"
+            "- 'repair_success': True if all blocks now pass CRC"
         ),
         task_type=TaskType.GAP,
         expected={
-            "catalog": {
-                "book": [
-                    {
-                        "@id": "1",
-                        "title": "Python Cookbook",
-                        "author": "David Beazley",
-                        "price": {"@currency": "USD", "#text": "49.99"},
-                    },
-                    {
-                        "@id": "2",
-                        "title": "Fluent Python",
-                        "author": "Luciano Ramalho",
-                        "price": {"@currency": "USD", "#text": "59.99"},
-                    },
-                ],
-            },
+            "repaired_text": TEXT_3,
+            "corrupted_blocks": [1],
+            "repair_success": True,
         },
         hidden_tests=[
             {
-                "input": {"xml_string": "<root><item>text</item></root>"},
-                "expected": {"root": {"item": "text"}},
+                "input": {"data": GUARDIAN_4_CORRUPT},
+                "expected": {
+                    "repaired_text": TEXT_4,
+                    "corrupted_blocks": [2],
+                    "repair_success": True,
+                },
             },
             {
-                "input": {"xml_string": '<root attr="val"/>'},
-                "expected": {"root": {"@attr": "val"}},
+                "input": {"data": GUARDIAN_1},  # no corruption
+                "expected": {
+                    "repaired_text": TEXT_1,
+                    "corrupted_blocks": [],
+                    "repair_success": True,
+                },
             },
         ],
         adversarial_tests=[
-            {"input": {"xml_string": ""}},
-            {"input": {"xml_string": "not xml at all"}},
-            {"input": {"xml_string": "<root><a>1</a><a>2</a><a>3</a></root>"}},
+            {"input": {"data": ""}},
+            {"input": {"data": GUARDIAN_ADV_DOUBLE}},  # double corruption — unrepairable
         ],
     ),
 
-    # Variant tasks — should REUSE tools from gap tasks
+    # ── Variant tasks (should REUSE gap tools) ───────────────────
     Task(
         id="variant_1",
         description=(
-            "Hex-encode the given string and return a dict with:\n"
-            "- 'encoded': the hex-encoded string\n"
-            "- 'original_size': byte length of the original\n"
-            "- 'encoded_size': length of the hex string\n"
-            "- 'encoding': 'hex'\n\n"
-            "Input string: 'Hello'"
+            "Decode and verify this GUARDIAN data (same format as before):\n\n"
+            f"Data: {GUARDIAN_2}\n\n"
+            "Return text, blocks count, and integrity results."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_1",
         expected={
-            "encoded": "48656c6c6f",
-            "original_size": 5,
-            "encoded_size": 10,
-            "encoding": "hex",
+            "text": TEXT_2,
+            "blocks": len(list(range(0, len(TEXT_2.encode('utf-8')), 16))),
+            "integrity": [{"block_id": i, "crc_valid": True, "parity_valid": True}
+                          for i in range(len(list(range(0, len(TEXT_2.encode('utf-8')), 16))))],
         },
     ),
     Task(
         id="variant_2",
         description=(
-            "Convert this configuration XML to a JSON-compatible dict using the same rules "
-            "(@ prefix for attributes, #text for text content, lists for repeated elements).\n\n"
-            f"{CONFIG_XML}"
+            "Repair this corrupted GUARDIAN data (same format as before):\n\n"
+            f"Corrupted data: {GUARDIAN_4_CORRUPT}\n\n"
+            "Return repaired text, corrupted block IDs, and repair success status."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_2",
         expected={
-            "config": {
-                "database": {
-                    "host": "localhost",
-                    "port": "5432",
-                    "name": "myapp",
-                    "credentials": {
-                        "username": "admin",
-                        "password": "secret123",
-                    },
-                },
-                "cache": {
-                    "enabled": "true",
-                    "ttl": "3600",
-                },
-            },
+            "repaired_text": TEXT_4,
+            "corrupted_blocks": [2],
+            "repair_success": True,
         },
     ),
 
-    # Compose task — convert XML to JSON then base64 encode
+    # ── Compose task (decode + verify + repair pipeline) ──────────
     Task(
         id="compose_1",
         description=(
-            "Convert this XML to JSON (as a string), then base64-encode the JSON string. "
-            "Return the encoding metadata dict.\n\n"
-            f"{MIXED_CONTENT_XML}"
+            "Decode this GUARDIAN data, check integrity, and if any blocks are corrupted, "
+            "repair them. Return the final clean text and a summary.\n\n"
+            f"Data: {GUARDIAN_3_CORRUPT}\n\n"
+            "Return: {{'text': repaired_text, 'was_corrupted': bool, 'blocks_repaired': int}}"
         ),
         task_type=TaskType.COMPOSE,
-        composes_tasks=["gap_2", "gap_1"],
+        composes_tasks=["gap_1", "gap_2"],
+        expected={
+            "text": TEXT_3,
+            "was_corrupted": True,
+            "blocks_repaired": 1,
+        },
     ),
 
-    # Regress task — re-test encoding
+    # ── Regress task ────────────────────────────────────────────
     Task(
         id="regress_1",
         description=(
-            "Base64-encode the string 'Regression test data 12345' and return the metadata dict."
+            f"Decode and verify this GUARDIAN data (same format as before):\n\n"
+            f"Data: {_encode_guardian(b'Regression test: GUARDIAN format still works!', block_size=16, parity_group_size=3)}\n\n"
+            "Return text and integrity results."
         ),
         task_type=TaskType.REGRESS,
         reuses_task="gap_1",
         expected={
-            "encoded": "UmVncmVzc2lvbiB0ZXN0IGRhdGEgMTIzNDU=",
-            "original_size": 27,
-            "encoded_size": 36,
-            "encoding": "base64",
+            "text": "Regression test: GUARDIAN format still works!",
+            "blocks": 3,
+            "integrity": [
+                {"block_id": 0, "crc_valid": True, "parity_valid": True},
+                {"block_id": 1, "crc_valid": True, "parity_valid": True},
+                {"block_id": 2, "crc_valid": True, "parity_valid": True},
+            ],
         },
     ),
 
-    # Adversarial tasks — break naive implementations
+    # ── Adversarial tasks ────────────────────────────────────────
     Task(
         id="adversarial_1",
         description=(
-            "Convert this malformed XML to JSON. Handle CDATA sections, XML entities "
-            "(&amp; &lt; &gt;), and recover gracefully from unclosed tags if possible.\n\n"
-            f"{MALFORMED_XML}"
+            "Decode this GUARDIAN data that has TWO corrupted blocks in the SAME parity group.\n"
+            "XOR parity alone cannot repair two corruptions in the same group.\n\n"
+            "Your tool should:\n"
+            "1. Detect both corrupted blocks\n"
+            "2. Attempt repair — it should fail or report partial repair\n"
+            "3. Return repair_success=False when multiple blocks in one group are corrupted\n\n"
+            f"Data: {GUARDIAN_ADV_DOUBLE}\n\n"
+            "Return corrupted_blocks list and repair_success status."
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_2",
+        expected={
+            "corrupted_blocks": [0, 3],
+            "repair_success": False,
+        },
     ),
     Task(
         id="adversarial_2",
         description=(
-            "Base64-encode these edge-case strings and return metadata for each:\n"
-            "1. Empty string: ''\n"
-            "2. Single byte that requires padding: 'A'\n"
-            "3. Two bytes that require padding: 'AB'\n"
-            "4. Exactly 3 bytes (no padding): 'ABC'\n"
-            "5. String with null bytes: '\\x00\\x00\\x00'\n\n"
-            "Return a list of metadata dicts."
+            "Decode this minimal GUARDIAN data (single block, only 2 bytes of actual data):\n\n"
+            f"Data: {GUARDIAN_TINY}\n\n"
+            "Edge cases to handle:\n"
+            "- Single data block (block_size=16 but only 2 bytes of data)\n"
+            "- Padding bytes should NOT be included in output\n"
+            "- Parity group with only one block\n\n"
+            "Return the decoded text and verify integrity."
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_1",
-        expected=[
-            {"encoded": "", "original_size": 0, "encoded_size": 0, "encoding": "base64"},
-            {"encoded": "QQ==", "original_size": 1, "encoded_size": 4, "encoding": "base64"},
-            {"encoded": "QUI=", "original_size": 2, "encoded_size": 4, "encoding": "base64"},
-            {"encoded": "QUJD", "original_size": 3, "encoded_size": 4, "encoding": "base64"},
-            {"encoded": "AAAA", "original_size": 3, "encoded_size": 4, "encoding": "base64"},
-        ],
+        expected={
+            "text": TEXT_TINY,
+            "blocks": 1,
+            "integrity": [{"block_id": 0, "crc_valid": True, "parity_valid": True}],
+        },
     ),
 ]
 
@@ -299,10 +509,10 @@ TASKS = [
 def create_session() -> Session:
     return Session(
         id="data_transform_s5",
-        name="Format Conversion & Encoding",
+        name="Custom Checksum & Integrity Format (GUARDIAN)",
         domain="data_transform",
         tasks=TASKS,
         seed_tools=SEED_TOOLS,
-        description="Tests tool creation for base64/hex encoding and XML-to-JSON conversion, "
-                    "with reuse across encodings, composition, and adversarial edge cases.",
+        description="Tests tool creation for decoding and repairing a custom integrity format "
+                    "(GUARDIAN blocks) with CRC-16 and XOR parity. Agent MUST create and execute tools.",
     )
