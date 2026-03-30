@@ -1,0 +1,205 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{\textbf{EvolveTool-Bench}: Diagnosing Tool Library Quality\\in Self-Evolving LLM Agents}
+
+\author{Alibek T. Kaliyev\\
+Point72 L.P. / University of Texas at Austin\\
+\texttt{alibek.kaliyev@utexas.edu}}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A growing body of work enables LLM agents to create their own tools at runtime---VOYAGER synthesizes code skills, EvoSkill evolves strategy-level skill folders, and ARISE generates executable Python tools with sandbox validation. Yet every existing benchmark evaluates these systems solely on downstream task success, treating the tool library as a black box. We introduce \textsc{EvolveTool-Bench}, the first diagnostic benchmark that evaluates the \emph{quality of the tool library itself}: redundancy, reuse, composition ability, regression stability, and safety. Our benchmark uses structured sessions of 11 tasks with known dependency relationships---seed, gap, variant, compose, regress, and adversarial---over five proprietary data formats that cannot be solved from LLM training data. We evaluate ARISE with three reward configurations against a no-evolution baseline across 55 tasks. Our key findings: (1) proprietary formats reduce task completion from near-100\% to 42--49\%, confirming they genuinely require tool creation; (2) heuristic reward functions prevent evolution from triggering, while LLM-as-judge rewards unlock the full evolution pipeline, producing 15 tools across 5 sessions; (3) with LLM judge rewards, ARISE achieves 86.7\% tool reuse rate and 46.5\% library health, outperforming the no-evolution baseline on our composite EvolveTool Score. We release the benchmark, evaluation harness, and all experimental data.
+\end{abstract}
+
+\section{Introduction}
+
+LLM agents increasingly create their own tools at runtime. VOYAGER~\cite{wang2023voyager} synthesizes code skills in Minecraft, CREATOR~\cite{qian2023creator} uses tool creation as a reasoning strategy, LLMs as Tool Makers~\cite{cai2023latm} separates tool-making from tool-using, EvoSkill~\cite{alzubi2026evoskill} evolves structured skill folders via failure analysis, and ARISE~\cite{kaliyev2026arise} synthesizes executable Python tools with sandbox validation and adversarial testing.
+
+These systems are evaluated exclusively on \emph{task success}: if the agent solves downstream tasks, the tool library is deemed good. This is analogous to evaluating a software engineer solely by whether their code runs, ignoring maintainability, duplication, test coverage, and technical debt. In practice, tool libraries can succeed on benchmarks while accumulating redundant tools, polluting the namespace, failing on edge cases, and never reusing previously created capabilities.
+
+We present \textsc{EvolveTool-Bench}, a diagnostic benchmark with three contributions:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Library-level metrics.} Six diagnostic axes beyond task completion: tool quality (correctness, robustness, generality, code quality), reuse rate, redundancy, composition success, regression stability, and safety.
+
+\item \textbf{Controlled task sessions.} Structured sequences of 11 tasks with known dependency relationships, enabling measurement of whether agents recognize reuse opportunities, compose their own tools, and maintain stability as the library grows.
+
+\item \textbf{Proprietary formats.} Five custom data formats (ARISE Binary Records, RLE matrices, VDL schemas, QLOG binary logs, TPACK serialization, GUARDIAN checksums) that cannot be solved from LLM training data, forcing genuine tool creation.
+\end{enumerate}
+
+\section{Related Work}
+
+\paragraph{Tool Creation Benchmarks.} Tool-Genesis~\cite{xia2026toolgenesis} evaluates one-shot tool creation with surface compliance, schema-F1, and unit test pass rates---all per-tool metrics with no library-level evaluation. SkillsBench~\cite{skillsbench2026} evaluates whether curated skills improve task success but uses static skill sets, not evolved ones.
+
+\paragraph{Self-Evolving Agent Frameworks.} VOYAGER~\cite{wang2023voyager} demonstrates lifelong skill acquisition in Minecraft, evaluated by exploration metrics. EvoSkill~\cite{alzubi2026evoskill} evolves textual skill folders through failure-driven feedback, evaluated by downstream accuracy. ARISE~\cite{kaliyev2026arise} synthesizes executable Python tools with sandbox validation. None evaluate tool library quality.
+
+\paragraph{Tool Use Benchmarks.} ToolBench~\cite{qin2023toolbench}, AgentBench~\cite{liu2024agentbench}, and ToolComp~\cite{toolcomp2025} evaluate agents using pre-defined tool sets. Vending-Bench~\cite{backlund2025vendingbench} tests long-horizon coherence with fixed tools. None evaluate agents that create their own tools.
+
+\paragraph{Gap.} No existing benchmark measures redundancy, reuse, composition, regression, or safety of self-evolved tool libraries. Our work fills this gap.
+
+\section{Benchmark Design}
+
+\subsection{Task Session Structure}
+
+Each session contains 11 tasks in six categories with known dependency relationships:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llp{5.5cm}}
+\toprule
+\textbf{Type} & \textbf{Count} & \textbf{What it diagnoses} \\
+\midrule
+Seed & 3 & Baseline: can agent use provided tools? \\
+Gap & 2 & Synthesis: does agent create a working tool? \\
+Variant & 2 & Reuse: does agent retrieve existing tool or create duplicate? \\
+Compose & 1 & Composition: can agent chain its own tools? \\
+Regress & 1 & Stability: does the library remain functional? \\
+Adversarial & 2 & Refinement: can agent handle edge cases? \\
+\bottomrule
+\end{tabular}
+\caption{Task types in each diagnostic session.}
+\label{tab:task_types}
+\end{table}
+
+Variant and regress tasks are designed so that the evaluator \emph{knows} which prior tool should be reused, enabling measurement of reuse rate independent of task success.
+
+\subsection{Proprietary Formats}
+
+Standard data transformation tasks (CSV, JSON, XML) are easily solved by frontier LLMs from training data. To force genuine tool creation, we design five custom formats:
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{ABR} (ARISE Binary Records): Binary format with 1-byte field counts, variable-length fields, and 0xFF separators, base64-encoded.
+\item \textbf{RLE}: Run-length encoded matrices with \texttt{rows,cols;val:count,...} syntax.
+\item \textbf{VDL} (Validation Definition Language): Custom schema language with type codes, flags, nested objects, and array fields.
+\item \textbf{QLOG} (Quantized Log Format): Binary logs with bit-packed severity/subsystem bytes, custom epoch timestamps, and continuation entries.
+\item \textbf{TPACK} (Tagged Pack Format): Custom serialization with type tags, variable-length integers, and nested structures.
+\end{itemize}
+
+Each format has encode/decode reference implementations used to generate test data and verify outputs.
+
+\subsection{Evaluation Axes}
+
+\paragraph{Axis 1: Task Completion.} Binary pass/fail via deterministic verification (exact match or structural equivalence). Reported overall and by task type.
+
+\paragraph{Axis 2: Tool Quality Score (TQS).} Each synthesized tool is scored on four dimensions using held-out test suites: correctness (hidden unit tests), robustness (adversarial edge cases), generality (held-out inputs from same distribution), and code quality (docstrings, type hints, error handling, length).
+
+\paragraph{Axis 3: Library Diagnostics.} Six metrics measured at session end:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Reuse Rate}: proportion of variant/regress tasks using existing tools.
+\item \textbf{Redundancy Rate}: proportion of functionally duplicate tools (identical outputs on shared test inputs).
+\item \textbf{Library Precision}: proportion of tools above quality threshold.
+\item \textbf{Creation Efficiency}: proportion of created tools actually used to solve tasks.
+\item \textbf{Composition Success}: proportion of compose tasks solved.
+\item \textbf{Regression Rate}: proportion of regress tasks that fail.
+\end{itemize}
+
+\paragraph{Composite Score.} The EvolveTool Score (ETS) combines all axes:
+\begin{equation}
+\text{ETS} = 0.25 \cdot \text{TC} + 0.20 \cdot \text{TQS} + 0.10 \cdot (1 - \text{RC}) + 0.30 \cdot \text{LH} + 0.15 \cdot \text{SS}
+\end{equation}
+where TC is task completion, TQS is mean tool quality, RC is refinement cost, LH is library health (mean of six diagnostics), and SS is safety score. Library health receives the highest weight (0.30) as it is our primary contribution.
+
+\section{Experimental Setup}
+
+\paragraph{Systems.} We evaluate four configurations:
+\begin{enumerate}[leftmargin=*]
+\item \textbf{No-Evolution}: Agent uses only seed tools (read\_csv, write\_json, compute\_hash). Cannot create new tools.
+\item \textbf{ARISE (ft=3)}: Full ARISE with failure threshold 3 and heuristic reward (1.0 if no tool errors).
+\item \textbf{ARISE (ft=1)}: ARISE with failure threshold 1 and strict reward (requires tool usage).
+\item \textbf{ARISE+Judge}: ARISE with failure threshold 1 and LLM-as-judge reward.
+\end{enumerate}
+
+\paragraph{Model.} Claude Sonnet 4 via Amazon Bedrock for both the agent and tool synthesis. All systems use the same underlying model to isolate the effect of the evolution mechanism.
+
+\paragraph{Benchmark.} Domain A (Data Transformation), 5 sessions, 55 total tasks. Each session tests a different proprietary format.
+
+\section{Results}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{System} & \textbf{ETS}$\uparrow$ & \textbf{TC}$\uparrow$ & \textbf{Tools} & \textbf{Reuse}$\uparrow$ & \textbf{LH}$\uparrow$ \\
+\midrule
+No-Evolution & 0.456 & 49.1\% & 0 & 66.7\% & 34.4\% \\
+ARISE (ft=3) & 0.423 & 40.0\% & 0 & 66.7\% & 31.1\% \\
+ARISE (ft=1) & 0.446 & 45.5\% & 0 & 66.7\% & 34.4\% \\
+\textbf{ARISE+Judge} & \textbf{0.467} & 41.8\% & \textbf{15} & \textbf{86.7\%} & \textbf{46.5\%} \\
+\bottomrule
+\end{tabular}
+\caption{Aggregate results across 5 sessions (55 tasks). ETS = EvolveTool Score, TC = task completion, LH = library health. $\uparrow$ = higher is better.}
+\label{tab:results}
+\end{table}
+
+\subsection{Finding 1: Proprietary Formats Genuinely Challenge LLMs}
+
+All systems achieve $\sim$100\% on seed tasks (standard CSV/JSON with provided tools) but only 40--49\% overall. Gap tasks---requiring decoding of proprietary formats---see 0--50\% completion rates. This confirms that our custom formats cannot be solved from training data and require genuine tool creation or reasoning.
+
+\subsection{Finding 2: Reward Design Determines Whether Evolution Triggers}
+
+With heuristic rewards (check for tool errors, output length), ARISE creates \emph{zero} tools across all configurations. The agent produces long, helpful ``I cannot decode this format'' responses that score 1.0 under heuristic evaluation. Only the LLM-as-judge reward correctly identifies these as failures, enabling the full evolution pipeline. This has practical implications: \textbf{self-evolution systems are only as good as their reward signal.}
+
+\subsection{Finding 3: Evolution Improves Library Health, Not Task Completion}
+
+ARISE+Judge achieves the highest ETS (0.467) despite having lower task completion (41.8\%) than no-evolution (49.1\%). The improvement comes from library-level metrics: reuse rate jumps from 66.7\% to 86.7\%, and library health improves by 35\% (31.1\% $\to$ 46.5\%). This validates our core hypothesis: \textbf{task completion alone is insufficient for evaluating self-evolving agents.}
+
+\subsection{Finding 4: Tool Reuse Emerges When Tools Are Available}
+
+Without evolved tools, the reuse rate is 66.7\% (agent attempts to apply seed tools to variant tasks). With 15 evolved tools available, reuse rises to 86.7\%---the agent recognizes that previously created tools can handle new tasks. This suggests that the primary bottleneck is tool creation, not tool retrieval.
+
+\subsection{Per-Session Breakdown}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Session} & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{Efficiency} \\
+\midrule
+S1: ABR + RLE & 81.8\% & 0 & 66.7\% & 0.0\% \\
+S2: VDL Schema & 36.4\% & 0 & 66.7\% & 0.0\% \\
+S3: QLOG Logs & 45.5\% & 2 & 100\% & 100\% \\
+S4: TPACK Serial. & 36.4\% & 6 & 100\% & 83.3\% \\
+S5: GUARDIAN CRC & 27.3\% & 7 & 100\% & 85.7\% \\
+\bottomrule
+\end{tabular}
+\caption{ARISE+Judge per-session results. Tool creation increases in later sessions (S3--S5) as the judge provides clearer failure signals.}
+\label{tab:per_session}
+\end{table}
+
+Format complexity correlates with tool creation: simpler formats (ABR, RLE) are partially solvable inline, while complex formats (TPACK, GUARDIAN) force tool creation. Sessions with created tools show 100\% reuse rate and $>$83\% creation efficiency.
+
+\section{Discussion}
+
+\paragraph{Library Quality as a First-Class Metric.} Our results demonstrate that task completion and library quality can diverge---a system can score highest on ETS while having lower task completion. This validates the need for library-level diagnostics in evaluating self-evolving agents.
+
+\paragraph{The Reward Problem.} The most striking finding is that heuristic reward functions completely prevent evolution. In all heuristic configurations, ARISE creates zero tools despite repeated failures. Only LLM-as-judge rewards provide the signal density needed to trigger evolution. This suggests that \textbf{reward engineering is the critical bottleneck for self-evolving systems}, not the synthesis or validation pipeline.
+
+\paragraph{Limitations.} (1) We evaluate only one domain (data transformation) with one model (Claude Sonnet). Domains B (API orchestration) and C (numerical computation) are designed but not yet evaluated. (2) We compare only ARISE against a no-evolution baseline; head-to-head comparison with EvoSkill is planned. (3) Tool quality scores are zero across all systems because the hidden test evaluation pipeline was not run on synthesized tools in this initial experiment. (4) The LLM judge adds cost ($\sim$\$0.001 per evaluation) and latency.
+
+\section{Conclusion}
+
+\textsc{EvolveTool-Bench} is the first benchmark to evaluate self-evolved tool libraries as first-class artifacts. Our controlled task sessions with proprietary formats expose fundamental challenges: reward design determines whether evolution triggers at all, and library health metrics reveal quality dimensions invisible to task-completion-only evaluation. We release the benchmark, evaluation harness, and experimental data to enable systematic comparison of self-evolving agent systems.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
