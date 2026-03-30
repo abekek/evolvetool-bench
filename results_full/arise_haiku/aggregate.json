@@ -1,0 +1,130 @@
+{
+  "system": "arise",
+  "model": "haiku",
+  "sessions": 9,
+  "avg_task_completion": 0.6515151515151515,
+  "avg_tool_quality": 0.3526234567901235,
+  "avg_reuse_rate": 0.6666666666666666,
+  "avg_library_health": 0.5123456790123456,
+  "avg_evolvetool_score": 0.6117536475869809,
+  "total_tools": 13,
+  "tool_details": [
+    {
+      "session": "data_transform_s1",
+      "name": "parse_rle",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s1",
+      "name": "reshape_list",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "parse_binary_format",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "timestamp_to_iso",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "decode_base64",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "verify_checksums",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_base64",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "http_get_with_headers",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "compute_hmac_auth_header",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "http_get_paginated",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s1",
+      "name": "compute_descriptive_stats",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_nonlinear_model",
+      "tqs": 0.25,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.5
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_arcsig_spectrum",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    }
+  ]
+}

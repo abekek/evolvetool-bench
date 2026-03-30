@@ -1,0 +1,12 @@
+{
+  "system": "no-evolution",
+  "model": "haiku",
+  "sessions": 9,
+  "avg_task_completion": 0.6666666666666666,
+  "avg_tool_quality": 0.0,
+  "avg_reuse_rate": 0.5185185185185185,
+  "avg_library_health": 0.4012345679012346,
+  "avg_evolvetool_score": 0.5155218855218854,
+  "total_tools": 0,
+  "tool_details": []
+}
