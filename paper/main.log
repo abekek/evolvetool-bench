@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  30 MAR 2026 12:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  30 MAR 2026 15:40
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -462,17 +462,22 @@ Underfull \hbox (badness 1694) in paragraph at lines 29--30
 
 
 
+
+[1{/usr/local/texlive/2025basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+]
+Underfull \hbox (badness 1931) in paragraph at lines 47--48
+\T1/cmr/m/n/10 scripts---through failure-driven feed-back with Pareto
+ []
+
+
 Underfull \hbox (badness 5696) in paragraph at lines 49--50
  []\T1/cmr/bx/n/10 Tool Use Bench-marks.[] \T1/cmr/m/n/10 Tool-Bench [[]], Agen
 t-
  []
 
 
-
-[1{/usr/local/texlive/2025basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
-
-]
 Underfull \hbox (badness 7522) in paragraph at lines 67--68
 []\T1/cmr/m/n/8 Does agent cre-ate a
  []
@@ -493,6 +498,8 @@ Underfull \hbox (badness 2662) in paragraph at lines 70--71
  []
 
 
+
+
 Underfull \hbox (badness 2310) in paragraph at lines 82--83
 \T1/cmr/m/n/10 a mock HTTP server im-ple-ment-ing cus-tom pro-to-
  []
@@ -509,8 +516,6 @@ Underfull \hbox (badness 5050) in paragraph at lines 82--83
 
 
 
-
-
 [2]
 
 
@@ -519,30 +524,36 @@ Underfull \hbox (badness 1082) in paragraph at lines 178--179
  []
 
 
+
+[3]
 Underfull \hbox (badness 1226) in paragraph at lines 199--199
 []\T1/cmr/m/n/10 Figure 1: |Tool syn-the-sized by ARISE for HMAC-
  []
 
-<fig_comparison.pdf, id=133, 570.56664pt x 281.52237pt>
+<fig_comparison.pdf, id=152, 570.56664pt x 281.52237pt>
 File: fig_comparison.pdf Graphic file (type pdf)
 <use fig_comparison.pdf>
 Package pdftex.def Info: fig_comparison.pdf  used on input line 205.
 (pdftex.def)             Requested size: 247.94499pt x 122.33667pt.
-<fig_tool_quality.pdf, id=134, 570.5447pt x 245.2543pt>
+<fig_tool_quality.pdf, id=153, 570.5447pt x 245.2818pt>
 File: fig_tool_quality.pdf Graphic file (type pdf)
 <use fig_tool_quality.pdf>
 Package pdftex.def Info: fig_tool_quality.pdf  used on input line 212.
-(pdftex.def)             Requested size: 247.94499pt x 106.58371pt.
-
-
-[3]
-
-
-Underfull \vbox (badness 2158) has occurred while \output is active []
+(pdftex.def)             Requested size: 247.94499pt x 106.59566pt.
 
 
 
-[4 <./fig_comparison.pdf> <./fig_tool_quality.pdf>] (./main.bbl
+
+[4 <./fig_comparison.pdf> <./fig_tool_quality.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 233--234
+\T1/cmr/m/n/10 (seed$\OMS/cmsy/m/n/10 !$\T1/cmr/m/n/10 gap$\OMS/cmsy/m/n/10 !$\
+T1/cmr/m/n/10 variant$\OMS/cmsy/m/n/10 !$\T1/cmr/m/n/10 compose$\OMS/cmsy/m/n/1
+0 !$\T1/cmr/m/n/10 regress$\OMS/cmsy/m/n/10 !$\T1/cmr/m/n/10 adversarial)
+ []
+
+
+
+(./main.bbl
 Underfull \hbox (badness 1584) in paragraph at lines 9--12
 []\T1/cmr/m/n/10 Anonymous.  Tool-comp: Eval-u-at-ing multi-tool
  []
@@ -554,14 +565,18 @@ Underfull \hbox (badness 6032) in paragraph at lines 9--12
 
 
 
-
+[5]
 Underfull \hbox (badness 1173) in paragraph at lines 57--60
 []\T1/cmr/m/n/10 Congying Xia et al.  Tool-genesis: Eval-u-at-ing
  []
 
 )
 
-[5] (./main.aux)
+
+
+[6
+
+] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -570,17 +585,17 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: E9F97061D7AA61B8FB94E25F70D29B30;1423.
  ) 
 Here is how much of TeX's memory you used:
- 12414 strings out of 474662
- 193111 string characters out of 5751110
- 611175 words of memory out of 5000000
+ 12417 strings out of 474662
+ 193138 string characters out of 5751110
+ 613159 words of memory out of 5000000
  35221 multiletter control sequences out of 15000+600000
- 577741 words of font info for 81 fonts, out of 8000000 for 9000
+ 577821 words of font info for 81 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 75i,12n,79p,1678b,448s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,1678b,556s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/alibek/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/
-ec/ectt0800.600pk> </Users/alibek/Library/texlive/2025basic/texmf-var/fonts/pk/
-ljfour/jknappen/ec/ecti0800.600pk> </Users/alibek/Library/texlive/2025basic/tex
-mf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk> </Users/alibek/Library/texli
+ec/ecrm0600.600pk> </Users/alibek/Library/texlive/2025basic/texmf-var/fonts/pk/
+ljfour/jknappen/ec/ectt1000.600pk> </Users/alibek/Library/texlive/2025basic/tex
+mf-var/fonts/pk/ljfour/jknappen/ec/ectt0800.600pk> </Users/alibek/Library/texli
 ve/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk> </Users/alib
 ek/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600
 pk> </Users/alibek/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen
@@ -606,10 +621,10 @@ c/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025ba
 sic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/20
 25basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive
 /2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on main.pdf (5 pages, 272114 bytes).
+Output written on main.pdf (6 pages, 277169 bytes).
 PDF statistics:
- 881 PDF objects out of 1000 (max. 8388607)
- 275 compressed objects within 3 object streams
- 80 named destinations out of 1000 (max. 500000)
+ 888 PDF objects out of 1000 (max. 8388607)
+ 281 compressed objects within 3 object streams
+ 83 named destinations out of 1000 (max. 500000)
  107 words of extra memory for PDF output out of 10000 (max. 10000000)
 
