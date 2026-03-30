@@ -1,272 +1,420 @@
-"""Domain A, Session 4: Aggregation & Statistics.
+"""Domain A, Session 4: Custom Serialization Format (TPACK — Tagged Pack Format).
+
+Key design principle: tasks use CUSTOM ENCODINGS that the LLM cannot
+solve from training data. The agent MUST create and execute tools.
+
+TPACK (Tagged Pack Format) is a custom compact serialization format:
+  - Every value starts with a 1-byte type tag
+  - Type tags:
+    0x01 = null
+    0x02 = boolean false
+    0x03 = boolean true
+    0x10 = uint8  (1 byte follows)
+    0x11 = uint16 (2 bytes big-endian follow)
+    0x12 = int32  (4 bytes big-endian follow)
+    0x13 = float64 (8 bytes IEEE 754 big-endian follow)
+    0x20 = string (varint length + UTF-8 bytes)
+    0x30 = array  (varint count + elements)
+    0x40 = map    (varint count + key-value pairs, keys are always strings)
+  - Varint encoding: 7 bits per byte, MSB=1 means more bytes follow
+    (similar to protobuf varints but custom — value is little-endian within groups)
+  - Top-level value is always a map or array
+  - Entire payload is base64-encoded for transport
 
 Session structure (11 tasks):
   Seed 1-3:  Use provided tools (read_csv, write_json, compute_hash)
-  Gap 1:     Group-by aggregation on CSV data (sum, count, avg per group)
-  Gap 2:     Compute running/rolling statistics (running mean, cumulative sum)
-  Variant 1: Different grouping key and aggregation function — should REUSE gap_1's tool
-  Variant 2: Different rolling window size — should REUSE gap_2's tool
-  Compose 1: Parse CSV, aggregate by group, format as JSON report
-  Regress 1: Re-run group-by aggregation — should still work
-  Adversarial 1: Empty groups, single-element groups, all same group
-  Adversarial 2: Numeric overflow, NaN values, negative numbers in running stats
+  Gap 1:     Deserialize TPACK format into Python dicts/lists
+  Gap 2:     Query/filter deserialized TPACK data
+  Variant 1: Deserialize different TPACK data — should REUSE gap_1
+  Variant 2: Different query on different data — should REUSE gap_2
+  Compose 1: Deserialize TPACK then query the result
+  Regress 1: Re-deserialize original TPACK data
+  Adversarial 1: TPACK with deeply nested structures and large varints
+  Adversarial 2: Query with missing keys and type mismatches
 """
 
+import base64
+import struct
 from ...types import Task, TaskType, Session
 from .seed_tools import SEED_TOOLS
 
 
-# ── Test data ────────────────────────────────────────────────────────
+# ── TPACK Format Encoder ────────────────────────────────────────────
 
-SALES_CSV = (
-    "region,product,revenue,units\n"
-    "East,Widget,1200,10\n"
-    "West,Widget,800,8\n"
-    "East,Gadget,1500,5\n"
-    "West,Gadget,900,3\n"
-    "East,Widget,600,6\n"
-    "West,Gizmo,2000,4"
-)
+def _encode_varint(n: int) -> bytes:
+    """Encode an unsigned integer as a TPACK varint."""
+    if n < 0:
+        raise ValueError("Varint must be non-negative")
+    result = bytearray()
+    while n >= 0x80:
+        result.append((n & 0x7F) | 0x80)
+        n >>= 7
+    result.append(n & 0x7F)
+    return bytes(result)
 
-EMPLOYEE_CSV = (
-    "department,name,salary,years\n"
-    "Engineering,Alice,95000,5\n"
-    "Engineering,Bob,88000,3\n"
-    "Marketing,Charlie,72000,7\n"
-    "Engineering,Diana,102000,8\n"
-    "Marketing,Eve,68000,2\n"
-    "Sales,Frank,78000,4"
-)
 
-TIMESERIES_DATA = [
-    {"date": "2025-01-01", "value": 10},
-    {"date": "2025-01-02", "value": 20},
-    {"date": "2025-01-03", "value": 15},
-    {"date": "2025-01-04", "value": 25},
-    {"date": "2025-01-05", "value": 30},
-    {"date": "2025-01-06", "value": 10},
-    {"date": "2025-01-07", "value": 20},
+def _decode_varint(data: bytes, offset: int) -> tuple[int, int]:
+    """Decode a TPACK varint. Returns (value, new_offset)."""
+    result = 0
+    shift = 0
+    while offset < len(data):
+        byte = data[offset]
+        result |= (byte & 0x7F) << shift
+        offset += 1
+        if not (byte & 0x80):
+            break
+        shift += 7
+    return result, offset
+
+
+def _tpack_encode(value) -> bytes:
+    """Encode a Python value into TPACK binary format."""
+    if value is None:
+        return b'\x01'
+    elif isinstance(value, bool):
+        return b'\x03' if value else b'\x02'
+    elif isinstance(value, int):
+        if 0 <= value <= 255:
+            return b'\x10' + struct.pack('B', value)
+        elif 0 <= value <= 65535:
+            return b'\x11' + struct.pack('>H', value)
+        else:
+            return b'\x12' + struct.pack('>i', value)
+    elif isinstance(value, float):
+        return b'\x13' + struct.pack('>d', value)
+    elif isinstance(value, str):
+        encoded = value.encode('utf-8')
+        return b'\x20' + _encode_varint(len(encoded)) + encoded
+    elif isinstance(value, list):
+        buf = bytearray(b'\x30')
+        buf.extend(_encode_varint(len(value)))
+        for item in value:
+            buf.extend(_tpack_encode(item))
+        return bytes(buf)
+    elif isinstance(value, dict):
+        buf = bytearray(b'\x40')
+        buf.extend(_encode_varint(len(value)))
+        for k, v in value.items():
+            # Keys are always strings
+            k_bytes = str(k).encode('utf-8')
+            buf.extend(_encode_varint(len(k_bytes)))
+            buf.extend(k_bytes)
+            buf.extend(_tpack_encode(v))
+        return bytes(buf)
+    else:
+        raise TypeError(f"Unsupported type: {type(value)}")
+
+
+def _tpack_decode(data: bytes, offset: int = 0) -> tuple:
+    """Decode a TPACK value. Returns (value, new_offset)."""
+    if offset >= len(data):
+        raise ValueError("Unexpected end of data")
+
+    tag = data[offset]
+    offset += 1
+
+    if tag == 0x01:
+        return None, offset
+    elif tag == 0x02:
+        return False, offset
+    elif tag == 0x03:
+        return True, offset
+    elif tag == 0x10:
+        return data[offset], offset + 1
+    elif tag == 0x11:
+        val = struct.unpack('>H', data[offset:offset + 2])[0]
+        return val, offset + 2
+    elif tag == 0x12:
+        val = struct.unpack('>i', data[offset:offset + 4])[0]
+        return val, offset + 4
+    elif tag == 0x13:
+        val = struct.unpack('>d', data[offset:offset + 8])[0]
+        return val, offset + 8
+    elif tag == 0x20:
+        length, offset = _decode_varint(data, offset)
+        val = data[offset:offset + length].decode('utf-8')
+        return val, offset + length
+    elif tag == 0x30:
+        count, offset = _decode_varint(data, offset)
+        result = []
+        for _ in range(count):
+            item, offset = _tpack_decode(data, offset)
+            result.append(item)
+        return result, offset
+    elif tag == 0x40:
+        count, offset = _decode_varint(data, offset)
+        result = {}
+        for _ in range(count):
+            key_len, offset = _decode_varint(data, offset)
+            key = data[offset:offset + key_len].decode('utf-8')
+            offset += key_len
+            val, offset = _tpack_decode(data, offset)
+            result[key] = val
+        return result, offset
+    else:
+        raise ValueError(f"Unknown tag: 0x{tag:02x}")
+
+
+def _encode_tpack_b64(value) -> str:
+    """Encode a value to TPACK and return as base64."""
+    return base64.b64encode(_tpack_encode(value)).decode('ascii')
+
+
+def _decode_tpack_b64(b64_data: str):
+    """Decode base64 TPACK data."""
+    raw = base64.b64decode(b64_data)
+    value, _ = _tpack_decode(raw)
+    return value
+
+
+# ── Test Data ────────────────────────────────────────────────────────
+
+USERS_DATA = [
+    {"name": "Alice", "age": 30, "active": True, "score": 95.5, "role": "admin"},
+    {"name": "Bob", "age": 25, "active": False, "score": 72.0, "role": "viewer"},
+    {"name": "Charlie", "age": 35, "active": True, "score": 88.3, "role": "editor"},
+]
+TPACK_USERS = _encode_tpack_b64(USERS_DATA)
+
+PRODUCTS_DATA = [
+    {"sku": "WDG-001", "name": "Widget", "price": 9.99, "qty": 100, "available": True},
+    {"sku": "GDG-002", "name": "Gadget", "price": 24.99, "qty": 50, "available": True},
+    {"sku": "GZM-003", "name": "Gizmo", "price": 4.99, "qty": 0, "available": False},
+    {"sku": "THG-004", "name": "Thingamajig", "price": 149.99, "qty": 12, "available": True},
+]
+TPACK_PRODUCTS = _encode_tpack_b64(PRODUCTS_DATA)
+
+ORDERS_DATA = {
+    "order_id": "ORD-2025-0042",
+    "customer": {"name": "Diana", "email": "diana@test.com"},
+    "items": [
+        {"sku": "WDG-001", "qty": 3, "unit_price": 9.99},
+        {"sku": "GDG-002", "qty": 1, "unit_price": 24.99},
+    ],
+    "total": 54.96,
+    "shipped": False,
+    "notes": None,
+}
+TPACK_ORDERS = _encode_tpack_b64(ORDERS_DATA)
+
+# Deeply nested adversarial data
+NESTED_DATA = {
+    "level1": {
+        "level2": {
+            "level3": {
+                "level4": {
+                    "value": 42,
+                    "tags": ["deep", "nested", "test"],
+                },
+            },
+        },
+    },
+    "big_number": 70000,  # requires uint16 or larger
+    "negative": -100,     # requires int32
+    "empty_map": {},
+    "empty_array": [],
+    "long_string": "A" * 200,  # varint length > 127, needs 2-byte varint
+}
+TPACK_NESTED = _encode_tpack_b64(NESTED_DATA)
+
+# Small single-record test
+SINGLE_RECORD = {"x": 1, "y": "hello"}
+TPACK_SINGLE = _encode_tpack_b64(SINGLE_RECORD)
+
+# Query results
+ACTIVE_USERS = [
+    {"name": "Alice", "age": 30, "active": True, "score": 95.5, "role": "admin"},
+    {"name": "Charlie", "age": 35, "active": True, "score": 88.3, "role": "editor"},
 ]
 
-STOCK_PRICES = [
-    {"date": "2025-01-01", "price": 100.0},
-    {"date": "2025-01-02", "price": 102.5},
-    {"date": "2025-01-03", "price": 99.0},
-    {"date": "2025-01-04", "price": 103.0},
-    {"date": "2025-01-05", "price": 107.5},
+EXPENSIVE_PRODUCTS = [
+    {"sku": "GDG-002", "name": "Gadget", "price": 24.99, "qty": 50, "available": True},
+    {"sku": "THG-004", "name": "Thingamajig", "price": 149.99, "qty": 12, "available": True},
 ]
 
-EDGE_CASE_CSV = (
-    "group,value\n"
-    "A,10\n"
-    "A,20\n"
-    "A,30\n"
-    "B,100\n"
-    "C,5\n"
-    "C,5"
-)
-
-OVERFLOW_DATA = [
-    {"date": "day1", "value": 1e308},
-    {"date": "day2", "value": 1e308},
-    {"date": "day3", "value": -1e308},
-    {"date": "day4", "value": 0},
-    {"date": "day5", "value": float("nan")},
-    {"date": "day6", "value": 42},
+AVAILABLE_PRODUCTS = [
+    {"sku": "WDG-001", "name": "Widget", "price": 9.99, "qty": 100, "available": True},
+    {"sku": "GDG-002", "name": "Gadget", "price": 24.99, "qty": 50, "available": True},
+    {"sku": "THG-004", "name": "Thingamajig", "price": 149.99, "qty": 12, "available": True},
 ]
 
 
 # ── Tasks ────────────────────────────────────────────────────────────
 
 TASKS = [
-    # Seed tasks — use provided tools
+    # ── Seed tasks ───────────────────────────────────────────────
     Task(
         id="seed_1",
         description=(
-            "Read this CSV and convert to JSON:\n" + SALES_CSV
+            "Read this CSV and convert it to JSON:\n"
+            "tag,type,size\n0x10,uint8,1\n0x11,uint16,2\n0x12,int32,4\n0x13,float64,8"
         ),
         task_type=TaskType.SEED,
-        expected=[
-            {"region": "East", "product": "Widget", "revenue": "1200", "units": "10"},
-            {"region": "West", "product": "Widget", "revenue": "800", "units": "8"},
-            {"region": "East", "product": "Gadget", "revenue": "1500", "units": "5"},
-            {"region": "West", "product": "Gadget", "revenue": "900", "units": "3"},
-            {"region": "East", "product": "Widget", "revenue": "600", "units": "6"},
-            {"region": "West", "product": "Gizmo", "revenue": "2000", "units": "4"},
-        ],
     ),
     Task(
         id="seed_2",
-        description='Compute the SHA-256 hash of the string "aggregation".',
+        description='Compute the SHA-256 hash of "tpack-format-v1".',
         task_type=TaskType.SEED,
-        expected="f9a554554474923f7dee7f8e36a2bc851ab904aab5cd642be789c8f54eed4684",
     ),
     Task(
         id="seed_3",
         description=(
-            'Convert this summary to JSON:\n'
-            '[{"group": "East", "total": 3300}, {"group": "West", "total": 3700}]'
+            "Read this CSV, then output the data as JSON:\n"
+            "name,active,score\nAlice,true,95.5\nBob,false,72.0\nCharlie,true,88.3"
         ),
         task_type=TaskType.SEED,
     ),
 
-    # Gap tasks — require new tools
+    # ── Gap tasks (require creating new tools) ───────────────────
     Task(
         id="gap_1",
         description=(
-            "Group this CSV data by 'region' and compute the sum of 'revenue' and the count of rows "
-            "for each group. Return a list of dicts with keys: region, total_revenue, count.\n\n"
-            f"{SALES_CSV}"
+            "Deserialize this TPACK (Tagged Pack Format) binary data into Python objects.\n\n"
+            "TPACK format specification:\n"
+            "- Base64 encoded binary data\n"
+            "- Every value starts with a 1-byte type tag:\n"
+            "  0x01=null, 0x02=false, 0x03=true\n"
+            "  0x10=uint8 (1 byte), 0x11=uint16 (2 bytes big-endian)\n"
+            "  0x12=int32 (4 bytes big-endian), 0x13=float64 (8 bytes IEEE 754 big-endian)\n"
+            "  0x20=string (varint length + UTF-8 bytes)\n"
+            "  0x30=array (varint count + elements)\n"
+            "  0x40=map (varint count + key-value pairs, keys are always strings)\n"
+            "- Varint: 7 bits per byte, MSB=1 means more bytes follow (little-endian bit groups)\n\n"
+            f"Data: {TPACK_USERS}\n\n"
+            "Return the deserialized Python data structure."
         ),
         task_type=TaskType.GAP,
-        expected=[
-            {"region": "East", "total_revenue": 3300, "count": 3},
-            {"region": "West", "total_revenue": 3700, "count": 3},
-        ],
+        expected=USERS_DATA,
         hidden_tests=[
             {
-                "input": {
-                    "csv_string": "cat,val\nA,10\nA,20\nB,5",
-                    "group_by": "cat",
-                    "aggregations": {"total": ("val", "sum"), "n": ("val", "count")},
-                },
-                "expected": [{"cat": "A", "total": 30, "n": 2}, {"cat": "B", "total": 5, "n": 1}],
+                "input": {"data": TPACK_SINGLE},
+                "expected": SINGLE_RECORD,
+            },
+            {
+                "input": {"data": _encode_tpack_b64([1, "two", 3.0, None, True])},
+                "expected": [1, "two", 3.0, None, True],
             },
         ],
         adversarial_tests=[
-            {"input": {"csv_string": "g,v\n", "group_by": "g", "aggregations": {"total": ("v", "sum")}}},
-            {"input": {"csv_string": "g,v\nA,10", "group_by": "g", "aggregations": {"total": ("v", "sum")}}},
-            {"input": {"csv_string": "g,v\nA,abc", "group_by": "g", "aggregations": {"total": ("v", "sum")}}},
+            {"input": {"data": ""}},                           # empty
+            {"input": {"data": "AQ=="}},                       # just null (tag 0x01)
+            {"input": {"data": base64.b64encode(b'\xFF').decode()}},  # unknown tag
         ],
     ),
     Task(
         id="gap_2",
         description=(
-            "Compute a running (rolling) mean with a window size of 3 over the 'value' field. "
-            "For the first elements where the full window is not available, use the available values. "
-            "Return a list of dicts with 'date' and 'rolling_mean' (rounded to 2 decimal places).\n\n"
-            f"Data: {TIMESERIES_DATA}"
+            "Query/filter deserialized TPACK data. Given this list of user records:\n\n"
+            f"{USERS_DATA}\n\n"
+            "Filter to only records where 'active' is True.\n"
+            "Return the matching records."
         ),
         task_type=TaskType.GAP,
-        expected=[
-            {"date": "2025-01-01", "rolling_mean": 10.0},
-            {"date": "2025-01-02", "rolling_mean": 15.0},
-            {"date": "2025-01-03", "rolling_mean": 15.0},
-            {"date": "2025-01-04", "rolling_mean": 20.0},
-            {"date": "2025-01-05", "rolling_mean": 23.33},
-            {"date": "2025-01-06", "rolling_mean": 21.67},
-            {"date": "2025-01-07", "rolling_mean": 20.0},
-        ],
+        expected=ACTIVE_USERS,
         hidden_tests=[
             {
                 "input": {
-                    "data": [{"t": "a", "v": 2}, {"t": "b", "v": 4}, {"t": "c", "v": 6}, {"t": "d", "v": 8}],
-                    "value_field": "v",
-                    "date_field": "t",
-                    "window": 2,
+                    "records": PRODUCTS_DATA,
+                    "filter_field": "available",
+                    "filter_value": True,
                 },
-                "expected": [
-                    {"t": "a", "rolling_mean": 2.0},
-                    {"t": "b", "rolling_mean": 3.0},
-                    {"t": "c", "rolling_mean": 5.0},
-                    {"t": "d", "rolling_mean": 7.0},
-                ],
+                "expected": AVAILABLE_PRODUCTS,
+            },
+            {
+                "input": {
+                    "records": USERS_DATA,
+                    "filter_field": "role",
+                    "filter_value": "admin",
+                },
+                "expected": [USERS_DATA[0]],
             },
         ],
         adversarial_tests=[
-            {"input": {"data": [], "value_field": "v", "window": 3}},
-            {"input": {"data": [{"v": 5}], "value_field": "v", "window": 10}},
+            {"input": {"records": [], "filter_field": "active", "filter_value": True}},
+            {"input": {"records": USERS_DATA, "filter_field": "nonexistent", "filter_value": True}},
+            {"input": {"records": [{"a": None}], "filter_field": "a", "filter_value": None}},
         ],
     ),
 
-    # Variant tasks — should REUSE tools from gap tasks
+    # ── Variant tasks (should REUSE gap tools) ───────────────────
     Task(
         id="variant_1",
         description=(
-            "Group this employee CSV by 'department' and compute the average 'salary' and "
-            "the max 'years' for each department. Return dicts with: department, avg_salary, max_years.\n\n"
-            f"{EMPLOYEE_CSV}"
+            "Deserialize this TPACK data (same format as before):\n\n"
+            f"Data: {TPACK_PRODUCTS}\n\n"
+            "Return the deserialized data."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_1",
-        expected=[
-            {"department": "Engineering", "avg_salary": 95000.0, "max_years": 8},
-            {"department": "Marketing", "avg_salary": 70000.0, "max_years": 7},
-            {"department": "Sales", "avg_salary": 78000.0, "max_years": 4},
-        ],
+        expected=PRODUCTS_DATA,
     ),
     Task(
         id="variant_2",
         description=(
-            "Compute a rolling mean with a window size of 2 over the 'price' field. "
-            "Return dicts with 'date' and 'rolling_mean' (rounded to 2 decimal places).\n\n"
-            f"Data: {STOCK_PRICES}"
+            "Filter these product records to only those with price > 10.0:\n\n"
+            f"{PRODUCTS_DATA}\n\n"
+            "Return matching records."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_2",
-        expected=[
-            {"date": "2025-01-01", "rolling_mean": 100.0},
-            {"date": "2025-01-02", "rolling_mean": 101.25},
-            {"date": "2025-01-03", "rolling_mean": 100.75},
-            {"date": "2025-01-04", "rolling_mean": 101.0},
-            {"date": "2025-01-05", "rolling_mean": 105.25},
-        ],
+        expected=EXPENSIVE_PRODUCTS,
     ),
 
-    # Compose task — parse CSV, aggregate, format as JSON report
+    # ── Compose task (deserialize then query) ─────────────────────
     Task(
         id="compose_1",
         description=(
-            "Parse this CSV, group by 'region', compute the sum of 'revenue' per region, "
-            "then output the result as a formatted JSON string.\n\n"
-            f"{SALES_CSV}"
+            "Deserialize this TPACK data, then filter the resulting records "
+            "to only those where 'available' is True.\n\n"
+            f"Data: {TPACK_PRODUCTS}\n\n"
+            "Return the filtered records."
         ),
         task_type=TaskType.COMPOSE,
-        composes_tasks=["gap_1", "seed_3"],
+        composes_tasks=["gap_1", "gap_2"],
+        expected=AVAILABLE_PRODUCTS,
     ),
 
-    # Regress task — re-test aggregation
+    # ── Regress task ────────────────────────────────────────────
     Task(
         id="regress_1",
         description=(
-            "Group this CSV by 'product' and compute the sum of 'units' for each product.\n\n"
-            f"{SALES_CSV}"
+            f"Deserialize this TPACK data (same format as before):\n\n"
+            f"Data: {TPACK_ORDERS}\n\n"
+            "Return the deserialized data."
         ),
         task_type=TaskType.REGRESS,
         reuses_task="gap_1",
-        expected=[
-            {"product": "Widget", "total_units": 24},
-            {"product": "Gadget", "total_units": 8},
-            {"product": "Gizmo", "total_units": 4},
-        ],
+        expected=ORDERS_DATA,
     ),
 
-    # Adversarial tasks — break naive implementations
+    # ── Adversarial tasks ────────────────────────────────────────
     Task(
         id="adversarial_1",
         description=(
-            "Group this CSV by 'group' and compute: sum, count, average, min, and max of 'value'. "
-            "Handle single-element groups correctly (avg = value, min = max = value).\n\n"
-            f"{EDGE_CASE_CSV}"
+            "Deserialize this TPACK data that contains:\n"
+            "- Deeply nested maps (4 levels deep)\n"
+            "- A number > 255 (requires uint16 encoding)\n"
+            "- A negative number (requires int32 encoding)\n"
+            "- Empty maps and arrays\n"
+            "- A string > 127 bytes (requires multi-byte varint for length)\n\n"
+            f"Data: {TPACK_NESTED}\n\n"
+            "Return the deserialized data."
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_1",
-        expected=[
-            {"group": "A", "sum": 60, "count": 3, "avg": 20.0, "min": 10, "max": 30},
-            {"group": "B", "sum": 100, "count": 1, "avg": 100.0, "min": 100, "max": 100},
-            {"group": "C", "sum": 10, "count": 2, "avg": 5.0, "min": 5, "max": 5},
-        ],
+        expected=NESTED_DATA,
     ),
     Task(
         id="adversarial_2",
         description=(
-            "Compute running mean with window 3 on this data that includes extreme floats "
-            "and NaN. NaN values should be excluded from the window (treat as missing). "
-            "Return 'rolling_mean' rounded to 2 decimal places, or null if all values in window are NaN.\n\n"
-            f"Data: {OVERFLOW_DATA}"
+            "Query this deserialized TPACK data (a single order object, not an array).\n"
+            "Extract all item SKUs from the nested 'items' array.\n\n"
+            f"{ORDERS_DATA}\n\n"
+            "Return a list of SKU strings: ['WDG-001', 'GDG-002']"
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_2",
+        expected=["WDG-001", "GDG-002"],
     ),
 ]
 
@@ -274,10 +422,10 @@ TASKS = [
 def create_session() -> Session:
     return Session(
         id="data_transform_s4",
-        name="Aggregation & Statistics",
+        name="Custom Serialization Format (TPACK)",
         domain="data_transform",
         tasks=TASKS,
         seed_tools=SEED_TOOLS,
-        description="Tests tool creation for group-by aggregation and running statistics, "
-                    "with reuse across grouping keys, composition, and adversarial edge cases.",
+        description="Tests tool creation for deserializing a custom tagged binary format "
+                    "(TPACK) with varints and type tags. Agent MUST create and execute tools.",
     )

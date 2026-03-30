@@ -1,304 +1,505 @@
-"""Domain A, Session 2: Schema Validation & Mapping.
+"""Domain A, Session 2: Custom Schema Language (VDL — Validation Definition Language).
+
+Key design principle: tasks use CUSTOM ENCODINGS that the LLM cannot
+solve from training data. The agent MUST create and execute tools.
+
+VDL (Validation Definition Language) is a proprietary schema format:
+  - Each line defines a field: `field_name : type_code [ flags ]`
+  - Type codes: S=string, I=integer, F=float, B=boolean, E(val1|val2)=enum
+  - Flags: R=required, U=unique, N=nullable, V(min..max)=range validator
+  - Nested objects use indented blocks with `> object_name :`
+  - Arrays use `* field_name : type_code`
+  - Comments start with `#`
+  - Schema header: `@schema schema_name @version N`
 
 Session structure (11 tasks):
   Seed 1-3:  Use provided tools (read_csv, write_json, compute_hash)
-  Gap 1:     Validate JSON data against a JSON-schema-like definition
-  Gap 2:     Map fields between two different schemas (rename/restructure)
-  Variant 1: Validate against a different schema — should REUSE gap_1's tool
-  Variant 2: Map fields with a different mapping spec — should REUSE gap_2's tool
-  Compose 1: Validate incoming data then map valid records to output schema
-  Regress 1: Re-run validation with original schema — should still work
-  Adversarial 1: Schema with optional fields and deeply nested required fields
-  Adversarial 2: Mapping with missing source fields and type coercion
+  Gap 1:     Parse VDL schema into structured representation
+  Gap 2:     Validate data records against a parsed VDL schema
+  Variant 1: Parse a different VDL schema — should REUSE gap_1
+  Variant 2: Validate different data against different schema — should REUSE gap_2
+  Compose 1: Parse schema then validate data (chain gap_1 + gap_2)
+  Regress 1: Re-parse the original schema
+  Adversarial 1: VDL with deeply nested objects and edge-case types
+  Adversarial 2: Data with type coercion edge cases against strict schema
 """
 
 from ...types import Task, TaskType, Session
 from .seed_tools import SEED_TOOLS
 
 
-# ── Test data ────────────────────────────────────────────────────────
+# ── VDL Format Definition ────────────────────────────────────────────
+# This is a completely custom schema language — NOT JSON Schema, NOT protobuf,
+# NOT any standard format. The LLM must write a parser from scratch.
 
-USER_SCHEMA = {
-    "type": "object",
-    "required": ["name", "email", "age"],
-    "properties": {
-        "name": {"type": "string"},
-        "email": {"type": "string"},
-        "age": {"type": "integer"},
-        "role": {"type": "string"},
-    },
+def _parse_vdl(vdl_text: str) -> dict:
+    """Reference parser for VDL schemas. Returns structured representation."""
+    lines = vdl_text.strip().split('\n')
+    schema = {"name": "", "version": 0, "fields": []}
+    field_stack = [schema["fields"]]  # stack for nested objects
+    indent_stack = [0]
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+
+        # Header
+        if stripped.startswith('@schema'):
+            parts = stripped.split()
+            schema["name"] = parts[1] if len(parts) > 1 else ""
+            for i, p in enumerate(parts):
+                if p == '@version' and i + 1 < len(parts):
+                    schema["version"] = int(parts[i + 1])
+            continue
+
+        indent = len(line) - len(line.lstrip())
+
+        # Pop stack if we've dedented
+        while len(indent_stack) > 1 and indent <= indent_stack[-1]:
+            indent_stack.pop()
+            field_stack.pop()
+
+        field_def = _parse_field_line(stripped)
+        if field_def:
+            field_stack[-1].append(field_def)
+            # If it's a nested object, push its children list
+            if field_def["type"] == "object":
+                field_def["children"] = []
+                field_stack.append(field_def["children"])
+                indent_stack.append(indent)
+
+    return schema
+
+
+def _parse_field_line(line: str) -> dict | None:
+    """Parse a single VDL field definition line."""
+    # Nested object: `> object_name :`
+    if line.startswith('>'):
+        name = line[1:].strip().rstrip(':').strip()
+        return {"name": name, "type": "object", "flags": [], "children": []}
+
+    # Array field: `* field_name : type_code`
+    is_array = line.startswith('*')
+    if is_array:
+        line = line[1:].strip()
+
+    # Split name : type [flags]
+    if ':' not in line:
+        return None
+
+    name_part, rest = line.split(':', 1)
+    name = name_part.strip()
+    rest = rest.strip()
+
+    # Extract flags in brackets
+    flags = []
+    while '[' in rest:
+        start = rest.index('[')
+        end = rest.index(']', start)
+        flag_content = rest[start + 1:end]
+        flags.append(flag_content)
+        rest = rest[:start] + rest[end + 1:]
+    rest = rest.strip()
+
+    # Parse type code
+    type_info = _parse_type_code(rest)
+
+    result = {"name": name, "is_array": is_array, "flags": flags}
+    result.update(type_info)
+    return result
+
+
+def _parse_type_code(code: str) -> dict:
+    """Parse a VDL type code."""
+    code = code.strip()
+    if code == 'S':
+        return {"type": "string"}
+    elif code == 'I':
+        return {"type": "integer"}
+    elif code == 'F':
+        return {"type": "float"}
+    elif code == 'B':
+        return {"type": "boolean"}
+    elif code.startswith('E(') and code.endswith(')'):
+        values = code[2:-1].split('|')
+        return {"type": "enum", "values": [v.strip() for v in values]}
+    else:
+        return {"type": "unknown", "raw": code}
+
+
+def _validate_against_vdl(schema_fields: list[dict], record: dict) -> list[str]:
+    """Validate a single record against parsed VDL fields. Returns list of errors."""
+    errors = []
+    for field_def in schema_fields:
+        name = field_def["name"]
+        flags = field_def.get("flags", [])
+        is_required = any(f == 'R' for f in flags)
+        is_nullable = any(f == 'N' for f in flags)
+
+        if name not in record:
+            if is_required:
+                errors.append(f"missing required field: {name}")
+            continue
+
+        value = record[name]
+        if value is None:
+            if not is_nullable:
+                errors.append(f"field '{name}' is not nullable")
+            continue
+
+        # Type check
+        expected_type = field_def.get("type", "unknown")
+        if expected_type == "string" and not isinstance(value, str):
+            errors.append(f"field '{name}' expected string, got {type(value).__name__}")
+        elif expected_type == "integer" and not isinstance(value, int):
+            errors.append(f"field '{name}' expected integer, got {type(value).__name__}")
+        elif expected_type == "float" and not isinstance(value, (int, float)):
+            errors.append(f"field '{name}' expected float, got {type(value).__name__}")
+        elif expected_type == "boolean" and not isinstance(value, bool):
+            errors.append(f"field '{name}' expected boolean, got {type(value).__name__}")
+        elif expected_type == "enum":
+            if value not in field_def.get("values", []):
+                errors.append(f"field '{name}' value '{value}' not in enum {field_def['values']}")
+
+        # Range validator
+        for flag in flags:
+            if flag.startswith('V(') and flag.endswith(')'):
+                range_str = flag[2:-1]
+                if '..' in range_str:
+                    lo, hi = range_str.split('..')
+                    try:
+                        lo_val = float(lo) if lo else float('-inf')
+                        hi_val = float(hi) if hi else float('inf')
+                        if isinstance(value, (int, float)) and not (lo_val <= value <= hi_val):
+                            errors.append(f"field '{name}' value {value} out of range [{lo}..{hi}]")
+                    except (ValueError, TypeError):
+                        pass
+
+    return errors
+
+
+# ── Test data: VDL schemas ───────────────────────────────────────────
+
+USER_VDL = """@schema UserProfile @version 1
+# User profile schema
+username : S [R] [U]
+email : S [R]
+age : I [R] [V(0..150)]
+score : F [N]
+role : E(admin|editor|viewer) [R]
+"""
+
+PRODUCT_VDL = """@schema ProductCatalog @version 2
+# Product catalog entry
+sku : S [R] [U]
+name : S [R]
+price : F [R] [V(0..99999)]
+in_stock : B
+category : E(electronics|clothing|food|other) [R]
+weight_kg : F [N] [V(0..1000)]
+"""
+
+NESTED_VDL = """@schema OrderRecord @version 1
+order_id : S [R] [U]
+status : E(pending|shipped|delivered|cancelled) [R]
+> customer :
+    name : S [R]
+    email : S [R]
+    > address :
+        street : S [R]
+        city : S [R]
+        zip : S
+* items : S
+total : F [R] [V(0..)]
+"""
+
+# Expected parse results
+USER_VDL_PARSED = {
+    "name": "UserProfile",
+    "version": 1,
+    "fields": [
+        {"name": "username", "type": "string", "is_array": False, "flags": ["R", "U"]},
+        {"name": "email", "type": "string", "is_array": False, "flags": ["R"]},
+        {"name": "age", "type": "integer", "is_array": False, "flags": ["R", "V(0..150)"]},
+        {"name": "score", "type": "float", "is_array": False, "flags": ["N"]},
+        {"name": "role", "type": "enum", "values": ["admin", "editor", "viewer"],
+         "is_array": False, "flags": ["R"]},
+    ],
 }
 
-PRODUCT_SCHEMA = {
-    "type": "object",
-    "required": ["sku", "price"],
-    "properties": {
-        "sku": {"type": "string"},
-        "price": {"type": "number"},
-        "description": {"type": "string"},
-        "in_stock": {"type": "boolean"},
-    },
+PRODUCT_VDL_PARSED = {
+    "name": "ProductCatalog",
+    "version": 2,
+    "fields": [
+        {"name": "sku", "type": "string", "is_array": False, "flags": ["R", "U"]},
+        {"name": "name", "type": "string", "is_array": False, "flags": ["R"]},
+        {"name": "price", "type": "float", "is_array": False, "flags": ["R", "V(0..99999)"]},
+        {"name": "in_stock", "type": "boolean", "is_array": False, "flags": []},
+        {"name": "category", "type": "enum", "values": ["electronics", "clothing", "food", "other"],
+         "is_array": False, "flags": ["R"]},
+        {"name": "weight_kg", "type": "float", "is_array": False, "flags": ["N", "V(0..1000)"]},
+    ],
 }
 
-NESTED_SCHEMA = {
-    "type": "object",
-    "required": ["id", "profile"],
-    "properties": {
-        "id": {"type": "integer"},
-        "profile": {
-            "type": "object",
-            "required": ["first_name", "contact"],
-            "properties": {
-                "first_name": {"type": "string"},
-                "last_name": {"type": "string"},
-                "contact": {
-                    "type": "object",
-                    "required": ["email"],
-                    "properties": {
-                        "email": {"type": "string"},
-                        "phone": {"type": "string"},
-                    },
-                },
-            },
-        },
-    },
-}
-
+# Validation test data
 VALID_USERS = [
-    {"name": "Alice", "email": "alice@example.com", "age": 30},
-    {"name": "Bob", "email": "bob@example.com", "age": 25, "role": "admin"},
+    {"username": "alice", "email": "alice@test.com", "age": 30, "score": 95.5, "role": "admin"},
+    {"username": "bob", "email": "bob@test.com", "age": 25, "score": None, "role": "viewer"},
 ]
 
 INVALID_USERS = [
-    {"name": "Charlie", "age": 28},  # missing email
-    {"name": "Diana", "email": "diana@example.com", "age": "twenty"},  # wrong type
-    {"name": "Eve", "email": "eve@example.com", "age": 35},  # valid
+    {"username": "charlie", "age": 28, "role": "editor"},  # missing email
+    {"username": "diana", "email": "d@t.com", "age": 200, "role": "admin"},  # age out of range
+    {"username": "eve", "email": "e@t.com", "age": 22, "role": "superuser"},  # invalid enum
 ]
 
-USER_TO_CONTACT_MAPPING = {
-    "full_name": "name",
-    "email_address": "email",
-    "years_old": "age",
-}
+VALID_PRODUCTS = [
+    {"sku": "EL-001", "name": "Widget", "price": 9.99, "in_stock": True, "category": "electronics"},
+]
 
-EMPLOYEE_TO_HR_MAPPING = {
-    "employee_id": "id",
-    "full_name": "name",
-    "department_name": "dept",
-    "annual_salary": "salary",
-}
+INVALID_PRODUCTS = [
+    {"sku": "CL-001", "name": "Shirt", "price": -5.0, "category": "clothing"},  # negative price
+    {"name": "Hat", "price": 15.0, "category": "clothing"},  # missing sku
+]
 
-EMPLOYEES = [
-    {"id": "E001", "name": "Alice Smith", "dept": "Engineering", "salary": 95000},
-    {"id": "E002", "name": "Bob Jones", "dept": "Marketing", "salary": 72000},
+# Validation expected results
+INVALID_USERS_RESULTS = [
+    {"valid": False, "errors": ["missing required field: email"]},
+    {"valid": False, "errors": ["field 'age' value 200 out of range [0..150]"]},
+    {"valid": False, "errors": ["field 'role' value 'superuser' not in enum ['admin', 'editor', 'viewer']"]},
+]
+
+VALID_USERS_RESULTS = [
+    {"valid": True, "errors": []},
+    {"valid": True, "errors": []},
+]
+
+VALID_PRODUCTS_RESULTS = [
+    {"valid": True, "errors": []},
+]
+
+INVALID_PRODUCTS_RESULTS = [
+    {"valid": False, "errors": ["field 'price' value -5.0 out of range [0..99999]"]},
+    {"valid": False, "errors": ["missing required field: sku"]},
 ]
 
 
 # ── Tasks ────────────────────────────────────────────────────────────
 
 TASKS = [
-    # Seed tasks — use provided tools
+    # ── Seed tasks ───────────────────────────────────────────────
     Task(
         id="seed_1",
         description=(
             "Read this CSV and convert it to JSON:\n"
-            "id,name,email\n1,Alice,alice@test.com\n2,Bob,bob@test.com"
+            "field,type,required\nusername,string,true\nemail,string,true\nage,integer,true"
         ),
         task_type=TaskType.SEED,
-        expected=[
-            {"id": "1", "name": "Alice", "email": "alice@test.com"},
-            {"id": "2", "name": "Bob", "email": "bob@test.com"},
-        ],
     ),
     Task(
         id="seed_2",
-        description='Compute the SHA-256 hash of the string "schema_validation".',
+        description='Compute the SHA-256 hash of "vdl-schema-v1".',
         task_type=TaskType.SEED,
-        expected="b852786aa2fdcf159e1a6be61bc0ee20a8885c97dee0354f706833c2d322e123",
     ),
     Task(
         id="seed_3",
         description=(
-            'Convert this data to a JSON string:\n'
-            '[{"valid": true, "errors": []}, {"valid": false, "errors": ["missing field"]}]'
+            "Read this CSV, then output the data as JSON:\n"
+            "schema,version,fields\nUserProfile,1,5\nProductCatalog,2,6"
         ),
         task_type=TaskType.SEED,
     ),
 
-    # Gap tasks — require new tools
+    # ── Gap tasks (require creating new tools) ───────────────────
     Task(
         id="gap_1",
         description=(
-            "Validate each record in this list against the given schema and return a list of "
-            "validation results. Each result should have 'valid' (bool) and 'errors' (list of strings).\n\n"
-            f"Schema: {USER_SCHEMA}\n\n"
-            f"Data: {INVALID_USERS}"
+            "Parse this VDL (Validation Definition Language) schema into a structured representation.\n\n"
+            "VDL format rules:\n"
+            "- Header: `@schema name @version N`\n"
+            "- Each field: `field_name : type_code [flags]`\n"
+            "- Type codes: S=string, I=integer, F=float, B=boolean, E(val1|val2)=enum\n"
+            "- Flags in brackets: R=required, U=unique, N=nullable, V(min..max)=range\n"
+            "- Nested objects: `> object_name :` followed by indented fields\n"
+            "- Array fields: `* field_name : type_code`\n"
+            "- Comments start with `#`\n\n"
+            "Schema:\n"
+            f"{USER_VDL}\n\n"
+            "Return a dict with keys: name (str), version (int), fields (list of field dicts).\n"
+            "Each field dict should have: name, type, is_array, flags.\n"
+            "For enum types, also include 'values' list."
         ),
         task_type=TaskType.GAP,
-        expected=[
-            {"valid": False, "errors": ["missing required field: email"]},
-            {"valid": False, "errors": ["field 'age' expected type integer, got str"]},
-            {"valid": True, "errors": []},
-        ],
+        expected=USER_VDL_PARSED,
         hidden_tests=[
             {
-                "input": {
-                    "schema": USER_SCHEMA,
-                    "records": [{"name": "Test", "email": "t@t.com", "age": 1}],
+                "input": {"vdl_text": "@schema Test @version 1\nfoo : S [R]\nbar : I [N]"},
+                "expected": {
+                    "name": "Test",
+                    "version": 1,
+                    "fields": [
+                        {"name": "foo", "type": "string", "is_array": False, "flags": ["R"]},
+                        {"name": "bar", "type": "integer", "is_array": False, "flags": ["N"]},
+                    ],
                 },
-                "expected": [{"valid": True, "errors": []}],
             },
             {
-                "input": {
-                    "schema": USER_SCHEMA,
-                    "records": [{}],
+                "input": {"vdl_text": "@schema Enum @version 1\ncolor : E(red|green|blue) [R]"},
+                "expected": {
+                    "name": "Enum",
+                    "version": 1,
+                    "fields": [
+                        {"name": "color", "type": "enum", "values": ["red", "green", "blue"],
+                         "is_array": False, "flags": ["R"]},
+                    ],
                 },
-                "verify": "result[0]['valid'] is False and len(result[0]['errors']) >= 3",
             },
         ],
         adversarial_tests=[
-            {"input": {"schema": USER_SCHEMA, "records": []}},
-            {"input": {"schema": {"type": "object", "required": [], "properties": {}}, "records": [{"any": "thing"}]}},
-            {"input": {"schema": USER_SCHEMA, "records": [{"name": 123, "email": 456, "age": "abc"}]}},
+            {"input": {"vdl_text": ""}},                      # empty schema
+            {"input": {"vdl_text": "# just a comment\n"}},     # only comments
+            {"input": {"vdl_text": "@schema X @version 0"}},   # no fields
         ],
     ),
     Task(
         id="gap_2",
         description=(
-            "Map each record from the source schema to a target schema using the given field mapping. "
-            "The mapping dict maps target_field -> source_field. Return a list of remapped dicts.\n\n"
-            f"Mapping: {USER_TO_CONTACT_MAPPING}\n\n"
-            f"Data: {VALID_USERS}"
+            "Validate data records against a parsed VDL schema. The schema has been parsed into:\n\n"
+            f"{USER_VDL_PARSED}\n\n"
+            "Validate these records and return a list of validation results.\n"
+            "Each result: {{'valid': bool, 'errors': list[str]}}\n\n"
+            "Validation rules:\n"
+            "- Check required fields (flag 'R') are present\n"
+            "- Check types match (string/integer/float/boolean/enum)\n"
+            "- Check range constraints V(min..max)\n"
+            "- Nullable fields (flag 'N') can be None\n"
+            "- Non-nullable fields cannot be None\n\n"
+            f"Records: {INVALID_USERS}"
         ),
         task_type=TaskType.GAP,
-        expected=[
-            {"full_name": "Alice", "email_address": "alice@example.com", "years_old": 30},
-            {"full_name": "Bob", "email_address": "bob@example.com", "years_old": 25},
-        ],
+        expected=INVALID_USERS_RESULTS,
         hidden_tests=[
             {
                 "input": {
-                    "mapping": {"a": "x", "b": "y"},
-                    "records": [{"x": 1, "y": 2, "z": 3}],
+                    "schema": USER_VDL_PARSED,
+                    "records": VALID_USERS,
                 },
-                "expected": [{"a": 1, "b": 2}],
+                "expected": VALID_USERS_RESULTS,
+            },
+            {
+                "input": {
+                    "schema": USER_VDL_PARSED,
+                    "records": [{"username": "x", "email": "x@x.com", "age": -1, "role": "admin"}],
+                },
+                "verify": "result[0]['valid'] is False and 'range' in result[0]['errors'][0]",
             },
         ],
         adversarial_tests=[
-            {"input": {"mapping": {"a": "x"}, "records": [{}]}},
-            {"input": {"mapping": {}, "records": [{"x": 1}]}},
-            {"input": {"mapping": {"a": "missing_field"}, "records": [{"x": 1}]}},
+            {"input": {"schema": USER_VDL_PARSED, "records": []}},
+            {"input": {"schema": {"name": "Empty", "version": 1, "fields": []}, "records": [{"x": 1}]}},
+            {"input": {"schema": USER_VDL_PARSED, "records": [{}]}},
         ],
     ),
 
-    # Variant tasks — should REUSE tools from gap tasks
+    # ── Variant tasks (should REUSE gap tools) ───────────────────
     Task(
         id="variant_1",
         description=(
-            "Validate each record against the PRODUCT schema:\n\n"
-            f"Schema: {PRODUCT_SCHEMA}\n\n"
-            "Data: ["
-            '{"sku": "WDG-001", "price": 9.99, "in_stock": true}, '
-            '{"sku": "GDG-002", "price": "free"}, '
-            '{"price": 14.99}'
-            "]"
+            "Parse this VDL schema (same format as before):\n\n"
+            f"{PRODUCT_VDL}\n\n"
+            "Return the structured representation."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_1",
-        expected=[
-            {"valid": True, "errors": []},
-            {"valid": False, "errors": ["field 'price' expected type number, got str"]},
-            {"valid": False, "errors": ["missing required field: sku"]},
-        ],
+        expected=PRODUCT_VDL_PARSED,
     ),
     Task(
         id="variant_2",
         description=(
-            "Map these employee records to the HR schema:\n\n"
-            f"Mapping: {EMPLOYEE_TO_HR_MAPPING}\n\n"
-            f"Data: {EMPLOYEES}"
+            "Validate these product records against the product schema:\n\n"
+            f"Schema: {PRODUCT_VDL_PARSED}\n\n"
+            f"Records: {INVALID_PRODUCTS}\n\n"
+            "Return validation results."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_2",
-        expected=[
-            {"employee_id": "E001", "full_name": "Alice Smith", "department_name": "Engineering", "annual_salary": 95000},
-            {"employee_id": "E002", "full_name": "Bob Jones", "department_name": "Marketing", "annual_salary": 72000},
-        ],
+        expected=INVALID_PRODUCTS_RESULTS,
     ),
 
-    # Compose task — validate then map
+    # ── Compose task (chain gap_1 + gap_2) ─────────────────────
     Task(
         id="compose_1",
         description=(
-            "First validate these records against the user schema. Then map ONLY the valid records "
-            "to the contact schema using the field mapping. Return the mapped valid records.\n\n"
-            f"Schema: {USER_SCHEMA}\n\n"
-            f"Mapping: {USER_TO_CONTACT_MAPPING}\n\n"
-            f"Data: {INVALID_USERS}"
+            "Parse this VDL schema, then validate the given records against it.\n\n"
+            f"Schema (VDL text):\n{USER_VDL}\n\n"
+            f"Records: {VALID_USERS}\n\n"
+            "First parse the VDL, then validate each record. Return validation results."
         ),
         task_type=TaskType.COMPOSE,
         composes_tasks=["gap_1", "gap_2"],
-        expected=[
-            {"full_name": "Eve", "email_address": "eve@example.com", "years_old": 35},
-        ],
+        expected=VALID_USERS_RESULTS,
     ),
 
-    # Regress task — re-test validation
+    # ── Regress task ────────────────────────────────────────────
     Task(
         id="regress_1",
         description=(
-            "Validate these records against the user schema:\n\n"
-            f"Schema: {USER_SCHEMA}\n\n"
-            f"Data: {VALID_USERS}"
+            "Parse this VDL schema (same format as before):\n\n"
+            "@schema Sensor @version 3\n"
+            "sensor_id : S [R] [U]\n"
+            "reading : F [R] [V(-50..200)]\n"
+            "unit : E(celsius|fahrenheit|kelvin) [R]\n"
+            "calibrated : B\n\n"
+            "Return the structured representation."
         ),
         task_type=TaskType.REGRESS,
         reuses_task="gap_1",
-        expected=[
-            {"valid": True, "errors": []},
-            {"valid": True, "errors": []},
-        ],
+        expected={
+            "name": "Sensor",
+            "version": 3,
+            "fields": [
+                {"name": "sensor_id", "type": "string", "is_array": False, "flags": ["R", "U"]},
+                {"name": "reading", "type": "float", "is_array": False, "flags": ["R", "V(-50..200)"]},
+                {"name": "unit", "type": "enum", "values": ["celsius", "fahrenheit", "kelvin"],
+                 "is_array": False, "flags": ["R"]},
+                {"name": "calibrated", "type": "boolean", "is_array": False, "flags": []},
+            ],
+        },
     ),
 
-    # Adversarial tasks — break naive implementations
+    # ── Adversarial tasks ────────────────────────────────────────
     Task(
         id="adversarial_1",
         description=(
-            "Validate this record against a schema with nested required fields. "
-            "The validation must check required fields recursively in nested objects.\n\n"
-            f"Schema: {NESTED_SCHEMA}\n\n"
-            "Data: ["
-            '{"id": 1, "profile": {"first_name": "Alice"}}, '
-            '{"id": 2, "profile": {"first_name": "Bob", "contact": {"phone": "555-0100"}}}, '
-            '{"id": 3, "profile": {"first_name": "Charlie", "contact": {"email": "c@test.com"}}}'
-            "]"
+            "Parse this VDL schema with nested objects and array fields:\n\n"
+            f"{NESTED_VDL}\n\n"
+            "The parser must handle:\n"
+            "- Nested `> object_name :` blocks (indentation-based)\n"
+            "- Array fields with `*` prefix\n"
+            "- Open-ended range V(0..)\n"
+            "Return the structured representation."
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_1",
-        expected=[
-            {"valid": False, "errors": ["missing required field: profile.contact"]},
-            {"valid": False, "errors": ["missing required field: profile.contact.email"]},
-            {"valid": True, "errors": []},
-        ],
     ),
     Task(
         id="adversarial_2",
         description=(
-            "Map these records using the given mapping. Some source fields are missing, "
-            "and some values need type handling (None, nested dicts). "
-            "Missing source fields should map to None.\n\n"
-            "Mapping: {\"full_name\": \"name\", \"contact\": \"email\", \"status\": \"active\"}\n\n"
-            "Data: ["
-            '{"name": "Alice", "email": "a@test.com"}, '
-            '{"name": "Bob"}, '
-            '{"email": "c@test.com", "active": true}'
-            "]"
+            "Validate these edge-case records against the user schema:\n\n"
+            f"Schema: {USER_VDL_PARSED}\n\n"
+            "Records:\n"
+            "1. {{'username': 123, 'email': 'a@b.com', 'age': 25, 'role': 'admin'}} - wrong type for username\n"
+            "2. {{'username': 'test', 'email': 'x', 'age': 0, 'score': 'not_a_float', 'role': 'viewer'}} - wrong type for score\n"
+            "3. {{'username': '', 'email': '', 'age': 150, 'role': 'admin'}} - boundary values\n\n"
+            "Return validation results."
         ),
         task_type=TaskType.ADVERSARIAL,
         breaks_task="gap_2",
         expected=[
-            {"full_name": "Alice", "contact": "a@test.com", "status": None},
-            {"full_name": "Bob", "contact": None, "status": None},
-            {"full_name": None, "contact": "c@test.com", "status": True},
+            {"valid": False, "errors": ["field 'username' expected string, got int"]},
+            {"valid": False, "errors": ["field 'score' expected float, got str"]},
+            {"valid": True, "errors": []},  # age=150 is within V(0..150)
         ],
     ),
 ]
@@ -307,10 +508,10 @@ TASKS = [
 def create_session() -> Session:
     return Session(
         id="data_transform_s2",
-        name="Schema Validation & Mapping",
+        name="Custom Schema Language (VDL)",
         domain="data_transform",
         tasks=TASKS,
         seed_tools=SEED_TOOLS,
-        description="Tests tool creation for JSON schema validation and field mapping, "
-                    "with reuse across schemas, composition, and adversarial edge cases.",
+        description="Tests tool creation for parsing and validating against a proprietary "
+                    "schema language (VDL) that cannot be solved from LLM training data.",
     )

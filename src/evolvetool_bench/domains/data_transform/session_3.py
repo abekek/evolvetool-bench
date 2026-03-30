@@ -1,274 +1,471 @@
-"""Domain A, Session 3: Text Processing & Extraction.
+"""Domain A, Session 3: Proprietary Log Format (QLOG — Quantized Log Format).
+
+Key design principle: tasks use CUSTOM ENCODINGS that the LLM cannot
+solve from training data. The agent MUST create and execute tools.
+
+QLOG (Quantized Log Format) is a proprietary binary log format:
+  - Each log entry is a fixed-header + variable-payload binary record
+  - Header (8 bytes):
+    - Bytes 0-3: Timestamp as uint32, seconds since custom epoch (2025-01-01 00:00:00 UTC)
+    - Byte 4: Severity packed as: (severity_level << 4) | (subsystem_id & 0x0F)
+      severity_level: 0=TRACE, 1=DEBUG, 2=INFO, 3=WARN, 4=ERROR, 5=FATAL
+      subsystem_id: 0-15
+    - Byte 5: Flags byte (bit 0=compressed, bit 1=has_context, bit 2=continuation)
+    - Bytes 6-7: Payload length as uint16 big-endian
+  - Payload: UTF-8 message text
+  - If has_context flag (bit 1), payload is followed by:
+    - 1-byte context_count
+    - Each context: [1-byte key_len][key_bytes][2-byte value_len][value_bytes]
+  - Entries separated by 0xFE 0xFE marker
 
 Session structure (11 tasks):
   Seed 1-3:  Use provided tools (read_csv, write_json, compute_hash)
-  Gap 1:     Extract structured data from unstructured text (emails, log lines)
-  Gap 2:     Regex pattern matching — find and extract all matches with named groups
-  Variant 1: Extract from different text format (server logs) — should REUSE gap_1's tool
-  Variant 2: Different regex pattern on different text — should REUSE gap_2's tool
-  Compose 1: Extract log entries then aggregate counts by level
-  Regress 1: Re-run extraction on original log format — should still work
-  Adversarial 1: Malformed text with unicode, missing fields, multiline values
-  Adversarial 2: Regex with catastrophic backtracking potential, overlapping matches
+  Gap 1:     Parse QLOG binary format into structured log records
+  Gap 2:     Filter/aggregate parsed QLOG records by severity and time range
+  Variant 1: Parse different QLOG data — should REUSE gap_1
+  Variant 2: Different filter criteria — should REUSE gap_2
+  Compose 1: Parse QLOG then aggregate by severity level
+  Regress 1: Re-parse original QLOG data
+  Adversarial 1: QLOG with context fields and continuation entries
+  Adversarial 2: Filter with edge-case time ranges and empty results
 """
 
+import base64
+import struct
+from datetime import datetime, timezone
 from ...types import Task, TaskType, Session
 from .seed_tools import SEED_TOOLS
 
 
-# ── Test data ────────────────────────────────────────────────────────
+# ── QLOG Format Encoder ─────────────────────────────────────────────
+# Custom epoch: 2025-01-01 00:00:00 UTC
+QLOG_EPOCH = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
-EMAIL_TEXT = """From: alice@example.com
-To: bob@example.com
-Subject: Q3 Report
-Date: 2025-10-15
+SEVERITY_NAMES = {0: "TRACE", 1: "DEBUG", 2: "INFO", 3: "WARN", 4: "ERROR", 5: "FATAL"}
+SEVERITY_IDS = {v: k for k, v in SEVERITY_NAMES.items()}
 
-Hi Bob,
-Please find the Q3 report attached.
-Best, Alice
 
----
+def _qlog_timestamp(dt: datetime) -> int:
+    """Convert datetime to QLOG timestamp (seconds since 2025-01-01)."""
+    return int((dt - QLOG_EPOCH).total_seconds())
 
-From: charlie@example.com
-To: diana@example.com
-Subject: Meeting Tomorrow
-Date: 2025-10-16
 
-Diana,
-Can we reschedule to 3pm?
-Thanks, Charlie"""
+def _encode_qlog_entry(
+    timestamp_dt: datetime,
+    severity: str,
+    subsystem_id: int,
+    message: str,
+    context: dict[str, str] | None = None,
+    is_continuation: bool = False,
+) -> bytes:
+    """Encode a single QLOG entry."""
+    ts = _qlog_timestamp(timestamp_dt)
+    sev_id = SEVERITY_IDS[severity]
+    packed_sev = (sev_id << 4) | (subsystem_id & 0x0F)
 
-SERVER_LOGS = """2025-10-15 08:23:01 [INFO] Server started on port 8080
-2025-10-15 08:23:05 [INFO] Connected to database
-2025-10-15 08:24:12 [WARN] Slow query detected (1532ms)
-2025-10-15 08:25:00 [ERROR] Connection timeout to redis:6379
-2025-10-15 08:25:01 [INFO] Retrying connection...
-2025-10-15 08:25:03 [ERROR] Connection failed after 3 retries
-2025-10-15 08:25:10 [INFO] Fallback to local cache"""
+    flags = 0
+    if context:
+        flags |= 0x02  # has_context
+    if is_continuation:
+        flags |= 0x04  # continuation
 
-ACCESS_LOGS = """192.168.1.10 - - [15/Oct/2025:08:23:01 +0000] "GET /api/users HTTP/1.1" 200 1234
-192.168.1.11 - - [15/Oct/2025:08:23:02 +0000] "POST /api/login HTTP/1.1" 200 567
-10.0.0.5 - - [15/Oct/2025:08:24:00 +0000] "GET /api/products HTTP/1.1" 404 89
-192.168.1.10 - - [15/Oct/2025:08:25:00 +0000] "DELETE /api/users/5 HTTP/1.1" 403 45"""
+    msg_bytes = message.encode('utf-8')
 
-IP_PORT_TEXT = """Server alpha listening on 192.168.1.100:8080
-Server beta listening on 10.0.0.1:3000
-Proxy at 172.16.0.1:443 forwarding to 192.168.1.100:8080
-Health check: 10.0.0.1:3000 OK, 172.16.0.1:443 OK"""
+    # Build context payload
+    ctx_bytes = b''
+    if context:
+        ctx_bytes += struct.pack('B', len(context))
+        for key, val in context.items():
+            k = key.encode('utf-8')
+            v = val.encode('utf-8')
+            ctx_bytes += struct.pack('B', len(k)) + k + struct.pack('>H', len(v)) + v
 
-MALFORMED_LOGS = """2025-10-15 08:23:01 [INFO] Server started \u2014 ready to accept connections
-2025-10-15 08:23:05 [] Empty level field
-08:24:12 [WARN] Missing date prefix
-2025-10-15 08:25:00 [ERROR] Stack trace:
-  at Connection.connect (net.js:123)
-  at Pool.acquire (pool.js:45)
-2025-10-15 08:25:10 [INFO] Caf\u00e9 service resumed with \u00fcber-fast mode"""
+    payload_len = len(msg_bytes) + len(ctx_bytes)
+
+    header = struct.pack('>I', ts)
+    header += struct.pack('B', packed_sev)
+    header += struct.pack('B', flags)
+    header += struct.pack('>H', payload_len)
+
+    return header + msg_bytes + ctx_bytes
+
+
+def _encode_qlog(entries: list[dict]) -> str:
+    """Encode multiple QLOG entries, separated by 0xFEFE, return base64."""
+    buf = bytearray()
+    for i, entry in enumerate(entries):
+        if i > 0:
+            buf.extend(b'\xFE\xFE')
+        dt = datetime.fromisoformat(entry["timestamp"])
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        buf.extend(_encode_qlog_entry(
+            timestamp_dt=dt,
+            severity=entry["severity"],
+            subsystem_id=entry.get("subsystem", 0),
+            message=entry["message"],
+            context=entry.get("context"),
+            is_continuation=entry.get("continuation", False),
+        ))
+    return base64.b64encode(bytes(buf)).decode('ascii')
+
+
+def _decode_qlog(b64_data: str) -> list[dict]:
+    """Reference decoder for QLOG format."""
+    raw = base64.b64decode(b64_data)
+    # Split on 0xFEFE separator
+    entries_raw = []
+    current = bytearray()
+    i = 0
+    while i < len(raw):
+        if i + 1 < len(raw) and raw[i] == 0xFE and raw[i + 1] == 0xFE:
+            entries_raw.append(bytes(current))
+            current = bytearray()
+            i += 2
+        else:
+            current.append(raw[i])
+            i += 1
+    if current:
+        entries_raw.append(bytes(current))
+
+    results = []
+    for entry_bytes in entries_raw:
+        if len(entry_bytes) < 8:
+            continue
+        ts_val = struct.unpack('>I', entry_bytes[0:4])[0]
+        packed_sev = entry_bytes[4]
+        flags = entry_bytes[5]
+        payload_len = struct.unpack('>H', entry_bytes[6:8])[0]
+
+        sev_level = (packed_sev >> 4) & 0x0F
+        subsystem = packed_sev & 0x0F
+        has_context = bool(flags & 0x02)
+        is_continuation = bool(flags & 0x04)
+
+        dt = QLOG_EPOCH.replace(tzinfo=timezone.utc) + __import__('datetime').timedelta(seconds=ts_val)
+
+        payload = entry_bytes[8:8 + payload_len]
+
+        # If has_context, the message ends where context begins
+        # We need to figure out the split — message is variable, context starts with count byte
+        # For simplicity, decode the context from the end
+        context = {}
+        msg_bytes = payload
+        if has_context and len(payload) > 0:
+            # Context is appended after message — we decode from the structure
+            # Actually, the message length isn't explicitly stored, so we parse context backwards
+            # This is part of the complexity of the format!
+            # The context count is right after the message, but we don't know where...
+            # We'll parse forward: try to find valid context at each position
+            for split_pos in range(len(payload)):
+                remaining = payload[split_pos:]
+                if len(remaining) < 1:
+                    continue
+                ctx_count = remaining[0]
+                if ctx_count == 0:
+                    continue
+                try:
+                    pos = 1
+                    ctx = {}
+                    for _ in range(ctx_count):
+                        klen = remaining[pos]
+                        pos += 1
+                        key = remaining[pos:pos + klen].decode('utf-8')
+                        pos += klen
+                        vlen = struct.unpack('>H', remaining[pos:pos + 2])[0]
+                        pos += 2
+                        val = remaining[pos:pos + vlen].decode('utf-8')
+                        pos += vlen
+                        ctx[key] = val
+                    if pos == len(remaining) and len(ctx) == ctx_count:
+                        msg_bytes = payload[:split_pos]
+                        context = ctx
+                        break
+                except (IndexError, struct.error, UnicodeDecodeError):
+                    continue
+
+        record = {
+            "timestamp": dt.isoformat(),
+            "severity": SEVERITY_NAMES.get(sev_level, f"UNKNOWN({sev_level})"),
+            "subsystem": subsystem,
+            "message": msg_bytes.decode('utf-8'),
+            "flags": {
+                "compressed": bool(flags & 0x01),
+                "has_context": has_context,
+                "continuation": is_continuation,
+            },
+        }
+        if context:
+            record["context"] = context
+        results.append(record)
+
+    return results
+
+
+# ── Test Data ────────────────────────────────────────────────────────
+
+LOG_ENTRIES_1 = [
+    {"timestamp": "2025-03-15T10:30:00+00:00", "severity": "INFO", "subsystem": 1,
+     "message": "Server started on port 8080"},
+    {"timestamp": "2025-03-15T10:30:05+00:00", "severity": "INFO", "subsystem": 2,
+     "message": "Database connection established"},
+    {"timestamp": "2025-03-15T10:31:12+00:00", "severity": "WARN", "subsystem": 3,
+     "message": "Slow query detected: 1532ms"},
+    {"timestamp": "2025-03-15T10:32:00+00:00", "severity": "ERROR", "subsystem": 1,
+     "message": "Connection timeout to redis:6379"},
+    {"timestamp": "2025-03-15T10:32:01+00:00", "severity": "INFO", "subsystem": 1,
+     "message": "Retrying connection attempt 1"},
+    {"timestamp": "2025-03-15T10:32:05+00:00", "severity": "ERROR", "subsystem": 1,
+     "message": "Connection failed after 3 retries"},
+]
+QLOG_1 = _encode_qlog(LOG_ENTRIES_1)
+
+LOG_ENTRIES_2 = [
+    {"timestamp": "2025-06-01T08:00:00+00:00", "severity": "DEBUG", "subsystem": 5,
+     "message": "Cache miss for key user:1234"},
+    {"timestamp": "2025-06-01T08:00:01+00:00", "severity": "INFO", "subsystem": 5,
+     "message": "Cache populated: 256 entries"},
+    {"timestamp": "2025-06-01T08:05:00+00:00", "severity": "FATAL", "subsystem": 0,
+     "message": "Out of memory: heap exhausted"},
+]
+QLOG_2 = _encode_qlog(LOG_ENTRIES_2)
+
+LOG_ENTRIES_CONTEXT = [
+    {"timestamp": "2025-03-15T10:30:00+00:00", "severity": "ERROR", "subsystem": 1,
+     "message": "Request failed",
+     "context": {"request_id": "abc-123", "user": "alice", "path": "/api/data"}},
+    {"timestamp": "2025-03-15T10:30:01+00:00", "severity": "WARN", "subsystem": 2,
+     "message": "Deprecated API called",
+     "context": {"endpoint": "/v1/old", "replacement": "/v2/new"}},
+]
+QLOG_CONTEXT = _encode_qlog(LOG_ENTRIES_CONTEXT)
+
+LOG_ENTRIES_CONTINUATION = [
+    {"timestamp": "2025-03-15T10:30:00+00:00", "severity": "ERROR", "subsystem": 1,
+     "message": "Stack trace begins"},
+    {"timestamp": "2025-03-15T10:30:00+00:00", "severity": "ERROR", "subsystem": 1,
+     "message": "  at Connection.connect (net.js:123)", "continuation": True},
+    {"timestamp": "2025-03-15T10:30:00+00:00", "severity": "ERROR", "subsystem": 1,
+     "message": "  at Pool.acquire (pool.js:45)", "continuation": True},
+]
+QLOG_CONTINUATION = _encode_qlog(LOG_ENTRIES_CONTINUATION)
+
+# Expected parse results (simplified — just key fields)
+PARSED_1 = [
+    {"severity": "INFO", "subsystem": 1, "message": "Server started on port 8080"},
+    {"severity": "INFO", "subsystem": 2, "message": "Database connection established"},
+    {"severity": "WARN", "subsystem": 3, "message": "Slow query detected: 1532ms"},
+    {"severity": "ERROR", "subsystem": 1, "message": "Connection timeout to redis:6379"},
+    {"severity": "INFO", "subsystem": 1, "message": "Retrying connection attempt 1"},
+    {"severity": "ERROR", "subsystem": 1, "message": "Connection failed after 3 retries"},
+]
+
+PARSED_2 = [
+    {"severity": "DEBUG", "subsystem": 5, "message": "Cache miss for key user:1234"},
+    {"severity": "INFO", "subsystem": 5, "message": "Cache populated: 256 entries"},
+    {"severity": "FATAL", "subsystem": 0, "message": "Out of memory: heap exhausted"},
+]
+
+# Aggregation expected
+SEVERITY_COUNTS_1 = {"INFO": 3, "WARN": 1, "ERROR": 2}
+ERRORS_ONLY_1 = [
+    {"severity": "ERROR", "subsystem": 1, "message": "Connection timeout to redis:6379"},
+    {"severity": "ERROR", "subsystem": 1, "message": "Connection failed after 3 retries"},
+]
 
 
 # ── Tasks ────────────────────────────────────────────────────────────
 
 TASKS = [
-    # Seed tasks — use provided tools
+    # ── Seed tasks ───────────────────────────────────────────────
     Task(
         id="seed_1",
         description=(
-            "Read this CSV and convert to JSON:\n"
-            "level,count\nINFO,4\nWARN,1\nERROR,2"
+            "Read this CSV and convert it to JSON:\n"
+            "severity,count\nINFO,3\nWARN,1\nERROR,2"
         ),
         task_type=TaskType.SEED,
-        expected=[
-            {"level": "INFO", "count": "4"},
-            {"level": "WARN", "count": "1"},
-            {"level": "ERROR", "count": "2"},
-        ],
     ),
     Task(
         id="seed_2",
-        description='Compute the SHA-256 hash of the string "text_processing".',
+        description='Compute the SHA-256 hash of "qlog-format-v1".',
         task_type=TaskType.SEED,
-        expected="40391d773134f49f30381f080cebfb370e88b5d3ac85028b12f56f5ec99c7455",
     ),
     Task(
         id="seed_3",
         description=(
-            'Write this data as JSON:\n'
-            '[{"pattern": "\\\\d+", "matches": 5}, {"pattern": "[a-z]+", "matches": 12}]'
+            "Read this CSV, then output the data as JSON:\n"
+            "subsystem,name\n0,core\n1,network\n2,database\n3,query\n5,cache"
         ),
         task_type=TaskType.SEED,
     ),
 
-    # Gap tasks — require new tools
+    # ── Gap tasks (require creating new tools) ───────────────────
     Task(
         id="gap_1",
         description=(
-            "Extract structured records from this unstructured text. Each email should become a dict "
-            "with keys: from, to, subject, date, body. Return a list of extracted records.\n\n"
-            f"{EMAIL_TEXT}"
+            "Decode this QLOG (Quantized Log Format) binary data into structured log records.\n\n"
+            "QLOG format specification:\n"
+            "- Base64 encoded binary data\n"
+            "- Each entry has an 8-byte header + variable payload:\n"
+            "  - Bytes 0-3: uint32 big-endian timestamp (seconds since 2025-01-01 00:00:00 UTC)\n"
+            "  - Byte 4: packed severity = (severity_level << 4) | (subsystem_id & 0x0F)\n"
+            "    severity_level: 0=TRACE, 1=DEBUG, 2=INFO, 3=WARN, 4=ERROR, 5=FATAL\n"
+            "  - Byte 5: flags byte (bit 0=compressed, bit 1=has_context, bit 2=continuation)\n"
+            "  - Bytes 6-7: uint16 big-endian payload length\n"
+            "- Payload: UTF-8 message text\n"
+            "- Entries separated by 0xFE 0xFE marker bytes\n\n"
+            f"Data: {QLOG_1}\n\n"
+            "Return a list of dicts with keys: severity (str name), subsystem (int), message (str).\n"
+            "Also include the decoded timestamp as ISO format string."
         ),
         task_type=TaskType.GAP,
-        expected=[
-            {
-                "from": "alice@example.com",
-                "to": "bob@example.com",
-                "subject": "Q3 Report",
-                "date": "2025-10-15",
-                "body": "Hi Bob,\nPlease find the Q3 report attached.\nBest, Alice",
-            },
-            {
-                "from": "charlie@example.com",
-                "to": "diana@example.com",
-                "subject": "Meeting Tomorrow",
-                "date": "2025-10-16",
-                "body": "Diana,\nCan we reschedule to 3pm?\nThanks, Charlie",
-            },
-        ],
+        expected=PARSED_1,
         hidden_tests=[
             {
-                "input": {
-                    "text": "From: x@y.com\nTo: a@b.com\nSubject: Test\nDate: 2025-01-01\n\nHello",
-                    "format": "email",
-                },
-                "expected": [{"from": "x@y.com", "to": "a@b.com", "subject": "Test", "date": "2025-01-01", "body": "Hello"}],
+                "input": {"data": QLOG_2},
+                "expected": PARSED_2,
+            },
+            {
+                "input": {"data": _encode_qlog([
+                    {"timestamp": "2025-01-01T00:00:00+00:00", "severity": "TRACE",
+                     "subsystem": 0, "message": "boot"},
+                ])},
+                "expected": [{"severity": "TRACE", "subsystem": 0, "message": "boot"}],
             },
         ],
         adversarial_tests=[
-            {"input": {"text": "", "format": "email"}},
-            {"input": {"text": "Just plain text with no structure at all.", "format": "email"}},
+            {"input": {"data": ""}},                          # empty
+            {"input": {"data": "AAAA"}},                       # too short for header
+            {"input": {"data": base64.b64encode(b'\x00' * 8 + b'\x00\x00').decode()}},  # zero-length payload
         ],
     ),
     Task(
         id="gap_2",
         description=(
-            "Extract all matches from text using a regex pattern with named groups. Return a list of "
-            "dicts where keys are the group names and values are the matched strings.\n\n"
-            "Pattern: `(?P<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) \\[(?P<level>\\w+)\\] (?P<message>.+)`\n\n"
-            f"Text:\n{SERVER_LOGS}"
+            "Filter and aggregate parsed QLOG records.\n\n"
+            "Given these parsed log records:\n"
+            f"{PARSED_1}\n\n"
+            "Filter to only entries with severity 'ERROR' or higher (ERROR, FATAL).\n"
+            "Return the filtered records."
         ),
         task_type=TaskType.GAP,
-        expected=[
-            {"timestamp": "2025-10-15 08:23:01", "level": "INFO", "message": "Server started on port 8080"},
-            {"timestamp": "2025-10-15 08:23:05", "level": "INFO", "message": "Connected to database"},
-            {"timestamp": "2025-10-15 08:24:12", "level": "WARN", "message": "Slow query detected (1532ms)"},
-            {"timestamp": "2025-10-15 08:25:00", "level": "ERROR", "message": "Connection timeout to redis:6379"},
-            {"timestamp": "2025-10-15 08:25:01", "level": "INFO", "message": "Retrying connection..."},
-            {"timestamp": "2025-10-15 08:25:03", "level": "ERROR", "message": "Connection failed after 3 retries"},
-            {"timestamp": "2025-10-15 08:25:10", "level": "INFO", "message": "Fallback to local cache"},
-        ],
+        expected=ERRORS_ONLY_1,
         hidden_tests=[
             {
                 "input": {
-                    "pattern": r"(?P<word>\w+)",
-                    "text": "hello world",
+                    "records": PARSED_1,
+                    "min_severity": "WARN",
                 },
-                "expected": [{"word": "hello"}, {"word": "world"}],
+                "expected": [
+                    {"severity": "WARN", "subsystem": 3, "message": "Slow query detected: 1532ms"},
+                    {"severity": "ERROR", "subsystem": 1, "message": "Connection timeout to redis:6379"},
+                    {"severity": "ERROR", "subsystem": 1, "message": "Connection failed after 3 retries"},
+                ],
+            },
+            {
+                "input": {
+                    "records": PARSED_2,
+                    "min_severity": "FATAL",
+                },
+                "expected": [
+                    {"severity": "FATAL", "subsystem": 0, "message": "Out of memory: heap exhausted"},
+                ],
             },
         ],
         adversarial_tests=[
-            {"input": {"pattern": r"(?P<x>\d+)", "text": "no digits here"}},
-            {"input": {"pattern": r"(no_named_group)", "text": "test"}},
-            {"input": {"pattern": r"(?P<a>.*)*", "text": "x" * 100}},  # backtracking risk
+            {"input": {"records": [], "min_severity": "ERROR"}},
+            {"input": {"records": PARSED_1, "min_severity": "TRACE"}},  # should return all
+            {"input": {"records": PARSED_1, "min_severity": "FATAL"}},  # should return none
         ],
     ),
 
-    # Variant tasks — should REUSE tools from gap tasks
+    # ── Variant tasks (should REUSE gap tools) ───────────────────
     Task(
         id="variant_1",
         description=(
-            "Extract structured records from these Apache-style access logs. Each line should become "
-            "a dict with keys: ip, timestamp, method, path, status, size.\n\n"
-            f"{ACCESS_LOGS}"
+            "Decode this QLOG data (same format as before):\n\n"
+            f"Data: {QLOG_2}\n\n"
+            "Return parsed log records."
         ),
         task_type=TaskType.VARIANT,
-        reuses_task="gap_2",
-        expected=[
-            {"ip": "192.168.1.10", "timestamp": "15/Oct/2025:08:23:01 +0000", "method": "GET", "path": "/api/users", "status": "200", "size": "1234"},
-            {"ip": "192.168.1.11", "timestamp": "15/Oct/2025:08:23:02 +0000", "method": "POST", "path": "/api/login", "status": "200", "size": "567"},
-            {"ip": "10.0.0.5", "timestamp": "15/Oct/2025:08:24:00 +0000", "method": "GET", "path": "/api/products", "status": "404", "size": "89"},
-            {"ip": "192.168.1.10", "timestamp": "15/Oct/2025:08:25:00 +0000", "method": "DELETE", "path": "/api/users/5", "status": "403", "size": "45"},
-        ],
+        reuses_task="gap_1",
+        expected=PARSED_2,
     ),
     Task(
         id="variant_2",
         description=(
-            "Extract all IP:port pairs from this text using regex with named groups.\n\n"
-            "Pattern: `(?P<ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(?P<port>\\d+)`\n\n"
-            f"Text:\n{IP_PORT_TEXT}"
+            "Filter these parsed log records to severity WARN and above:\n\n"
+            f"{PARSED_1}\n\n"
+            "Return filtered records."
         ),
         task_type=TaskType.VARIANT,
         reuses_task="gap_2",
         expected=[
-            {"ip": "192.168.1.100", "port": "8080"},
-            {"ip": "10.0.0.1", "port": "3000"},
-            {"ip": "172.16.0.1", "port": "443"},
-            {"ip": "192.168.1.100", "port": "8080"},
-            {"ip": "10.0.0.1", "port": "3000"},
-            {"ip": "172.16.0.1", "port": "443"},
+            {"severity": "WARN", "subsystem": 3, "message": "Slow query detected: 1532ms"},
+            {"severity": "ERROR", "subsystem": 1, "message": "Connection timeout to redis:6379"},
+            {"severity": "ERROR", "subsystem": 1, "message": "Connection failed after 3 retries"},
         ],
     ),
 
-    # Compose task — extract then aggregate
+    # ── Compose task (parse QLOG then aggregate) ──────────────────
     Task(
         id="compose_1",
         description=(
-            "Extract all log entries from the server logs using regex, then count the number of "
-            "entries per log level. Return a JSON object mapping level -> count.\n\n"
-            f"Text:\n{SERVER_LOGS}"
+            "Decode this QLOG data, then count entries by severity level.\n"
+            "Return a dict mapping severity name to count.\n\n"
+            f"Data: {QLOG_1}"
         ),
         task_type=TaskType.COMPOSE,
-        composes_tasks=["gap_2", "seed_3"],
-        expected={"INFO": 4, "WARN": 1, "ERROR": 2},
+        composes_tasks=["gap_1", "gap_2"],
+        expected=SEVERITY_COUNTS_1,
     ),
 
-    # Regress task — re-test extraction
+    # ── Regress task ────────────────────────────────────────────
     Task(
         id="regress_1",
         description=(
-            "Extract structured records from these log lines using regex with named groups:\n\n"
-            "Pattern: `(?P<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) \\[(?P<level>\\w+)\\] (?P<message>.+)`\n\n"
-            "Text:\n"
-            "2025-11-01 10:00:00 [INFO] Startup complete\n"
-            "2025-11-01 10:01:00 [WARN] Disk usage at 85%"
+            f"Decode this QLOG data (same format as before):\n\n"
+            f"Data: {_encode_qlog([{'timestamp': '2025-07-04T12:00:00+00:00', 'severity': 'WARN', 'subsystem': 7, 'message': 'Disk usage at 85 percent'}])}\n\n"
+            "Return parsed log records."
         ),
         task_type=TaskType.REGRESS,
-        reuses_task="gap_2",
-        expected=[
-            {"timestamp": "2025-11-01 10:00:00", "level": "INFO", "message": "Startup complete"},
-            {"timestamp": "2025-11-01 10:01:00", "level": "WARN", "message": "Disk usage at 85%"},
-        ],
+        reuses_task="gap_1",
+        expected=[{"severity": "WARN", "subsystem": 7, "message": "Disk usage at 85 percent"}],
     ),
 
-    # Adversarial tasks — break naive implementations
+    # ── Adversarial tasks ────────────────────────────────────────
     Task(
         id="adversarial_1",
         description=(
-            "Extract log entries from this text that contains unicode characters, empty level fields, "
-            "missing date prefixes, and multiline messages. Handle gracefully — skip malformed lines "
-            "or include partial data.\n\n"
-            "Pattern: `(?P<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) \\[(?P<level>\\w+)\\] (?P<message>.+)`\n\n"
-            f"Text:\n{MALFORMED_LOGS}"
+            "Decode this QLOG data that includes context fields.\n\n"
+            "Extended format: when flags byte has bit 1 set (has_context), after the message text "
+            "there is additional context data:\n"
+            "- 1-byte context_count\n"
+            "- Each context entry: [1-byte key_len][key_bytes][2-byte big-endian value_len][value_bytes]\n\n"
+            "The challenge: the message and context are packed together in the payload, "
+            "and the message length is NOT explicitly stored. You must parse the context "
+            "structure from the payload to determine where the message ends.\n\n"
+            f"Data: {QLOG_CONTEXT}\n\n"
+            "Return parsed records including a 'context' dict for entries that have it."
         ),
         task_type=TaskType.ADVERSARIAL,
-        breaks_task="gap_2",
-        expected=[
-            {"timestamp": "2025-10-15 08:23:01", "level": "INFO", "message": "Server started \u2014 ready to accept connections"},
-            {"timestamp": "2025-10-15 08:25:00", "level": "ERROR", "message": "Stack trace:"},
-            {"timestamp": "2025-10-15 08:25:10", "level": "INFO", "message": "Caf\u00e9 service resumed with \u00fcber-fast mode"},
-        ],
+        breaks_task="gap_1",
     ),
     Task(
         id="adversarial_2",
         description=(
-            "Extract matches using a regex pattern that has overlapping match potential. "
-            "Use non-overlapping leftmost matches only.\n\n"
-            "Pattern: `(?P<num>\\d{2,4})`\n\n"
-            "Text: 'Order 12345 has 67 items weighing 8 kg, reference A99B'"
+            "Decode this QLOG data with continuation entries (flags bit 2 set).\n"
+            "Continuation entries should be merged with the preceding non-continuation entry "
+            "by appending their message with a newline separator.\n\n"
+            f"Data: {QLOG_CONTINUATION}\n\n"
+            "Return the merged log records (continuation entries folded into their parent)."
         ),
         task_type=TaskType.ADVERSARIAL,
-        breaks_task="gap_2",
+        breaks_task="gap_1",
         expected=[
-            {"num": "1234"},
-            {"num": "67"},
-            {"num": "99"},
+            {"severity": "ERROR", "subsystem": 1,
+             "message": "Stack trace begins\n  at Connection.connect (net.js:123)\n  at Pool.acquire (pool.js:45)"},
         ],
     ),
 ]
@@ -277,10 +474,10 @@ TASKS = [
 def create_session() -> Session:
     return Session(
         id="data_transform_s3",
-        name="Text Processing & Extraction",
+        name="Proprietary Log Format (QLOG)",
         domain="data_transform",
         tasks=TASKS,
         seed_tools=SEED_TOOLS,
-        description="Tests tool creation for structured extraction from unstructured text "
-                    "and regex pattern matching, with composition, reuse, and adversarial edge cases.",
+        description="Tests tool creation for parsing a custom binary log format (QLOG) "
+                    "with bit-packed fields and custom epoch. Agent MUST create and execute tools.",
     )
