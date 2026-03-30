@@ -33,36 +33,53 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Evaluation Axes}{2}{subsection.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Axis 1: Task Completion.}{2}{section*.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Axis 2: Tool Quality Score (TQS).}{2}{section*.10}\protected@file@percent }
+\newlabel{eq:tqs}{{1}{2}{Axis 2: Tool Quality Score (TQS)}{equation.1}{}}
 \@writefile{toc}{\contentsline {paragraph}{Axis 3: Library Diagnostics.}{2}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Composite Score.}{2}{section*.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Experimental Setup}{2}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Systems.}{2}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Model.}{2}{section*.14}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Benchmark.}{2}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{2}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Domain A: Data Transformation}{2}{subsection.5.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Domain A aggregate (55 tasks, \%). Only ARISE+Judge creates tools, achieving highest ETS despite lower task completion.}}{3}{table.caption.16}\protected@file@percent }
-\newlabel{tab:results_a}{{2}{3}{Domain A aggregate (55 tasks, \%). Only ARISE+Judge creates tools, achieving highest ETS despite lower task completion}{table.caption.16}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces ARISE+Judge per-session (Domain A, \%). Tool creation increases with format complexity.}}{3}{table.caption.17}\protected@file@percent }
-\newlabel{tab:per_session_a}{{3}{3}{ARISE+Judge per-session (Domain A, \%). Tool creation increases with format complexity}{table.caption.17}{}}
+\newlabel{eq:reuse}{{2}{2}{Axis 3: Library Diagnostics}{equation.2}{}}
+\newlabel{eq:redund}{{3}{2}{Axis 3: Library Diagnostics}{equation.3}{}}
+\newlabel{eq:prec}{{4}{2}{Axis 3: Library Diagnostics}{equation.4}{}}
+\newlabel{eq:eff}{{5}{2}{Axis 3: Library Diagnostics}{equation.5}{}}
+\newlabel{eq:comp}{{6}{2}{Axis 3: Library Diagnostics}{equation.6}{}}
+\newlabel{eq:reg}{{7}{2}{Axis 3: Library Diagnostics}{equation.7}{}}
+\@writefile{toc}{\contentsline {paragraph}{Library Health (LH).}{2}{section*.12}\protected@file@percent }
+\newlabel{eq:lh}{{8}{2}{Library Health (LH)}{equation.8}{}}
+\@writefile{toc}{\contentsline {paragraph}{Composite Score.}{3}{section*.13}\protected@file@percent }
+\newlabel{eq:ets}{{9}{3}{Composite Score}{equation.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experimental Setup}{3}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Systems.}{3}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Model.}{3}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Benchmark.}{3}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{3}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Domain A: Data Transformation}{3}{subsection.5.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Domain B: API Orchestration}{3}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Domain A aggregate (55 tasks, \%). Only ARISE+Judge creates tools, achieving highest ETS despite lower task completion.}}{3}{table.caption.17}\protected@file@percent }
+\newlabel{tab:results_a}{{2}{3}{Domain A aggregate (55 tasks, \%). Only ARISE+Judge creates tools, achieving highest ETS despite lower task completion}{table.caption.17}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces ARISE+Judge per-session (Domain A, \%). Tool creation increases with format complexity.}}{3}{table.caption.18}\protected@file@percent }
+\newlabel{tab:per_session_a}{{3}{3}{ARISE+Judge per-session (Domain A, \%). Tool creation increases with format complexity}{table.caption.18}{}}
+\@writefile{toc}{\contentsline {paragraph}{Example: Evolved HMAC Tool.}{3}{section*.20}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Key Findings}{3}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 1: Proprietary tasks require tool creation.}{3}{section*.19}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 2: Reward design is the critical bottleneck.}{3}{section*.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 3: API tasks force more tool creation.}{3}{section*.21}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 4: Evolution improves library health, not just task completion.}{3}{section*.22}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Domain B results (11 tasks, \%). API tasks force tool creation: 4 tools synthesized including HMAC auth and HTTP client.}}{3}{table.caption.18}\protected@file@percent }
-\newlabel{tab:results_b}{{4}{3}{Domain B results (11 tasks, \%). API tasks force tool creation: 4 tools synthesized including HMAC auth and HTTP client}{table.caption.18}{}}
-\@writefile{toc}{\contentsline {paragraph}{Finding 5: Tool reuse emerges when tools are available.}{3}{section*.23}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{3}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Library Quality as First-Class Metric.}{3}{section*.24}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The Reward Problem.}{3}{section*.25}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Domain Differences.}{3}{section*.26}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Limitations.}{3}{section*.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{3}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Finding 1: Proprietary tasks require tool creation.}{3}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Finding 2: Reward design is the critical bottleneck.}{3}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Finding 3: API tasks force more tool creation.}{3}{section*.26}\protected@file@percent }
 \bibstyle{plain}
 \bibdata{references}
 \bibcite{alzubi2026evoskill}{1}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Domain B results (11 tasks, \%). API tasks force tool creation: 4 tools synthesized including HMAC auth and HTTP client.}}{4}{table.caption.19}\protected@file@percent }
+\newlabel{tab:results_b}{{4}{4}{Domain B results (11 tasks, \%). API tasks force tool creation: 4 tools synthesized including HMAC auth and HTTP client}{table.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Tool synthesized by ARISE for HMAC-timestamp auth. Generated, tested (5/5 sandbox tests passed), and promoted in $<$60 seconds.}}{4}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:evolved_code}{{1}{4}{Tool synthesized by ARISE for HMAC-timestamp auth. Generated, tested (5/5 sandbox tests passed), and promoted in $<$60 seconds}{figure.caption.21}{}}
+\@writefile{toc}{\contentsline {paragraph}{Finding 4: Evolution improves library health, not just task completion.}{4}{section*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Finding 5: Tool reuse emerges when tools are available.}{4}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{4}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Library Quality as First-Class Metric.}{4}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The Reward Problem.}{4}{section*.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Domain Differences.}{4}{section*.31}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces System comparison across four metrics (\%). ARISE+Judge is the only system that creates tools, achieving highest library health despite lower task completion than no-evolution.}}{4}{figure.caption.22}\protected@file@percent }
+\newlabel{fig:comparison}{{2}{4}{System comparison across four metrics (\%). ARISE+Judge is the only system that creates tools, achieving highest library health despite lower task completion than no-evolution}{figure.caption.22}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Tool Quality Score (TQS) for each of the 18 synthesized tools. Red line marks the quality threshold (0.5). 12 of 18 tools (67\%) pass the threshold.}}{4}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:tool_quality}{{3}{4}{Tool Quality Score (TQS) for each of the 18 synthesized tools. Red line marks the quality threshold (0.5). 12 of 18 tools (67\%) pass the threshold}{figure.caption.23}{}}
+\@writefile{toc}{\contentsline {paragraph}{Limitations.}{4}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{4}{section.7}\protected@file@percent }
 \bibcite{toolcomp2025}{2}
 \bibcite{skillsbench2026}{3}
 \bibcite{backlund2025vendingbench}{4}
@@ -73,4 +90,4 @@
 \bibcite{qin2023toolbench}{9}
 \bibcite{wang2023voyager}{10}
 \bibcite{xia2026toolgenesis}{11}
-\gdef \@abspage@last{4}
+\gdef \@abspage@last{5}
