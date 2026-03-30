@@ -37,8 +37,10 @@ class ARISESystem(AgentSystem):
             trajectory_store_path=self.trajectories_path,
             verbose=False,
             allowed_imports=[
-                "json", "csv", "re", "io", "hashlib", "math",
+                "json", "csv", "re", "io", "hashlib", "math", "hmac",
                 "collections", "itertools", "datetime", "base64",
+                "urllib", "urllib.request", "urllib.parse", "urllib.error",
+                "struct", "time",
             ],
         )
 

@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[10pt,twocolumn]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -6,16 +6,13 @@
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage[margin=1in]{geometry}
-\usepackage{enumitem}
-\usepackage{multirow}
+\usepackage[margin=0.75in]{geometry}
 \usepackage{caption}
-\usepackage{subcaption}
 
-\title{\textbf{EvolveTool-Bench}: Diagnosing Tool Library Quality\\in Self-Evolving LLM Agents}
+\title{\textbf{EvolveTool-Bench}: Diagnosing Tool Library Quality in Self-Evolving LLM Agents}
 
 \author{Alibek T. Kaliyev\\
-Point72 L.P. / University of Texas at Austin\\
+University of Texas at Austin\\
 \texttt{alibek.kaliyev@utexas.edu}}
 
 \date{}
@@ -35,7 +32,7 @@ These systems are evaluated exclusively on \emph{task success}: if the agent sol
 
 We present \textsc{EvolveTool-Bench}, a diagnostic benchmark with three contributions:
 
-\begin{enumerate}[leftmargin=*]
+\begin{enumerate}
 \item \textbf{Library-level metrics.} Six diagnostic axes beyond task completion: tool quality (correctness, robustness, generality, code quality), reuse rate, redundancy, composition success, regression stability, and safety.
 
 \item \textbf{Controlled task sessions.} Structured sequences of 11 tasks with known dependency relationships, enabling measurement of whether agents recognize reuse opportunities, compose their own tools, and maintain stability as the library grows.
@@ -59,19 +56,19 @@ We present \textsc{EvolveTool-Bench}, a diagnostic benchmark with three contribu
 
 Each session contains 11 tasks in six categories with known dependency relationships:
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
-\small
-\begin{tabular}{llp{5.5cm}}
+\footnotesize
+\begin{tabular}{llp{3.2cm}}
 \toprule
-\textbf{Type} & \textbf{Count} & \textbf{What it diagnoses} \\
+\textbf{Type} & \textbf{N} & \textbf{Diagnoses} \\
 \midrule
-Seed & 3 & Baseline: can agent use provided tools? \\
-Gap & 2 & Synthesis: does agent create a working tool? \\
-Variant & 2 & Reuse: does agent retrieve existing tool or create duplicate? \\
-Compose & 1 & Composition: can agent chain its own tools? \\
-Regress & 1 & Stability: does the library remain functional? \\
-Adversarial & 2 & Refinement: can agent handle edge cases? \\
+Seed & 3 & Can agent use provided tools? \\
+Gap & 2 & Does agent create a working tool? \\
+Variant & 2 & Reuse or create duplicate? \\
+Compose & 1 & Can agent chain own tools? \\
+Regress & 1 & Does the library stay stable? \\
+Adversarial & 2 & Can agent handle edge cases? \\
 \bottomrule
 \end{tabular}
 \caption{Task types in each diagnostic session.}
@@ -84,7 +81,7 @@ Variant and regress tasks are designed so that the evaluator \emph{knows} which 
 
 Standard data transformation tasks (CSV, JSON, XML) are easily solved by frontier LLMs from training data. To force genuine tool creation, we design five custom formats:
 
-\begin{itemize}[leftmargin=*]
+\begin{itemize}
 \item \textbf{ABR} (ARISE Binary Records): Binary format with 1-byte field counts, variable-length fields, and 0xFF separators, base64-encoded.
 \item \textbf{RLE}: Run-length encoded matrices with \texttt{rows,cols;val:count,...} syntax.
 \item \textbf{VDL} (Validation Definition Language): Custom schema language with type codes, flags, nested objects, and array fields.
@@ -101,7 +98,7 @@ Each format has encode/decode reference implementations used to generate test da
 \paragraph{Axis 2: Tool Quality Score (TQS).} Each synthesized tool is scored on four dimensions using held-out test suites: correctness (hidden unit tests), robustness (adversarial edge cases), generality (held-out inputs from same distribution), and code quality (docstrings, type hints, error handling, length).
 
 \paragraph{Axis 3: Library Diagnostics.} Six metrics measured at session end:
-\begin{itemize}[leftmargin=*]
+\begin{itemize}
 \item \textbf{Reuse Rate}: proportion of variant/regress tasks using existing tools.
 \item \textbf{Redundancy Rate}: proportion of functionally duplicate tools (identical outputs on shared test inputs).
 \item \textbf{Library Precision}: proportion of tools above quality threshold.
@@ -119,7 +116,7 @@ where TC is task completion, TQS is mean tool quality, RC is refinement cost, LH
 \section{Experimental Setup}
 
 \paragraph{Systems.} We evaluate four configurations:
-\begin{enumerate}[leftmargin=*]
+\begin{enumerate}
 \item \textbf{No-Evolution}: Agent uses only seed tools (read\_csv, write\_json, compute\_hash). Cannot create new tools.
 \item \textbf{ARISE (ft=3)}: Full ARISE with failure threshold 3 and heuristic reward (1.0 if no tool errors).
 \item \textbf{ARISE (ft=1)}: ARISE with failure threshold 1 and strict reward (requires tool usage).
@@ -132,20 +129,20 @@ where TC is task completion, TQS is mean tool quality, RC is refinement cost, LH
 
 \section{Results}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
-\small
-\begin{tabular}{lccccc}
+\footnotesize
+\begin{tabular}{@{}lccccc@{}}
 \toprule
 \textbf{System} & \textbf{ETS}$\uparrow$ & \textbf{TC}$\uparrow$ & \textbf{Tools} & \textbf{Reuse}$\uparrow$ & \textbf{LH}$\uparrow$ \\
 \midrule
-No-Evolution & 0.456 & 49.1\% & 0 & 66.7\% & 34.4\% \\
-ARISE (ft=3) & 0.423 & 40.0\% & 0 & 66.7\% & 31.1\% \\
-ARISE (ft=1) & 0.446 & 45.5\% & 0 & 66.7\% & 34.4\% \\
-\textbf{ARISE+Judge} & \textbf{0.467} & 41.8\% & \textbf{15} & \textbf{86.7\%} & \textbf{46.5\%} \\
+No-Evolution & .456 & 49.1 & 0 & 66.7 & 34.4 \\
+ARISE (ft=3) & .423 & 40.0 & 0 & 66.7 & 31.1 \\
+ARISE (ft=1) & .446 & 45.5 & 0 & 66.7 & 34.4 \\
+\textbf{ARISE+Judge} & \textbf{.467} & 41.8 & \textbf{15} & \textbf{86.7} & \textbf{46.5} \\
 \bottomrule
 \end{tabular}
-\caption{Aggregate results across 5 sessions (55 tasks). ETS = EvolveTool Score, TC = task completion, LH = library health. $\uparrow$ = higher is better.}
+\caption{Aggregate results across 5 sessions (55 tasks). ETS=EvolveTool Score, TC=task completion (\%), LH=library health (\%). $\uparrow$=higher is better.}
 \label{tab:results}
 \end{table}
 
@@ -167,21 +164,21 @@ Without evolved tools, the reuse rate is 66.7\% (agent attempts to apply seed to
 
 \subsection{Per-Session Breakdown}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
-\small
-\begin{tabular}{lcccc}
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-\textbf{Session} & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{Efficiency} \\
+\textbf{Session} & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{Eff.} \\
 \midrule
-S1: ABR + RLE & 81.8\% & 0 & 66.7\% & 0.0\% \\
-S2: VDL Schema & 36.4\% & 0 & 66.7\% & 0.0\% \\
-S3: QLOG Logs & 45.5\% & 2 & 100\% & 100\% \\
-S4: TPACK Serial. & 36.4\% & 6 & 100\% & 83.3\% \\
-S5: GUARDIAN CRC & 27.3\% & 7 & 100\% & 85.7\% \\
+S1: ABR+RLE & 81.8 & 0 & 66.7 & 0.0 \\
+S2: VDL & 36.4 & 0 & 66.7 & 0.0 \\
+S3: QLOG & 45.5 & 2 & 100 & 100 \\
+S4: TPACK & 36.4 & 6 & 100 & 83.3 \\
+S5: GUARDIAN & 27.3 & 7 & 100 & 85.7 \\
 \bottomrule
 \end{tabular}
-\caption{ARISE+Judge per-session results. Tool creation increases in later sessions (S3--S5) as the judge provides clearer failure signals.}
+\caption{ARISE+Judge per-session results (\%). Tool creation increases with format complexity.}
 \label{tab:per_session}
 \end{table}
 
