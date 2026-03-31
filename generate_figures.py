@@ -88,16 +88,17 @@ def fig2_tool_quality(results):
     # Sort by TQS
     all_tools.sort(key=lambda t: t["tqs"], reverse=True)
 
-    names = [f"{t['name'][:15]}\n({t['system'].split('/')[0][:5]})" for t in all_tools]
+    # Keep underscores, use monospace-like short names
+    names = [t["name"][:20] for t in all_tools]
     tqs = [t["tqs"] for t in all_tools]
 
-    fig, ax = plt.subplots(figsize=(8, 3.5))
+    fig, ax = plt.subplots(figsize=(8, 4))
     colors = ["#86efac" if v >= 0.5 else "#f87171" for v in tqs]
     ax.bar(range(len(names)), tqs, color=colors, alpha=0.8, edgecolor="white", linewidth=0.5)
     ax.axhline(y=0.5, color="#fbbf24", linestyle="--", alpha=0.7, label="Quality threshold")
     ax.set_ylabel("Tool Quality Score", fontsize=10)
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels(names, fontsize=5, rotation=45, ha="right")
+    ax.set_xticklabels(names, fontsize=6, rotation=60, ha="right")
     ax.set_ylim(0, 1)
     ax.legend(fontsize=8)
     ax.spines["top"].set_visible(False)
