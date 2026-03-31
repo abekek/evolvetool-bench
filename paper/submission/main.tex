@@ -22,7 +22,13 @@
 email=alibek.kaliyev@utexas.edu,
 url=https://arise-ai.dev,
 ]
+\cormark[1]
+\author[2]{Artem Maryanskyy}[%
+email=artem.maryanskyy@uber.com,
+]
+\cortext[1]{Corresponding author.}
 \address[1]{University of Texas at Austin, Austin, TX, USA}
+\address[2]{Uber Technologies, USA}
 
 \begin{abstract}
 Modern LLM agents increasingly create their own tools at runtime---from Python functions to API clients---yet existing benchmarks evaluate them almost exclusively by downstream task completion. This is analogous to judging a software engineer only by whether their code runs, ignoring redundancy, regression, and safety. We introduce \textsc{EvolveTool-Bench}, a diagnostic benchmark for \emph{LLM-generated tool libraries in software engineering workflows}. Across three domains requiring actual tool execution (proprietary data formats, API orchestration, and numerical computation), we define library-level software quality metrics---reuse, redundancy, composition success, regression stability, and safety---alongside a per-tool Tool Quality Score measuring correctness, robustness, generality, and code quality. In the first head-to-head comparison of code-level and strategy-level tool evolution (ARISE vs.\ EvoSkill vs.\ one-shot baselines, 99 tasks, two models), we show that systems with similar task completion (63--68\%) differ by up to 18\% in library health, revealing software quality risks invisible to task-only evaluation. Our results highlight that \emph{evaluation and governance of LLM-generated tools require treating the evolving tool library as a first-class software artifact}, not a black box.
@@ -45,7 +51,7 @@ LLM agents increasingly generate executable software artifacts at runtime---Pyth
 
 From a software engineering perspective, these systems are \emph{automated code generators} whose output accumulates into a growing codebase. Yet they are evaluated exclusively on task success---analogous to judging a software engineer solely by whether their code runs, ignoring maintainability, duplication, test coverage, regression, and technical debt. In practice, tool libraries can pass downstream benchmarks while accumulating redundant functions, failing on edge cases, breaking previously working capabilities, and never reusing existing code.
 
-We present \textsc{EvolveTool-Bench}, a diagnostic benchmark that treats LLM-generated tool libraries as \emph{first-class software artifacts} subject to quality evaluation. Our contributions align with two core themes of the LLM4SE community:
+We present \textsc{EvolveTool-Bench}, a diagnostic benchmark that treats LLM-generated tool libraries as \emph{first-class software artifacts} subject to quality evaluation. Our contributions align with three core themes of the LLM4SE community:
 
 \begin{enumerate}
 \item \textbf{Quality of LLM-generated software artifacts.} We define a Tool Quality Score (TQS) measuring correctness, robustness, generality, and code quality of each synthesized tool, plus six library-level metrics: reuse rate, redundancy, composition success, regression stability, creation efficiency, and safety. Together these form a composite library health score that captures software quality dimensions invisible to task-completion-only evaluation.
@@ -174,6 +180,20 @@ No-Evolution & Haiku & .516 & 66.7 & 0 & --- & 51.9 & 40.1 \\
 \caption{Full benchmark results (99 tasks per configuration). ARISE achieves highest ETS on both models despite lower task completion---the gap comes from software quality metrics invisible to TC-only evaluation.}
 \label{tab:results_full}
 \end{table*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_comparison.pdf}
+\caption{System comparison across four software quality metrics (\%). ARISE is the only system that generates tools, achieving highest library health despite lower task completion.}
+\label{fig:comparison}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_tool_quality.pdf}
+\caption{Tool Quality Score (TQS) for each synthesized tool. Green bars pass the quality gate (TQS $\geq$ 0.5). Many generated tools have correctness defects caught by hidden tests.}
+\label{fig:tool_quality}
+\end{figure}
 
 \subsection{Key Findings}
 
