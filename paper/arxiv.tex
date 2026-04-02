@@ -1,0 +1,225 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[margin=0.75in]{geometry}
+\setlength{\columnsep}{0.3in}
+\usepackage{caption}
+\usepackage{listings}
+\lstset{breaklines=true, basicstyle=\small\ttfamily, language=Python}
+
+\title{\textbf{EvolveTool-Bench}: Evaluating the Quality of LLM-Generated Tool Libraries as Software Artifacts}
+
+\author{%
+\begin{tabular}[t]{c}
+Alibek T. Kaliyev\thanks{Corresponding author}\\
+University of Texas at Austin\\
+\texttt{alibek.kaliyev@utexas.edu}
+\end{tabular}
+\hspace{2em}
+\and
+\begin{tabular}[t]{c}
+Artem Maryanskyy\\
+Uber Technologies\\
+\texttt{artem.maryanskyy@uber.com}
+\end{tabular}
+}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Modern LLM agents increasingly create their own tools at runtime---from Python functions to API clients---yet existing benchmarks evaluate them almost exclusively by downstream task completion. This is analogous to judging a software engineer only by whether their code runs, ignoring redundancy, regression, and safety. We introduce \textsc{EvolveTool-Bench}, a diagnostic benchmark for \emph{LLM-generated tool libraries in software engineering workflows}. Across three domains requiring actual tool execution (proprietary data formats, API orchestration, and numerical computation), we define library-level software quality metrics---reuse, redundancy, composition success, regression stability, and safety---alongside a per-tool Tool Quality Score measuring correctness, robustness, generality, and code quality. In the first head-to-head comparison of code-level and strategy-level tool evolution (ARISE vs.\ EvoSkill vs.\ one-shot baselines, 99 tasks, two models), we show that systems with similar task completion (63--68\%) differ by up to 18\% in library health, revealing software quality risks invisible to task-only evaluation. Our results highlight that \emph{evaluation and governance of LLM-generated tools require treating the evolving tool library as a first-class software artifact}, not a black box.
+\end{abstract}
+
+\section{Introduction}
+
+LLM agents increasingly generate executable software artifacts at runtime---Python functions, API clients, data parsers---and add them to persistent tool libraries. VOYAGER~\cite{wang2023voyager} synthesizes code skills in Minecraft, CREATOR~\cite{qian2023creator} uses tool creation as a reasoning strategy, LLMs as Tool Makers~\cite{cai2023latm} separates tool-making from tool-using, and EvoSkill~\cite{alzubi2026evoskill} evolves structured skill folders via failure analysis. ARISE (Adaptive Runtime Improvement through Self-Evolution)~\cite{kaliyev2026arise} operates as framework-agnostic middleware: it observes task failures, detects capability gaps via LLM analysis, synthesizes executable Python tools, validates them through sandboxed execution and adversarial testing, and promotes passing tools to the agent's active library. ARISE supports iterative refinement, A/B testing of tool variants, version-controlled rollback, and distributed deployment.
+
+From a software engineering perspective, these systems are \emph{automated code generators} whose output accumulates into a growing codebase. Yet they are evaluated exclusively on task success---analogous to judging a software engineer solely by whether their code runs, ignoring maintainability, duplication, test coverage, regression, and technical debt. In practice, tool libraries can pass downstream benchmarks while accumulating redundant functions, failing on edge cases, breaking previously working capabilities, and never reusing existing code.
+
+We present \textsc{EvolveTool-Bench}, a diagnostic benchmark that treats LLM-generated tool libraries as \emph{first-class software artifacts} subject to quality evaluation. Our contributions:
+
+\begin{enumerate}
+\item \textbf{Quality of LLM-generated software artifacts.} We define a Tool Quality Score (TQS) measuring correctness, robustness, generality, and code quality of each synthesized tool, plus six library-level metrics: reuse rate, redundancy, composition success, regression stability, creation efficiency, and safety.
+
+\item \textbf{Verification and validation of LLM-generated code.} Our evaluation harness runs hidden unit tests and adversarial inputs in sandboxed subprocesses, uses LLM-as-judge rewards to determine when evolution should trigger, and includes explicit regression tasks that measure whether adding new tools breaks previously working behavior.
+
+\item \textbf{Controlled diagnostic sessions.} Structured sequences of 11 tasks with known dependency relationships (seed, gap, variant, compose, regress, adversarial) enable measurement of whether agents recognize code reuse opportunities, compose their own functions, and maintain library stability as the codebase grows.
+\end{enumerate}
+
+\section{Related Work}
+
+\paragraph{Quality of LLM-Generated Code.} Tool-Genesis~\cite{xia2026toolgenesis} evaluates one-shot tool creation with surface compliance, schema-F1, and unit test pass rates---all per-artifact metrics with no library-level evaluation. SkillsBench~\cite{skillsbench2026} evaluates whether curated skills improve task success but uses static skill sets, not evolved ones. Neither measures redundancy, regression, or reuse across a growing codebase.
+
+\paragraph{Self-Evolving Agent Frameworks.} VOYAGER~\cite{wang2023voyager} demonstrates lifelong skill acquisition in Minecraft, evaluated by exploration metrics. EvoSkill~\cite{alzubi2026evoskill} evolves textual skill folders through failure-driven feedback, evaluated by downstream accuracy. ARISE~\cite{kaliyev2026arise} synthesizes executable Python functions with auto-generated test suites, validates them in isolated sandboxes, runs adversarial testing, and supports incremental patching and A/B testing. None evaluate the software quality of the resulting tool library.
+
+\paragraph{Software Engineering Benchmarks for Agents.} ToolBench~\cite{qin2023toolbench}, AgentBench~\cite{liu2024agentbench}, and ToolComp~\cite{toolcomp2025} evaluate agents using pre-defined tool sets. Vending-Bench~\cite{backlund2025vendingbench} tests long-horizon coherence with fixed tools. None evaluate agents that \emph{generate} their own tools, and none apply software quality metrics to the generated artifacts.
+
+\paragraph{Gap.} No existing benchmark measures redundancy, reuse, regression, composition, or code quality of self-evolved tool libraries as software artifacts. Our work fills this gap.
+
+\section{Benchmark Design}
+
+\subsection{Task Session Structure}
+
+Each session contains 11 tasks in six categories with known dependency relationships (Table~\ref{tab:task_types}). This structure mirrors software engineering workflows: seed tasks test existing code, gap tasks require new implementation, variant tasks test code reuse, compose tasks test function composition, regress tasks detect regressions, and adversarial tasks probe edge cases.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{llp{3cm}}
+\toprule
+\textbf{Type} & \textbf{N} & \textbf{SE Analog} \\
+\midrule
+Seed & 3 & Use existing library \\
+Gap & 2 & Implement new code \\
+Variant & 2 & Reuse vs.\ rewrite \\
+Compose & 1 & Function composition \\
+Regress & 1 & Regression testing \\
+Adversarial & 2 & Edge case / fuzz testing \\
+\bottomrule
+\end{tabular}
+\caption{Task types and their software engineering analogs.}
+\label{tab:task_types}
+\end{table}
+
+\subsection{Domains}
+
+\paragraph{Domain A: Data Transformation (5 sessions).} Proprietary binary formats (ARISE Binary Records, RLE matrices, VDL schema language, QLOG binary logs, TPACK serialization) that LLMs cannot solve from training data.
+
+\paragraph{Domain B: API Orchestration (1 session).} Mock HTTP server with HMAC-timestamp authentication and XOR-encrypted cursor pagination. Tasks inherently require code execution.
+
+\paragraph{Domain C: Numerical Computation (3 sessions).} Custom formats for curve fitting (ARCFIT), signal processing (ARCSIG), and constrained optimization (ARCOPT).
+
+\subsection{Software Quality Metrics}
+
+\paragraph{Per-Tool: Tool Quality Score (TQS).}
+\begin{itemize}
+\item \textbf{Correctness} ($C$): Hidden unit tests passing.
+\item \textbf{Robustness} ($R$): Adversarial inputs handled.
+\item \textbf{Generality} ($G$): Held-out inputs producing valid output.
+\item \textbf{Code Quality} ($Q$): Docstring, types, error handling, length, syntax.
+\end{itemize}
+
+\begin{equation}
+\text{TQS}(t) = \frac{1}{4}\bigl(C(t) + R(t) + G(t) + Q(t)\bigr)
+\end{equation}
+
+\paragraph{Per-Library: Library Health (LH).}
+\begin{align}
+\rho_r &= \frac{|\{t \in \mathcal{T}_{v,r} : \text{reused}\}|}{|\mathcal{T}_{v,r}|} & \text{(Code Reuse)} \\[2pt]
+\rho_d &= \frac{|\{(t_i,t_j) : \text{equiv}\}|}{\binom{|\mathcal{L}|}{2}} & \text{(Duplication)} \\[2pt]
+\pi &= \frac{|\{t \in \mathcal{L} : \text{TQS} \geq 0.5\}|}{|\mathcal{L}|} & \text{(Quality Gate)} \\[2pt]
+\eta &= \frac{|\mathcal{L}_{\text{used}}|}{|\mathcal{L}|} & \text{(Dead Code)} \\[2pt]
+\gamma &= \frac{|\{t \in \mathcal{T}_c : \text{passed}\}|}{|\mathcal{T}_c|} & \text{(Composability)} \\[2pt]
+\delta &= \frac{|\{t \in \mathcal{T}_{reg} : \text{failed}\}|}{|\mathcal{T}_{reg}|} & \text{(Regression)}
+\end{align}
+
+\begin{equation}
+\text{LH} = \frac{1}{6}\bigl(\rho_r + (1{-}\rho_d) + \pi + \eta + \gamma + (1{-}\delta)\bigr)
+\end{equation}
+
+\paragraph{Composite: EvolveTool Score (ETS).}
+\begin{equation}
+\text{ETS} = 0.25 \!\cdot\! \text{TC} + 0.20 \!\cdot\! \overline{\text{TQS}} + 0.10 \!\cdot\! (1{-}\text{RC}) + 0.30 \!\cdot\! \text{LH} + 0.15 \!\cdot\! \text{SS}
+\end{equation}
+
+\section{Experimental Setup}
+
+\paragraph{Systems.} (1) \textbf{No-Evolution}: Seed tools only. (2) \textbf{ARISE}: Iterative evolution with sandbox validation and LLM-as-judge reward. (3) \textbf{EvoSkill}: Strategy-level evolution (text prompts, not code). (4) \textbf{One-Shot}: Code generation without testing.
+
+\paragraph{Models.} Claude Sonnet 4 and Claude Haiku 4.5 via Amazon Bedrock.
+
+\paragraph{Scale.} 9 sessions $\times$ 11 tasks = \textbf{99 tasks} per configuration. Six configurations: 594 total executions.
+
+\section{Results}
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llcccccc}
+\toprule
+\textbf{System} & \textbf{Model} & \textbf{ETS}$\uparrow$ & \textbf{TC (\%)} & \textbf{Tools} & \textbf{TQS} & \textbf{Reuse (\%)} & \textbf{LH (\%)} \\
+\midrule
+No-Evolution & Sonnet & .518 & 66.7 & 0 & --- & 48.1 & 41.4 \\
+EvoSkill & Sonnet & .520 & \textbf{68.2} & 0 & --- & 48.1 & 41.4 \\
+One-Shot & Sonnet & .519 & 67.7 & 3 & .04 & 48.1 & 38.3 \\
+\textbf{ARISE} & \textbf{Sonnet} & .603 & 63.6 & \textbf{22} & .34 & \textbf{70.4} & \textbf{51.7} \\
+\midrule
+No-Evolution & Haiku & .516 & 66.7 & 0 & --- & 51.9 & 40.1 \\
+\textbf{ARISE} & \textbf{Haiku} & \textbf{.612} & 65.2 & 13 & \textbf{.35} & 66.7 & 51.2 \\
+\bottomrule
+\end{tabular}
+\caption{Full benchmark results (99 tasks, 3 domains). ARISE achieves highest ETS on both models despite lower task completion. ARISE+Haiku creates fewer tools (13 vs 22) but achieves highest overall ETS (0.612).}
+\label{tab:results}
+\end{table*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_comparison.pdf}
+\caption{System comparison across four metrics (\%). ARISE achieves highest library health despite lower task completion.}
+\label{fig:comparison}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_tool_quality.pdf}
+\caption{Tool Quality Score for each synthesized tool. Green = passes quality gate ($\geq 0.5$).}
+\label{fig:tool_quality}
+\end{figure}
+
+\subsection{Key Findings}
+
+\paragraph{Finding 1: Task completion hides quality differences.} All configurations achieve 63--68\% TC, but ETS ranges 0.516--0.612. ARISE has \emph{lowest} TC but \emph{highest} ETS. \textbf{TC-only benchmarks would rank ARISE last.}
+
+\paragraph{Finding 2: Code evolution outperforms strategy evolution.} ARISE (ETS=0.603) outperforms EvoSkill (ETS=0.520). EvoSkill creates zero executable tools and identical library health to no-evolution.
+
+\paragraph{Finding 3: Untested code is worse than no code.} One-Shot library health (38.3\%) is \emph{below} no-evolution (41.4\%). Untested tools are a liability.
+
+\paragraph{Finding 4: Reward design is the bottleneck.} Heuristic rewards produce zero tools. Only LLM-as-judge rewards trigger evolution.
+
+\paragraph{Finding 5: Tool quality is the frontier.} TQS averages 0.34--0.35. Correctness is weakest---hidden tests catch defects self-generated tests miss.
+
+\paragraph{Finding 6: Cheaper models match quality.} ARISE+Haiku (ETS=0.612) slightly beats ARISE+Sonnet (0.603) with fewer tools.
+
+\paragraph{Example: Evolved Tool.}
+\begin{lstlisting}
+def hmac_sha256(secret: str,
+                message: str) -> str:
+    """Generate HMAC-SHA256 hash."""
+    import hmac, hashlib
+    try:
+        h = hmac.new(
+            secret.encode('utf-8'),
+            message.encode('utf-8'),
+            hashlib.sha256)
+        return h.hexdigest()
+    except Exception as e:
+        return f"Error: {str(e)}"
+\end{lstlisting}
+Synthesized, tested (5/5 passed), promoted in $<$60s.
+
+\section{Discussion}
+
+\paragraph{Tools as Software Artifacts.} LLM-generated tools should be evaluated like any software artifact. The 18\% quality gap invisible to TC validates this.
+
+\paragraph{Implications.} Untested code is a liability (Finding 3) and self-generated tests miss defects (Finding 5). Any system accumulating generated code needs independent validation.
+
+\paragraph{Honest Assessment of ARISE.} Best libraries (22 tools, 70.4\% reuse) but: evolution overhead lowers TC; TQS averages 0.34; complex formats exceed synthesis capability.
+
+\paragraph{Limitations.} (1) EvoSkill baseline is approximate. (2) Two models, one provider. (3) Automated checks only. (4) No statistical significance.
+
+\section{Conclusion}
+
+\textsc{EvolveTool-Bench} is the first benchmark evaluating LLM-generated tool libraries as software artifacts. Across 99 tasks, TC fails to differentiate systems with different code quality. Code-level evolution with validation (ARISE) builds libraries with 70.4\% reuse and 51.7\% health. Untested generation introduces technical debt. Reward design is the critical bottleneck. We release all code and data.\footnote{\url{https://github.com/abekek/evolvetool-bench}}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

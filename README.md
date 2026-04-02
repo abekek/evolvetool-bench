@@ -3,6 +3,7 @@
 **Diagnosing tool library quality in self-evolving LLM agents.**
 
 [![Paper](https://img.shields.io/badge/paper-LLM4SE%202026-blue)](paper/submission/main.tex)
+[![arXiv](https://img.shields.io/badge/arXiv-2604.00392-b31b1b.svg)](https://arxiv.org/abs/2604.00392)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
