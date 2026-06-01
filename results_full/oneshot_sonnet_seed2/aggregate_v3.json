@@ -1,0 +1,18 @@
+{
+  "config": "oneshot_sonnet_seed2",
+  "n_tools": 2,
+  "v1": {
+    "correctness": 0.25,
+    "robustness": 0.5,
+    "generality": 0.25,
+    "code_quality": 0.6111111111111112,
+    "tqs": 0.4027777777777778
+  },
+  "v3": {
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.6111111111111112,
+    "tqs": 0.2777777777777778
+  }
+}

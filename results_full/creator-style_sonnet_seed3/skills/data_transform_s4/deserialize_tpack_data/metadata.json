@@ -1,0 +1,10 @@
+{
+  "name": "deserialize_tpack_data",
+  "version": 1,
+  "created_at_task": "adversarial_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "struct"
+  ]
+}

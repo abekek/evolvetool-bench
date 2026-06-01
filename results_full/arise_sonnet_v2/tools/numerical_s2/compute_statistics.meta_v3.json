@@ -1,0 +1,21 @@
+{
+  "name": "compute_statistics",
+  "created_at_task": "seed_1",
+  "session_id": "numerical_s2",
+  "scores_v1": {
+    "tqs": 0.625,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 1.0
+  },
+  "scores_v3": {
+    "tqs": 0.375,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 1.0
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 12
+}

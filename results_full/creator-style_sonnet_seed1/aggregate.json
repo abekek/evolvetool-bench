@@ -1,0 +1,240 @@
+{
+  "system": "creator-style",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.6717171717171717,
+  "avg_tool_quality": 0.47469135802469137,
+  "avg_reuse_rate": 0.7777777777777778,
+  "avg_correct_reuse_rate": 0.29629629629629634,
+  "avg_incorrect_reuse_rate": 0.48148148148148145,
+  "avg_library_health": 0.4932098765432098,
+  "avg_evolvetool_score": 0.621638608305275,
+  "total_tools": 25,
+  "tool_details": [
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_and_hash_names",
+      "tqs": 0.5138888888888888,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.5555555555555556
+    },
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_to_json",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_data",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s2",
+      "name": "parse_vdl_schema",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "decode_qlog_data",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack_data",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_and_filter_tpack_data",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack_data",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_guardian_format",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_guardian_with_double_corruption",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "authenticate_and_fetch_users",
+      "tqs": 0.3472222222222222,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_all_users_with_pagination",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 1.0,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_user_with_basic_auth",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_all_metrics_count",
+      "tqs": 0.5138888888888888,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.5555555555555556
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "authenticate_and_fetch_users",
+      "tqs": 0.5138888888888888,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.5555555555555556
+    },
+    {
+      "session": "numerical_s1",
+      "name": "parse_and_fit_arcfit_model",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_arcfit_power_law_model",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "numerical_s1",
+      "name": "evaluate_arcfit_model",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_arcfit_exp_decay_model",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_arcsig_and_compute_spectrum",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s2",
+      "name": "apply_bandpass_filter_to_arcsig",
+      "tqs": 0.29166666666666663,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_and_filter_arcsig_signal",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_arcsig_and_compute_spectrum",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s3",
+      "name": "solve_arcopt_problem",
+      "tqs": 0.2638888888888889,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.5555555555555556
+    },
+    {
+      "session": "numerical_s3",
+      "name": "solve_arcopt_quadratic_problem",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    }
+  ]
+}

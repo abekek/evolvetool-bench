@@ -1,0 +1,146 @@
+{
+  "n_bundles": 15,
+  "avg_bundle_quality": 0.8495370370370373,
+  "avg_structure": 1.0,
+  "avg_doc": 0.8444444444444447,
+  "avg_metadata": 1.0,
+  "avg_tool_tqs": 0.5537037037037037,
+  "fraction_passing_skill_gate": 1.0,
+  "bundles": [
+    {
+      "name": "get_unix_timestamp",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.84375,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5416666666666666
+    },
+    {
+      "name": "hmac_sha256",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.8020833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.375
+    },
+    {
+      "name": "http_get_with_headers",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.8645833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "decode_abr_format",
+      "session": "data_transform_s1",
+      "bundle_quality": 0.8645833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "decode_base64",
+      "session": "data_transform_s3",
+      "bundle_quality": 0.8645833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "parse_binary_data",
+      "session": "data_transform_s3",
+      "bundle_quality": 0.8020833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.375
+    },
+    {
+      "name": "parse_qlog",
+      "session": "data_transform_s3",
+      "bundle_quality": 0.8645833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "deserialize_tpack",
+      "session": "data_transform_s4",
+      "bundle_quality": 0.8506944444444444,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "compute_crc32",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.8958333333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.75
+    },
+    {
+      "name": "decode_base64",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.90625,
+      "structure": 1.0,
+      "doc": 1.0,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "xor_bytes",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.8645833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "compute_stats",
+      "session": "numerical_s1",
+      "bundle_quality": 0.8645833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "fit_nonlinear_curve",
+      "session": "numerical_s1",
+      "bundle_quality": 0.795138888888889,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3472222222222222
+    },
+    {
+      "name": "compute_statistics",
+      "session": "numerical_s2",
+      "bundle_quality": 0.8645833333333334,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.625
+    },
+    {
+      "name": "process_signal_spectrum",
+      "session": "numerical_s2",
+      "bundle_quality": 0.795138888888889,
+      "structure": 1.0,
+      "doc": 0.8333333333333334,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3472222222222222
+    }
+  ]
+}

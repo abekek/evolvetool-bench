@@ -1,0 +1,195 @@
+{
+  "system": "arise",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.6515151515151515,
+  "avg_tool_quality": 0.38155864197530875,
+  "avg_reuse_rate": 0.7777777777777777,
+  "avg_correct_reuse_rate": 0.18518518518518517,
+  "avg_incorrect_reuse_rate": 0.5925925925925926,
+  "avg_library_health": 0.5609567901234568,
+  "avg_evolvetool_score": 0.628790684624018,
+  "total_tools": 20,
+  "tool_details": [
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "filter_records",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_binary",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "parse_custom_binary",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "parse_tpack",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "compute_crc16",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_binary",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "compute_xor_parity",
+      "tqs": 0.7083333333333334,
+      "correctness": 0.0,
+      "robustness": 1.0,
+      "generality": 1.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "validate_block_integrity",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "reconstruct_with_parity",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "parse_structured_binary",
+      "tqs": 0.29166666666666663,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "repair_guardian_blocks",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "process_guardian_data",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "compute_hmac",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "get_current_timestamp",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 1.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "http_get_with_headers",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s1",
+      "name": "parse_structured_format",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_nonlinear_model",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "numerical_s2",
+      "name": "process_arcsig",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "numerical_s3",
+      "name": "optimize",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    }
+  ]
+}

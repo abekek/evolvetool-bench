@@ -1,0 +1,21 @@
+{
+  "name": "compute_crc32",
+  "created_at_task": "gap_2",
+  "session_id": "data_transform_s5",
+  "scores_v1": {
+    "tqs": 0.75,
+    "correctness": 0.0,
+    "robustness": 1.0,
+    "generality": 1.0,
+    "code_quality": 1.0
+  },
+  "scores_v3": {
+    "tqs": 0.75,
+    "correctness": 0.0,
+    "robustness": 1.0,
+    "generality": 1.0,
+    "code_quality": 1.0
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 11
+}

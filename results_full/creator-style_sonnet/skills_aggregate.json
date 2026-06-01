@@ -1,0 +1,173 @@
+{
+  "n_bundles": 18,
+  "avg_bundle_quality": 0.7694830246913581,
+  "avg_structure": 0.875,
+  "avg_doc": 0.6666666666666665,
+  "avg_metadata": 1.0,
+  "avg_tool_tqs": 0.5362654320987654,
+  "fraction_passing_skill_gate": 1.0,
+  "bundles": [
+    {
+      "name": "authenticate_and_fetch_users",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7708333333333333,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5416666666666666
+    },
+    {
+      "name": "check_api_health",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fetch_all_metrics_count",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fetch_all_users_and_compute_average_score",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fetch_all_users_with_pagination",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7847222222222222,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5972222222222222
+    },
+    {
+      "name": "fetch_user_with_auth",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "decode_abr_and_hash_names",
+      "session": "data_transform_s1",
+      "bundle_quality": 0.7708333333333333,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5416666666666666
+    },
+    {
+      "name": "decode_qlog_binary_data",
+      "session": "data_transform_s3",
+      "bundle_quality": 0.7152777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    },
+    {
+      "name": "decode_qlog_with_continuations",
+      "session": "data_transform_s3",
+      "bundle_quality": 0.7847222222222222,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5972222222222222
+    },
+    {
+      "name": "deserialize_tpack",
+      "session": "data_transform_s4",
+      "bundle_quality": 0.7083333333333333,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.29166666666666663
+    },
+    {
+      "name": "decode_guardian_data",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "decode_guardian_minimal_data",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.7847222222222222,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5972222222222222
+    },
+    {
+      "name": "repair_guardian_data_advanced",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.7638888888888888,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5138888888888888
+    },
+    {
+      "name": "parse_and_fit_arcfit_model",
+      "session": "numerical_s1",
+      "bundle_quality": 0.84375,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.8333333333333333
+    },
+    {
+      "name": "apply_bandpass_filter_to_arcsig",
+      "session": "numerical_s2",
+      "bundle_quality": 0.7152777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    },
+    {
+      "name": "decode_arcsig_and_compute_spectrum",
+      "session": "numerical_s2",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "solve_2x2_linear_system",
+      "session": "numerical_s2",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "solve_arcopt_linear_problem",
+      "session": "numerical_s3",
+      "bundle_quality": 0.7638888888888888,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5138888888888888
+    }
+  ]
+}

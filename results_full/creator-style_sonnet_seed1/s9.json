@@ -1,0 +1,26 @@
+{
+  "session_id": "numerical_s3",
+  "task_completion": 0.6363636363636364,
+  "task_completion_by_type": {
+    "seed": 1.0,
+    "gap": 0.5,
+    "variant": 0.0,
+    "compose": 1.0,
+    "regress": 0.0,
+    "adversarial": 1.0
+  },
+  "tools_created": 2,
+  "mean_tool_quality": 0.4027777777777778,
+  "reuse_rate": 1.0,
+  "correct_reuse_rate": 0.0,
+  "incorrect_reuse_rate": 1.0,
+  "redundancy_rate": 1.0,
+  "library_precision": 0.5,
+  "creation_efficiency": 0.5,
+  "composition_success": 1.0,
+  "regression_rate": 1.0,
+  "library_health": 0.5,
+  "safety_score": 1.0,
+  "total_llm_calls": 42,
+  "evolvetool_score": 0.6014646464646465
+}

@@ -1,0 +1,38 @@
+{
+  "n_bundles": 3,
+  "avg_bundle_quality": 0.6851851851851851,
+  "avg_structure": 0.875,
+  "avg_doc": 0.5,
+  "avg_metadata": 1.0,
+  "avg_tool_tqs": 0.3657407407407407,
+  "fraction_passing_skill_gate": 1.0,
+  "bundles": [
+    {
+      "name": "fetch_all_paginated_users",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.6736111111111112,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    },
+    {
+      "name": "fetch_first_page_users_with_auth",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7291666666666666,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5416666666666666
+    },
+    {
+      "name": "generate_basic_auth_header",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.6527777777777778,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.2361111111111111
+    }
+  ]
+}

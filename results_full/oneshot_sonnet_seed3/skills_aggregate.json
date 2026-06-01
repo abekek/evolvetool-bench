@@ -1,0 +1,47 @@
+{
+  "n_bundles": 4,
+  "avg_bundle_quality": 0.7048611111111112,
+  "avg_structure": 0.875,
+  "avg_doc": 0.5,
+  "avg_metadata": 1.0,
+  "avg_tool_tqs": 0.4444444444444444,
+  "fraction_passing_skill_gate": 1.0,
+  "bundles": [
+    {
+      "name": "authenticate_and_fetch_first_page",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7361111111111112,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fetch_all_paginated_users",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.6736111111111112,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    },
+    {
+      "name": "fetch_filtered_events",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7361111111111112,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "generate_auth_header",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.6736111111111112,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    }
+  ]
+}

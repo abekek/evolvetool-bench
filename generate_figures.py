@@ -8,9 +8,13 @@ import numpy as np
 
 
 def load_results():
-    """Load all aggregate results."""
+    """Load all aggregate results (exclude seed/improved runs)."""
     results = {}
+    exclude = ["improved", "seed"]
     for f in sorted(glob.glob("results_full/*/aggregate.json")):
+        dirname = f.split("/")[1]
+        if any(x in dirname for x in exclude):
+            continue
         with open(f) as fh:
             d = json.load(fh)
         key = f"{d['system']}/{d['model']}"
@@ -21,15 +25,17 @@ def load_results():
 def fig1_system_comparison(results):
     """Bar chart comparing all systems on key metrics."""
     # Sort: no-evolution first, then alphabetical
-    order = ["no-evolution", "arise", "evoskill", "oneshot"]
+    order = ["no-evolution", "evoskill", "oneshot", "arise"]
     models = ["sonnet", "haiku"]
+    name_map = {"no-evolution": "No-Evol", "arise": "Code-Evol", "evoskill": "Strategy-Only", "oneshot": "One-Shot"}
+    model_map = {"sonnet": "Sonnet", "haiku": "Haiku"}
 
     entries = []
     for sys_name in order:
         for model in models:
             key = f"{sys_name}/{model}"
             if key in results:
-                label = f"{sys_name}\n({model})"
+                label = f"{name_map.get(sys_name, sys_name)}\n({model_map.get(model, model)})"
                 entries.append((label, results[key]))
 
     if not entries:
@@ -88,8 +94,27 @@ def fig2_tool_quality(results):
     # Sort by TQS
     all_tools.sort(key=lambda t: t["tqs"], reverse=True)
 
-    # Keep underscores, use monospace-like short names
-    names = [t["name"][:20] for t in all_tools]
+    # Disambiguate duplicate names by adding session prefix
+    name_counts: dict[str, int] = {}
+    names = []
+    for t in all_tools:
+        base = t["name"][:18]
+        session = t.get("session", "")
+        # Extract short session tag (e.g., "s1", "api", "num1")
+        if "api" in session:
+            tag = "api"
+        elif "numerical" in session:
+            tag = "n" + session[-1]
+        else:
+            tag = "d" + session[-1] if session else ""
+        label = f"{base} ({tag})" if tag else base
+        # Still deduplicate if same name+session
+        if label in name_counts:
+            name_counts[label] += 1
+            label = f"{label}{name_counts[label]}"
+        else:
+            name_counts[label] = 1
+        names.append(label)
     tqs = [t["tqs"] for t in all_tools]
 
     fig, ax = plt.subplots(figsize=(8, 4))

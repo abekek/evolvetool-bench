@@ -148,19 +148,28 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=RECORDS_1,
         hidden_tests=[
-            {
-                "input": {"data": ABR_2},
-                "expected": RECORDS_2,
-            },
-            {
-                "input": {"data": _encode_abr([{"x": "1"}])},
-                "expected": [{"x": "1"}],
-            },
+            # v1 cases
+            {"input": {"data": ABR_2}, "expected": RECORDS_2},
+            {"input": {"data": _encode_abr([{"x": "1"}])}, "expected": [{"x": "1"}]},
+            # v3 expansion: more diverse inputs to tighten statistical power on C
+            {"input": {"data": _encode_abr([{"a": "1", "b": "2", "c": "3", "d": "4", "e": "5"}])},
+             "expected": [{"a": "1", "b": "2", "c": "3", "d": "4", "e": "5"}]},
+            {"input": {"data": _encode_abr([{"k": "v1"}, {"k": "v2"}, {"k": "v3"}])},
+             "expected": [{"k": "v1"}, {"k": "v2"}, {"k": "v3"}]},
+            {"input": {"data": _encode_abr([{"big": "x" * 300}])},
+             "expected": [{"big": "x" * 300}]},
+            {"input": {"data": _encode_abr([{"unicode": "café 🎯 αβγ"}])},
+             "expected": [{"unicode": "café 🎯 αβγ"}]},
         ],
         adversarial_tests=[
-            {"input": {"data": ""}},                      # empty
-            {"input": {"data": "AAAA"}},                   # invalid (too short)
-            {"input": {"data": base64.b64encode(b'\x00').decode()}},  # zero fields
+            # v1 cases
+            {"input": {"data": ""}},
+            {"input": {"data": "AAAA"}},
+            {"input": {"data": base64.b64encode(b'\x00').decode()}},
+            # v3 expansion
+            {"input": {"data": "!!!not-base64!!!"}},
+            {"input": {"data": base64.b64encode(b'\xff' * 200).decode()}},
+            {"input": {"data": base64.b64encode(b'\x02\x04name').decode()}},  # truncated mid-record
         ],
     ),
     Task(
@@ -175,19 +184,29 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=MATRIX_1,
         hidden_tests=[
-            {
-                "input": {"rle_string": _encode_rle_matrix([[7, 7], [7, 7]])},
-                "expected": [[7, 7], [7, 7]],
-            },
-            {
-                "input": {"rle_string": "1,5;1:1,2:1,3:1,4:1,5:1"},
-                "expected": [[1, 2, 3, 4, 5]],
-            },
+            # v1 cases
+            {"input": {"rle_string": _encode_rle_matrix([[7, 7], [7, 7]])},
+             "expected": [[7, 7], [7, 7]]},
+            {"input": {"rle_string": "1,5;1:1,2:1,3:1,4:1,5:1"},
+             "expected": [[1, 2, 3, 4, 5]]},
+            # v3 expansion
+            {"input": {"rle_string": _encode_rle_matrix([[1, 2, 3, 4], [4, 3, 2, 1], [1, 1, 1, 1], [0, 0, 0, 0]])},
+             "expected": [[1, 2, 3, 4], [4, 3, 2, 1], [1, 1, 1, 1], [0, 0, 0, 0]]},
+            {"input": {"rle_string": "1,20;9:20"}, "expected": [[9] * 20]},
+            {"input": {"rle_string": _encode_rle_matrix([[i % 3 for i in range(12)]])},
+             "expected": [[i % 3 for i in range(12)]]},
+            {"input": {"rle_string": _encode_rle_matrix([[100, 100, 100], [200, 200, 200]])},
+             "expected": [[100, 100, 100], [200, 200, 200]]},
         ],
         adversarial_tests=[
-            {"input": {"rle_string": "0,0;"}},            # empty matrix
-            {"input": {"rle_string": "1,1;0:1"}},         # single element
-            {"input": {"rle_string": "2,3;-1:3,0:3"}},    # negative values
+            # v1 cases
+            {"input": {"rle_string": "0,0;"}},
+            {"input": {"rle_string": "1,1;0:1"}},
+            {"input": {"rle_string": "2,3;-1:3,0:3"}},
+            # v3 expansion
+            {"input": {"rle_string": "malformed input"}},                 # no semicolon
+            {"input": {"rle_string": "3,3;1:5"}},                          # count mismatches dims
+            {"input": {"rle_string": "5,5;val:notanumber"}},               # non-integer count
         ],
     ),
 

@@ -1,0 +1,1454 @@
+[18:42:49] multi-seed done, starting phase 2
+[18:42:49] >>> Code-Evol Sonnet (v2 with preserved tools)
+/Users/alibek/anaconda3/lib/python3.11/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.1.0)/charset_normalizer (2.0.4) doesn't match a supported version!
+  warnings.warn(
+Running arise/sonnet on 9 sessions
+
+============================================================
+[arise/sonnet] SESSION 1/9: Proprietary Format Processing (ABR + RLE)
+============================================================
+
+=== Session: Proprietary Format Processing (ABR + RLE) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+name,age,city
+Alice,30...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "evolvetool-bench-2026"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+product,price,q...
+             ✓ PASS
+[4/11] GAP          | Decode this ARISE Binary Record (ABR) format data. The forma...
+             ✓ PASS
+[5/11] GAP          | Parse this Run-Length Encoded (RLE) matrix format and recons...
+             ✓ PASS
+[6/11] VARIANT      | Decode this ABR (ARISE Binary Record) format data. Same form...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'decode_abr'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] Tests failed (3 failures), refining...
+[ARISE:forge] Refining 'decode_abr'...
+[ARISE:forge] Testing in sandbox (attempt 2/3)...
+[ARISE:forge] Tests failed (1 failures), refining...
+[ARISE:forge] Refining 'decode_abr'...
+[ARISE:forge] Testing in sandbox (attempt 3/3)...
+[ARISE:forge] All 9 tests passed!
+[ARISE:forge] Independent test validation for 'decode_abr'...
+[ARISE:forge] Refining 'decode_abr'...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Parse this RLE matrix. Same format as before.
+
+Data: 2,6;5:2...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'decode_abr_format'...
+[ARISE:forge] Synthesizing 'parse_rle_matrix'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 5 tests passed!
+[ARISE:forge] Independent test validation for 'decode_abr_format'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] Tests failed (1 failures), refining...
+[ARISE:forge] Refining 'parse_rle_matrix'...
+[ARISE:forge] Refining 'decode_abr_format'...
+[ARISE:forge] Testing in sandbox (attempt 2/3)...
+[ARISE:forge] Tests failed (3 failures), refining...
+[ARISE:forge] Refining 'parse_rle_matrix'...
+[ARISE:forge] Adversarial testing 'decode_abr_format'...
+[ARISE:forge] Mutation testing 'decode_abr_format'...
+[ARISE:forge] Mutation survived: changed < to <= in boundary check at line 'if pos + key_len > len(binary_data)'
+[ARISE:forge] Strengthening tests for 'decode_abr_format'...
+             ✓ PASS [CREATED: decode_abr_format]
+[8/11] COMPOSE      | Decode this ABR data, then compute the SHA-256 hash of each ...
+             ✓ PASS
+[9/11] REGRESS      | Decode this ABR data (same format as before):
+
+Data: AgRpdGV...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'parse_rle_matrix'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 10 tests passed!
+[ARISE:forge] Independent test validation for 'parse_rle_matrix'...
+[ARISE:forge] Refining 'parse_rle_matrix'...
+             ✗ PARTIAL [REUSED]
+[10/11] ADVERSARIAL  | Decode this ABR data. WARNING: some field values may contain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Parse this RLE matrix. Note: contains zero-length runs, nega...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s1
+  task_completion: 0.955
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 1.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.611
+  safety_score: 1.000
+  total_llm_calls: 25
+  evolvetool_score: 0.649
+
+============================================================
+[arise/sonnet] SESSION 2/9: Custom Schema Language (VDL)
+============================================================
+
+=== Session: Custom Schema Language (VDL) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+field,type,required
+us...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "vdl-schema-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+schema,version,...
+             ✓ PASS
+[4/11] GAP          | Parse this VDL (Validation Definition Language) schema into ...
+             ✗ FAIL
+[5/11] GAP          | Validate data records against a parsed VDL schema. The schem...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this VDL schema (same format as before):
+
+@schema Prod...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Validate these product records against the product schema:
+
+...
+             ✗ FAIL
+[8/11] COMPOSE      | Parse this VDL schema, then validate the given records again...
+             ✗ FAIL
+[9/11] REGRESS      | Parse this VDL schema (same format as before):
+
+@schema Sens...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Parse this VDL schema with nested objects and array fields:
+...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'parse_schema'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] Tests failed (2 failures), refining...
+[ARISE:forge] Refining 'parse_schema'...
+[ARISE:forge] Testing in sandbox (attempt 2/3)...
+[ARISE:forge] Tests failed (1 failures), refining...
+[ARISE:forge] Refining 'parse_schema'...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Validate these edge-case records against the user schema:
+
+S...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s2
+  task_completion: 0.364
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.278
+  safety_score: 1.000
+  total_llm_calls: 20
+  evolvetool_score: 0.406
+
+============================================================
+[arise/sonnet] SESSION 3/9: Proprietary Log Format (QLOG)
+============================================================
+
+=== Session: Proprietary Log Format (QLOG) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+severity,count
+INFO,3
+...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "qlog-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+subsystem,name
+...
+             ✓ PASS
+[4/11] GAP          | Decode this QLOG (Quantized Log Format) binary data into str...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'decode_base64'...
+[ARISE:forge] Synthesizing 'parse_binary_data'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] Tests failed (1 failures), refining...
+[ARISE:forge] Refining 'decode_base64'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 10 tests passed!
+[ARISE:forge] Independent test validation for 'parse_binary_data'...
+[ARISE:forge] Testing in sandbox (attempt 2/3)...
+[ARISE:forge] All 9 tests passed!
+[ARISE:forge] Independent test validation for 'decode_base64'...
+[ARISE:forge] Refining 'parse_binary_data'...
+[ARISE:forge] Refining 'decode_base64'...
+[ARISE:forge] Adversarial testing 'parse_binary_data'...
+[ARISE:forge] Adversarial testing 'decode_base64'...
+[ARISE:forge] Refining 'decode_base64'...
+[ARISE:forge] Mutation testing 'parse_binary_data'...
+[ARISE:forge] Mutation testing 'decode_base64'...
+[ARISE:forge] Mutation survived: changed 2 to 3 in regex pattern for padding validation
+[ARISE:forge] Mutation survived: changed > to >= in MAX_INPUT_SIZE comparison
+[ARISE:forge] Strengthening tests for 'decode_base64'...
+             ✗ FAIL [CREATED: parse_binary_data]
+[5/11] GAP          | Filter and aggregate parsed QLOG records.
+
+Given these parse...
+             ✓ PASS
+[6/11] VARIANT      | Decode this QLOG data (same format as before):
+
+Data: AMeDAB...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Filter these parsed log records to severity WARN and above:
+...
+             ✓ PASS
+[8/11] COMPOSE      | Decode this QLOG data, then count entries by severity level....
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'split_binary_data'...
+[ARISE:forge] Synthesizing 'decode_base64'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] Tests failed (1 failures), refining...
+[ARISE:forge] Refining 'decode_base64'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 10 tests passed!
+[ARISE:forge] Independent test validation for 'split_binary_data'...
+[ARISE:forge] Testing in sandbox (attempt 2/3)...
+[ARISE:forge] All 7 tests passed!
+[ARISE:forge] Independent test validation for 'decode_base64'...
+[ARISE:forge] Refining 'split_binary_data'...
+[ARISE:forge] Adversarial testing 'decode_base64'...
+[ARISE:forge] Mutation testing 'decode_base64'...
+             ✓ PASS [CREATED: decode_base64]
+[9/11] REGRESS      | Decode this QLOG data (same format as before):
+
+Data: APM8wD...
+             ✗ PARTIAL [REUSED]
+[10/11] ADVERSARIAL  | Decode this QLOG data that includes context fields.
+
+Extende...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Decode this QLOG data with continuation entries (flags bit 2...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'classify_log_severity'...
+[ARISE:forge] Synthesizing 'parse_qlog'...
+[ARISE:forge] Synthesizing 'merge_continuation_entries'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] Tests failed (1 failures), refining...
+[ARISE:forge] Refining 'merge_continuation_entries'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 7 tests passed!
+[ARISE:forge] Independent test validation for 'parse_qlog'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 9 tests passed!
+[ARISE:forge] Independent test validation for 'classify_log_severity'...
+[ARISE:forge] Refining 'parse_qlog'...
+[ARISE:forge] Refining 'classify_log_severity'...
+[ARISE:forge] Adversarial testing 'parse_qlog'...
+[ARISE:forge] Refining 'parse_qlog'...
+[ARISE:forge] Mutation testing 'parse_qlog'...
+[ARISE:forge] Mutation survived: changed < to <= in boundary check at line 25
+[ARISE:forge] Strengthening tests for 'parse_qlog'...
+             ✗ FAIL [CREATED: parse_qlog]
+
+=== Results ===
+  session_id: data_transform_s3
+  task_completion: 0.773
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 1.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.667
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.556
+  safety_score: 1.000
+  total_llm_calls: 33
+  evolvetool_score: 0.580
+
+============================================================
+[arise/sonnet] SESSION 4/9: Custom Serialization Format (TPACK)
+============================================================
+
+=== Session: Custom Serialization Format (TPACK) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+tag,type,size
+0x10,uin...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "tpack-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+name,active,sco...
+             ✓ PASS
+[4/11] GAP          | Deserialize this TPACK (Tagged Pack Format) binary data into...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'deserialize_binary'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 8 tests passed!
+[ARISE:forge] Independent test validation for 'deserialize_binary'...
+[ARISE:forge] Adversarial testing 'deserialize_binary'...
+[ARISE:forge] Mutation testing 'deserialize_binary'...
+[ARISE:forge] Mutation survived: changed > to >= in boundary check at line with 'if offset + 5 > len(data)'
+[ARISE:forge] Strengthening tests for 'deserialize_binary'...
+             ✓ PASS
+[5/11] GAP          | Query/filter deserialized TPACK data. Given this list of use...
+             ✓ PASS
+[6/11] VARIANT      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'deserialize_tpack'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 13 tests passed!
+[ARISE:forge] Independent test validation for 'deserialize_tpack'...
+[ARISE:forge] Refining 'deserialize_tpack'...
+             ✗ FAIL
+[7/11] VARIANT      | Filter these product records to only those with price > 10.0...
+             ✓ PASS
+[8/11] COMPOSE      | Deserialize this TPACK data, then filter the resulting recor...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'deserialize_tpack'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 8 tests passed!
+[ARISE:forge] Independent test validation for 'deserialize_tpack'...
+[ARISE:forge] Refining 'deserialize_tpack'...
+[ARISE:forge] Adversarial testing 'deserialize_tpack'...
+[ARISE:forge] Mutation testing 'deserialize_tpack'...
+[ARISE:forge] Mutation survived: changed > to >= in boundary check on line 76
+[ARISE:forge] Mutation survived: deleted line that increments offset by str_len on line 103
+[ARISE:forge] Strengthening tests for 'deserialize_tpack'...
+             ✗ FAIL [CREATED: deserialize_tpack]
+[9/11] REGRESS      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Deserialize this TPACK data that contains:
+- Deeply nested m...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Query this deserialized TPACK data (a single order object, n...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s4
+  task_completion: 0.636
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.333
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.389
+  safety_score: 1.000
+  total_llm_calls: 18
+  evolvetool_score: 0.509
+
+============================================================
+[arise/sonnet] SESSION 5/9: Custom Checksum & Integrity Format (GUARDIAN)
+============================================================
+
+=== Session: Custom Checksum & Integrity Format (GUARDIAN) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+block_id,crc_valid,par...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "guardian-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+group,block_cou...
+             ✓ PASS
+[4/11] GAP          | Decode and verify this GUARDIAN (Guarded Data Integrity Arch...
+             ✗ FAIL
+[5/11] GAP          | Repair a corrupted GUARDIAN block using parity data.
+
+Given ...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'decode_base64'...
+[ARISE:forge] Synthesizing 'compute_crc32'...
+[ARISE:forge] Synthesizing 'parse_binary'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 5 tests passed!
+[ARISE:forge] Independent test validation for 'decode_base64'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 8 tests passed!
+[ARISE:forge] Independent test validation for 'compute_crc32'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 9 tests passed!
+[ARISE:forge] Independent test validation for 'parse_binary'...
+[ARISE:forge] Adversarial testing 'decode_base64'...
+[ARISE:forge] Adversarial testing 'compute_crc32'...
+[ARISE:forge] Refining 'parse_binary'...
+[ARISE:forge] Mutation testing 'compute_crc32'...
+[ARISE:forge] Mutation testing 'decode_base64'...
+[ARISE:forge] Mutation survived: deleted the strip() call on line 22
+[ARISE:forge] Strengthening tests for 'decode_base64'...
+             ✗ FAIL [CREATED: compute_crc32]
+[6/11] VARIANT      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Repair this corrupted GUARDIAN data (same format as before):...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Decode this GUARDIAN data, check integrity, and if any block...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'unpack_binary'...
+[ARISE:forge] Synthesizing 'decode_base64'...
+[ARISE:forge] Synthesizing 'xor_bytes'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 6 tests passed!
+[ARISE:forge] Independent test validation for 'decode_base64'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 8 tests passed!
+[ARISE:forge] Independent test validation for 'xor_bytes'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 9 tests passed!
+[ARISE:forge] Independent test validation for 'unpack_binary'...
+[ARISE:forge] Refining 'decode_base64'...
+[ARISE:forge] Adversarial testing 'xor_bytes'...
+[ARISE:forge] Adversarial testing 'decode_base64'...
+[ARISE:forge] Refining 'unpack_binary'...
+[ARISE:forge] Mutation testing 'xor_bytes'...
+[ARISE:forge] Mutation testing 'decode_base64'...
+[ARISE:forge] Mutation survived: deleted the strip() call on line 23
+[ARISE:forge] Strengthening tests for 'decode_base64'...
+             ✗ FAIL [CREATED: xor_bytes, decode_base64]
+[9/11] REGRESS      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Decode this GUARDIAN data that has TWO corrupted blocks in t...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'repair_guardian_data'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 6 tests passed!
+[ARISE:forge] Independent test validation for 'repair_guardian_data'...
+[ARISE:forge] Refining 'repair_guardian_data'...
+[ARISE:forge] Adversarial testing 'repair_guardian_data'...
+[ARISE:forge] Mutation testing 'repair_guardian_data'...
+[ARISE:forge] Mutation survived: changed < to <= in parity error detection loop condition
+[ARISE:forge] Mutation survived: changed range(len(data_blocks)) to range(len(data_blocks)-1) creating boundary error
+[ARISE:forge] Strengthening tests for 'repair_guardian_data'...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Decode this minimal GUARDIAN data (single block, only 2 byte...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s5
+  task_completion: 0.273
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 1.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.500
+  safety_score: 1.000
+  total_llm_calls: 40
+  evolvetool_score: 0.432
+
+============================================================
+[arise/sonnet] SESSION 6/9: API Authentication & Paginated Retrieval
+============================================================
+
+=== Session: API Authentication & Paginated Retrieval ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Check if the API server is healthy by making a GET request t...
+             ✓ PASS
+[2/11] SEED         | Get the authentication info from http://127.0.0.1:18080/auth...
+             ✓ PASS
+[3/11] SEED         | Make a GET request to http://127.0.0.1:18080/api/users (with...
+             ✓ PASS
+[4/11] GAP          | Authenticate with the API at http://127.0.0.1:18080. First, ...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'hmac_sha256'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 5 tests passed!
+[ARISE:forge] Independent test validation for 'hmac_sha256'...
+[ARISE:forge] Adversarial testing 'hmac_sha256'...
+[ARISE:forge] Refining 'hmac_sha256'...
+[ARISE:forge] Mutation testing 'hmac_sha256'...
+[ARISE:forge] Mutation survived: changed 'or' to 'and' in None check logic on line 11
+[ARISE:forge] Strengthening tests for 'hmac_sha256'...
+             ✓ PASS [CREATED: hmac_sha256]
+[5/11] GAP          | Fetch ALL users from http://127.0.0.1:18080/api/users. The A...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'get_unix_timestamp'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 6 tests passed!
+[ARISE:forge] Independent test validation for 'get_unix_timestamp'...
+[ARISE:forge] Refining 'get_unix_timestamp'...
+[ARISE:forge] Adversarial testing 'get_unix_timestamp'...
+[ARISE:forge] Mutation testing 'get_unix_timestamp'...
+             ✓ PASS [CREATED: get_unix_timestamp]
+[6/11] VARIANT      | Authenticate with http://127.0.0.1:18080 and fetch the user ...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'http_get_with_headers'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 6 tests passed!
+[ARISE:forge] Independent test validation for 'http_get_with_headers'...
+[ARISE:forge] Refining 'http_get_with_headers'...
+[ARISE:forge] Adversarial testing 'http_get_with_headers'...
+[ARISE:forge] Refining 'http_get_with_headers'...
+[ARISE:forge] Mutation testing 'http_get_with_headers'...
+             ✓ PASS [CREATED: http_get_with_headers]
+[7/11] VARIANT      | Fetch ALL metrics from http://127.0.0.1:18080/api/metrics. S...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Authenticate with http://127.0.0.1:18080, fetch ALL users (f...
+             ✓ PASS
+[9/11] REGRESS      | Authenticate with http://127.0.0.1:18080 and fetch the first...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Authenticate with http://127.0.0.1:18080 and fetch users. WA...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Fetch events from http://127.0.0.1:18080/api/events filtered...
+             ✓ PASS
+
+=== Results ===
+  session_id: api_orchestration_s1
+  task_completion: 0.818
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.611
+  safety_score: 1.000
+  total_llm_calls: 37
+  evolvetool_score: 0.604
+
+============================================================
+[arise/sonnet] SESSION 7/9: Custom Curve Fitting (ARCFIT format)
+============================================================
+
+=== Session: Custom Curve Fitting (ARCFIT format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for this dataset:
+[4.2, 7.8, 3.1, 9.5, 2....
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'compute_statistics'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 10 tests passed!
+[ARISE:forge] Independent test validation for 'compute_statistics'...
+[ARISE:forge] Refining 'compute_statistics'...
+[ARISE:forge] Adversarial testing 'compute_statistics'...
+[ARISE:forge] Refining 'compute_statistics'...
+             ✓ PASS
+[2/11] SEED         | Solve this 2×2 linear system for [x, y]:
+  2x + 3y = 8
+  5x ...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'compute_stats'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 7 tests passed!
+[ARISE:forge] Independent test validation for 'compute_stats'...
+[ARISE:forge] Refining 'compute_stats'...
+[ARISE:forge] Adversarial testing 'compute_stats'...
+[ARISE:forge] Refining 'compute_stats'...
+[ARISE:forge] Mutation testing 'compute_stats'...
+             ✓ PASS [CREATED: compute_stats]
+[3/11] SEED         | A sensor reads 14.7 at t=2.0 and 31.3 at t=6.0. Use linear i...
+             ✓ PASS
+[4/11] GAP          | Parse and fit the following ARCFIT model specification.
+
+ARC...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'fit_nonlinear_curve'...
+[ARISE:forge] Synthesizing 'parse_structured_format'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 10 tests passed!
+[ARISE:forge] Independent test validation for 'parse_structured_format'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 7 tests passed!
+[ARISE:forge] Independent test validation for 'fit_nonlinear_curve'...
+[ARISE:forge] Refining 'parse_structured_format'...
+[ARISE:forge] Refining 'fit_nonlinear_curve'...
+[ARISE:forge] Adversarial testing 'parse_structured_format'...
+[ARISE:forge] Adversarial testing 'fit_nonlinear_curve'...
+[ARISE:forge] Refining 'parse_structured_format'...
+[ARISE:forge] Mutation testing 'fit_nonlinear_curve'...
+             ✗ FAIL [CREATED: fit_nonlinear_curve]
+[5/11] GAP          | Evaluate a previously fitted ARCFIT model on new x values.
+
+...
+             ✗ FAIL
+[6/11] VARIANT      | Fit an ARCFIT model specification. Same format as before.
+
+S...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Evaluate an ARCFIT fitted model on query points. Same format...
+             ✓ PASS
+[8/11] COMPOSE      | Fit the ARCFIT model, then evaluate it on x = [0, 2, 4, 6, 8...
+             ✓ PASS
+[9/11] REGRESS      | Fit the ARCFIT model below (same format as before):
+
+Spec: M...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Fit this ARCFIT spec. WARNING: the data has significant meas...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Evaluate this ARCFIT model at edge-case x values including 0...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s1
+  task_completion: 0.636
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 2
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.611
+  safety_score: 1.000
+  total_llm_calls: 27
+  evolvetool_score: 0.568
+
+============================================================
+[arise/sonnet] SESSION 8/9: Custom Signal Processing (ARCSIG format)
+============================================================
+
+=== Session: Custom Signal Processing (ARCSIG format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for these signal amplitude samples:
+[0.84...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'compute_statistics'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 9 tests passed!
+[ARISE:forge] Independent test validation for 'compute_statistics'...
+[ARISE:forge] Refining 'compute_statistics'...
+[ARISE:forge] Adversarial testing 'compute_statistics'...
+[ARISE:forge] Mutation testing 'compute_statistics'...
+             ✓ PASS [CREATED: compute_statistics]
+[2/11] SEED         | A signal is sampled at 50 Hz. At t=0.1 s the amplitude is 3....
+             ✓ PASS
+[3/11] SEED         | Solve for [A, B] in the linear system:
+  3A + 2B = 14
+  A  -...
+[ARISE:forge] Detecting capability gaps...
+             ✓ PASS
+[4/11] GAP          | Decode the following ARCSIG signal and compute its one-sided...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'process_signal_spectrum'...
+[ARISE:forge] Synthesizing 'decode_binary_data'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 8 tests passed!
+[ARISE:forge] Independent test validation for 'decode_binary_data'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 7 tests passed!
+[ARISE:forge] Independent test validation for 'process_signal_spectrum'...
+[ARISE:forge] Refining 'decode_binary_data'...
+[ARISE:forge] Refining 'process_signal_spectrum'...
+[ARISE:forge] Adversarial testing 'decode_binary_data'...
+[ARISE:forge] Mutation testing 'decode_binary_data'...
+[ARISE:forge] Adversarial testing 'process_signal_spectrum'...
+[ARISE:forge] Mutation survived: changed < to <= in line comparing binary data length to expected size
+[ARISE:forge] Mutation survived: deleted the line that strips whitespace from base64_string
+[ARISE:forge] Strengthening tests for 'decode_binary_data'...
+[ARISE:forge] Refining 'process_signal_spectrum'...
+[ARISE:forge] Mutation testing 'process_signal_spectrum'...
+[ARISE:forge] Mutation survived: changed <= to < in boundary condition line 64
+[ARISE:forge] Strengthening tests for 'process_signal_spectrum'...
+             ✗ FAIL [CREATED: process_signal_spectrum]
+[5/11] GAP          | Apply a band-pass filter to an ARCSIG signal.
+
+Filter spec f...
+             ✓ PASS
+[6/11] VARIANT      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Apply a band-pass filter to this ARCSIG signal. Same format ...
+             ✓ PASS [REUSED]
+[8/11] COMPOSE      | Decode the ARCSIG signal, apply the band-pass filter to isol...
+             ✓ PASS
+[9/11] REGRESS      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Apply a very narrow band-pass filter to an ARCSIG signal. Th...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s2
+  task_completion: 0.636
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 2
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.583
+  safety_score: 1.000
+  total_llm_calls: 25
+  evolvetool_score: 0.561
+
+============================================================
+[arise/sonnet] SESSION 9/9: Custom Optimization Format (ARCOPT)
+============================================================
+
+=== Session: Custom Optimization Format (ARCOPT) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Solve this 2×2 linear system:
+  4x + y = 9
+  2x - 3y = 1
+
+Re...
+[ARISE:forge] Detecting capability gaps...
+             ✓ PASS
+[2/11] SEED         | An optimization solver returns objective values at three ite...
+[ARISE:forge] Detecting capability gaps...
+             ✓ PASS
+[3/11] SEED         | A constraint boundary passes through (0, 5) and (10, 0). Use...
+             ✓ PASS
+[4/11] GAP          | Parse the following ARCOPT optimization problem specificatio...
+             ✗ FAIL
+[5/11] GAP          | Solve the following ARCOPT optimization problem — find the v...
+[ARISE:forge] Detecting capability gaps...
+[ARISE:forge] Synthesizing 'solve_optimization'...
+[ARISE:forge] Synthesizing 'parse_specification'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] All 11 tests passed!
+[ARISE:forge] Independent test validation for 'parse_specification'...
+[ARISE:forge] Testing in sandbox (attempt 1/3)...
+[ARISE:forge] Tests failed (5 failures), refining...
+[ARISE:forge] Refining 'solve_optimization'...
+[ARISE:forge] Refining 'parse_specification'...
+[ARISE:forge] Testing in sandbox (attempt 2/3)...
+[ARISE:forge] All 8 tests passed!
+[ARISE:forge] Independent test validation for 'solve_optimization'...
+[ARISE:forge] Refining 'solve_optimization'...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this ARCOPT problem specification. Same format as befo...
+             ✗ FAIL
+[7/11] VARIANT      | Solve this ARCOPT optimization problem. Same format as befor...
+             ✗ FAIL
+[8/11] COMPOSE      | Parse and solve this ARCOPT problem. Then sample 5 evenly sp...
+             ✓ PASS
+[9/11] REGRESS      | Parse this ARCOPT problem (same format as before):
+
+Spec: AR...
+             ✗ FAIL
+[10/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the constrain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the objective...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s3
+  task_completion: 0.545
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.333
+  safety_score: 1.000
+  total_llm_calls: 17
+  evolvetool_score: 0.471
+
+  arise/sonnet: ETS=0.627 TC=0.626 Tools=15
+
+Done!
+[19:35:11] >>> ToolMaker-style Sonnet
+/Users/alibek/anaconda3/lib/python3.11/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.1.0)/charset_normalizer (2.0.4) doesn't match a supported version!
+  warnings.warn(
+Running toolmaker-style/sonnet on 9 sessions
+
+============================================================
+[toolmaker-style/sonnet] SESSION 1/9: Proprietary Format Processing (ABR + RLE)
+============================================================
+
+=== Session: Proprietary Format Processing (ABR + RLE) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+name,age,city
+Alice,30...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "evolvetool-bench-2026"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+product,price,q...
+             ✓ PASS
+[4/11] GAP          | Decode this ARISE Binary Record (ABR) format data. The forma...
+             ✓ PASS
+[5/11] GAP          | Parse this Run-Length Encoded (RLE) matrix format and recons...
+             ✓ PASS
+[6/11] VARIANT      | Decode this ABR (ARISE Binary Record) format data. Same form...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Parse this RLE matrix. Same format as before.
+
+Data: 2,6;5:2...
+             ✗ FAIL
+[8/11] COMPOSE      | Decode this ABR data, then compute the SHA-256 hash of each ...
+             ✓ PASS
+[9/11] REGRESS      | Decode this ABR data (same format as before):
+
+Data: AgRpdGV...
+             ✓ PASS [REUSED]
+[10/11] ADVERSARIAL  | Decode this ABR data. WARNING: some field values may contain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Parse this RLE matrix. Note: contains zero-length runs, nega...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s1
+  task_completion: 0.909
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 1.000
+    regress: 1.000
+    adversarial: 1.000
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.667
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 0.000
+  library_health: 0.611
+  safety_score: 1.000
+  total_llm_calls: 23
+  evolvetool_score: 0.640
+
+============================================================
+[toolmaker-style/sonnet] SESSION 2/9: Custom Schema Language (VDL)
+============================================================
+
+=== Session: Custom Schema Language (VDL) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+field,type,required
+us...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "vdl-schema-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+schema,version,...
+             ✓ PASS
+[4/11] GAP          | Parse this VDL (Validation Definition Language) schema into ...
+             ✗ FAIL
+[5/11] GAP          | Validate data records against a parsed VDL schema. The schem...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this VDL schema (same format as before):
+
+@schema Prod...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Validate these product records against the product schema:
+
+...
+             ✗ FAIL
+[8/11] COMPOSE      | Parse this VDL schema, then validate the given records again...
+             ✗ FAIL
+[9/11] REGRESS      | Parse this VDL schema (same format as before):
+
+@schema Sens...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Parse this VDL schema with nested objects and array fields:
+...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Validate these edge-case records against the user schema:
+
+S...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s2
+  task_completion: 0.364
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.278
+  safety_score: 1.000
+  total_llm_calls: 21
+  evolvetool_score: 0.405
+
+============================================================
+[toolmaker-style/sonnet] SESSION 3/9: Proprietary Log Format (QLOG)
+============================================================
+
+=== Session: Proprietary Log Format (QLOG) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+severity,count
+INFO,3
+...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "qlog-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+subsystem,name
+...
+             ✓ PASS
+[4/11] GAP          | Decode this QLOG (Quantized Log Format) binary data into str...
+             ✓ PASS
+[5/11] GAP          | Filter and aggregate parsed QLOG records.
+
+Given these parse...
+             ✓ PASS
+[6/11] VARIANT      | Decode this QLOG data (same format as before):
+
+Data: AMeDAB...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Filter these parsed log records to severity WARN and above:
+...
+             ✓ PASS
+[8/11] COMPOSE      | Decode this QLOG data, then count entries by severity level....
+             ✓ PASS
+[9/11] REGRESS      | Decode this QLOG data (same format as before):
+
+Data: APM8wD...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Decode this QLOG data that includes context fields.
+
+Extende...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Decode this QLOG data with continuation entries (flags bit 2...
+             ✗ PARTIAL
+
+=== Results ===
+  session_id: data_transform_s3
+  task_completion: 0.864
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 1.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.444
+  safety_score: 1.000
+  total_llm_calls: 26
+  evolvetool_score: 0.576
+
+============================================================
+[toolmaker-style/sonnet] SESSION 4/9: Custom Serialization Format (TPACK)
+============================================================
+
+=== Session: Custom Serialization Format (TPACK) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+tag,type,size
+0x10,uin...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "tpack-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+name,active,sco...
+             ✓ PASS
+[4/11] GAP          | Deserialize this TPACK (Tagged Pack Format) binary data into...
+             ✓ PASS
+[5/11] GAP          | Query/filter deserialized TPACK data. Given this list of use...
+             ✓ PASS
+[6/11] VARIANT      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL
+[7/11] VARIANT      | Filter these product records to only those with price > 10.0...
+             ✓ PASS
+[8/11] COMPOSE      | Deserialize this TPACK data, then filter the resulting recor...
+             ✗ FAIL
+[9/11] REGRESS      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL
+[10/11] ADVERSARIAL  | Deserialize this TPACK data that contains:
+- Deeply nested m...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Query this deserialized TPACK data (a single order object, n...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s4
+  task_completion: 0.636
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.167
+  safety_score: 1.000
+  total_llm_calls: 16
+  evolvetool_score: 0.445
+
+============================================================
+[toolmaker-style/sonnet] SESSION 5/9: Custom Checksum & Integrity Format (GUARDIAN)
+============================================================
+
+=== Session: Custom Checksum & Integrity Format (GUARDIAN) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+block_id,crc_valid,par...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "guardian-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+group,block_cou...
+             ✓ PASS
+[4/11] GAP          | Decode and verify this GUARDIAN (Guarded Data Integrity Arch...
+             ✗ FAIL
+[5/11] GAP          | Repair a corrupted GUARDIAN block using parity data.
+
+Given ...
+             ✗ FAIL
+[6/11] VARIANT      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Repair this corrupted GUARDIAN data (same format as before):...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Decode this GUARDIAN data, check integrity, and if any block...
+             ✗ FAIL
+[9/11] REGRESS      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Decode this GUARDIAN data that has TWO corrupted blocks in t...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Decode this minimal GUARDIAN data (single block, only 2 byte...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s5
+  task_completion: 0.273
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 1.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.333
+  safety_score: 1.000
+  total_llm_calls: 24
+  evolvetool_score: 0.396
+
+============================================================
+[toolmaker-style/sonnet] SESSION 6/9: API Authentication & Paginated Retrieval
+============================================================
+
+=== Session: API Authentication & Paginated Retrieval ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Check if the API server is healthy by making a GET request t...
+             ✓ PASS
+[2/11] SEED         | Get the authentication info from http://127.0.0.1:18080/auth...
+             ✓ PASS
+[3/11] SEED         | Make a GET request to http://127.0.0.1:18080/api/users (with...
+             ✓ PASS
+[4/11] GAP          | Authenticate with the API at http://127.0.0.1:18080. First, ...
+             ✗ FAIL
+[5/11] GAP          | Fetch ALL users from http://127.0.0.1:18080/api/users. The A...
+             ✗ FAIL
+[6/11] VARIANT      | Authenticate with http://127.0.0.1:18080 and fetch the user ...
+             ✓ PASS
+[7/11] VARIANT      | Fetch ALL metrics from http://127.0.0.1:18080/api/metrics. S...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Authenticate with http://127.0.0.1:18080, fetch ALL users (f...
+             ✗ FAIL
+[9/11] REGRESS      | Authenticate with http://127.0.0.1:18080 and fetch the first...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Authenticate with http://127.0.0.1:18080 and fetch users. WA...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Fetch events from http://127.0.0.1:18080/api/events filtered...
+             ✓ PASS
+
+=== Results ===
+  session_id: api_orchestration_s1
+  task_completion: 0.455
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.278
+  safety_score: 1.000
+  total_llm_calls: 60
+  evolvetool_score: 0.392
+
+============================================================
+[toolmaker-style/sonnet] SESSION 7/9: Custom Curve Fitting (ARCFIT format)
+============================================================
+
+=== Session: Custom Curve Fitting (ARCFIT format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for this dataset:
+[4.2, 7.8, 3.1, 9.5, 2....
+             ✓ PASS
+[2/11] SEED         | Solve this 2×2 linear system for [x, y]:
+  2x + 3y = 8
+  5x ...
+             ✓ PASS
+[3/11] SEED         | A sensor reads 14.7 at t=2.0 and 31.3 at t=6.0. Use linear i...
+             ✓ PASS
+[4/11] GAP          | Parse and fit the following ARCFIT model specification.
+
+ARC...
+             ✓ PASS
+[5/11] GAP          | Evaluate a previously fitted ARCFIT model on new x values.
+
+...
+             ✗ FAIL
+[6/11] VARIANT      | Fit an ARCFIT model specification. Same format as before.
+
+S...
+             ✓ PASS
+[7/11] VARIANT      | Evaluate an ARCFIT fitted model on query points. Same format...
+             ✓ PASS
+[8/11] COMPOSE      | Fit the ARCFIT model, then evaluate it on x = [0, 2, 4, 6, 8...
+             ✓ PASS
+[9/11] REGRESS      | Fit the ARCFIT model below (same format as before):
+
+Spec: M...
+             ✓ PASS
+[10/11] ADVERSARIAL  | Fit this ARCFIT spec. WARNING: the data has significant meas...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Evaluate this ARCFIT model at edge-case x values including 0...
+             ✗ PARTIAL
+
+=== Results ===
+  session_id: numerical_s1
+  task_completion: 0.864
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 1.000
+    compose: 1.000
+    regress: 1.000
+    adversarial: 0.500
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 0.000
+  library_health: 0.500
+  safety_score: 1.000
+  total_llm_calls: 20
+  evolvetool_score: 0.598
+
+============================================================
+[toolmaker-style/sonnet] SESSION 8/9: Custom Signal Processing (ARCSIG format)
+============================================================
+
+=== Session: Custom Signal Processing (ARCSIG format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for these signal amplitude samples:
+[0.84...
+             ✓ PASS
+[2/11] SEED         | A signal is sampled at 50 Hz. At t=0.1 s the amplitude is 3....
+             ✓ PASS
+[3/11] SEED         | Solve for [A, B] in the linear system:
+  3A + 2B = 14
+  A  -...
+             ✓ PASS
+[4/11] GAP          | Decode the following ARCSIG signal and compute its one-sided...
+             ✗ FAIL
+[5/11] GAP          | Apply a band-pass filter to an ARCSIG signal.
+
+Filter spec f...
+             ✓ PASS
+[6/11] VARIANT      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ PARTIAL
+[7/11] VARIANT      | Apply a band-pass filter to this ARCSIG signal. Same format ...
+             ✓ PASS
+[8/11] COMPOSE      | Decode the ARCSIG signal, apply the band-pass filter to isol...
+             ✓ PASS
+[9/11] REGRESS      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ PARTIAL
+[10/11] ADVERSARIAL  | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Apply a very narrow band-pass filter to an ARCSIG signal. Th...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s2
+  task_completion: 0.818
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.333
+  safety_score: 1.000
+  total_llm_calls: 18
+  evolvetool_score: 0.538
+
+============================================================
+[toolmaker-style/sonnet] SESSION 9/9: Custom Optimization Format (ARCOPT)
+============================================================
+
+=== Session: Custom Optimization Format (ARCOPT) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Solve this 2×2 linear system:
+  4x + y = 9
+  2x - 3y = 1
+
+Re...
+             ✓ PASS
+[2/11] SEED         | An optimization solver returns objective values at three ite...
+             ✓ PASS
+[3/11] SEED         | A constraint boundary passes through (0, 5) and (10, 0). Use...
+             ✓ PASS
+[4/11] GAP          | Parse the following ARCOPT optimization problem specificatio...
+             ✗ FAIL
+[5/11] GAP          | Solve the following ARCOPT optimization problem — find the v...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this ARCOPT problem specification. Same format as befo...
+             ✗ FAIL
+[7/11] VARIANT      | Solve this ARCOPT optimization problem. Same format as befor...
+             ✗ FAIL
+[8/11] COMPOSE      | Parse and solve this ARCOPT problem. Then sample 5 evenly sp...
+             ✓ PASS
+[9/11] REGRESS      | Parse this ARCOPT problem (same format as before):
+
+Spec: AR...
+             ✗ FAIL
+[10/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the constrain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the objective...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s3
+  task_completion: 0.545
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.333
+  safety_score: 1.000
+  total_llm_calls: 22
+  evolvetool_score: 0.466
+
+  toolmaker-style/sonnet: ETS=0.495 TC=0.636 Tools=0
+
+Done!
+[19:51:09] phase 2 complete
+
+config                          TC   TQS    LH   ETS
+-------------------------------------------------------
+arise_gpt4o                  0.485 0.000 0.278 0.452
+arise_haiku                  0.652 0.353 0.512 0.612
+arise_sonnet                 0.636 0.340 0.517 0.603
+arise_sonnet_improved        0.662 0.363 0.577 0.635
+arise_sonnet_improved2       0.646 0.329 0.475 0.595
+arise_sonnet_seed1           0.662 0.348 0.480 0.601
+arise_sonnet_seed2           0.646 0.349 0.506 0.605
+arise_sonnet_seed3           0.652 0.382 0.561 0.629
+arise_sonnet_v2              0.626 0.432 0.528 0.627
+evoskill_gpt4o               0.485 0.000 0.278 0.445
+evoskill_sonnet              0.667 0.000 0.407 0.515
+evoskill_sonnet_seed1        0.672 0.000 0.389 0.511
+evoskill_sonnet_seed2        0.662 0.000 0.432 0.521
+evoskill_sonnet_seed3        0.677 0.000 0.420 0.522
+no-evolution_gpt4o           0.485 0.000 0.278 0.445
+no-evolution_haiku           0.667 0.000 0.401 0.516
+no-evolution_sonnet          0.667 0.000 0.414 0.518
+no-evolution_sonnet_seed1    0.687 0.000 0.407 0.522
+no-evolution_sonnet_seed2    0.672 0.000 0.370 0.507
+no-evolution_sonnet_seed3    0.677 0.000 0.395 0.515
+oneshot_gpt4o                0.485 0.000 0.278 0.445
+oneshot_sonnet               0.677 0.040 0.383 0.519
+oneshot_sonnet_seed1         0.657 0.041 0.395 0.518
+oneshot_sonnet_seed2         0.687 0.045 0.417 0.533
+oneshot_sonnet_seed3         0.677 0.049 0.350 0.512
+toolmaker-style_sonnet       0.636 0.000 0.364 0.495

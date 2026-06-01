@@ -1,0 +1,51 @@
+{
+  "system": "oneshot",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.6767676767676769,
+  "avg_tool_quality": 0.04938271604938271,
+  "avg_reuse_rate": 0.4074074074074074,
+  "avg_correct_reuse_rate": 0.1111111111111111,
+  "avg_incorrect_reuse_rate": 0.2962962962962963,
+  "avg_library_health": 0.35030864197530864,
+  "avg_evolvetool_score": 0.5115347923681257,
+  "total_tools": 4,
+  "tool_details": [
+    {
+      "session": "api_orchestration_s1",
+      "name": "generate_auth_header",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_all_paginated_users",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "authenticate_and_fetch_first_page",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_filtered_events",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    }
+  ]
+}

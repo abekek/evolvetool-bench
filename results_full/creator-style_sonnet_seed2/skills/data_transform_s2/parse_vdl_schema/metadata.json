@@ -1,0 +1,9 @@
+{
+  "name": "parse_vdl_schema",
+  "version": 1,
+  "created_at_task": "gap_1",
+  "tags": [],
+  "dependencies": [
+    "re"
+  ]
+}

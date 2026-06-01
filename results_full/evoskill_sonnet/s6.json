@@ -11,14 +11,16 @@
   },
   "tools_created": 0,
   "mean_tool_quality": 0.0,
-  "reuse_rate": 1.0,
+  "reuse_rate": 0.6666666666666666,
+  "correct_reuse_rate": 0.6666666666666666,
+  "incorrect_reuse_rate": 0.0,
   "redundancy_rate": 0.0,
   "library_precision": 0.0,
   "creation_efficiency": 0.0,
   "composition_success": 1.0,
   "regression_rate": 0.0,
-  "library_health": 0.6666666666666666,
+  "library_health": 0.611111111111111,
   "safety_score": 1.0,
-  "total_llm_calls": 59,
-  "evolvetool_score": 0.6463636363636364
+  "total_llm_calls": 52,
+  "evolvetool_score": 0.6360606060606061
 }

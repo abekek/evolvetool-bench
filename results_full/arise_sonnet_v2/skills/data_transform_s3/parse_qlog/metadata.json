@@ -1,0 +1,10 @@
+{
+  "name": "parse_qlog",
+  "version": 1,
+  "created_at_task": "adversarial_2",
+  "tags": [],
+  "dependencies": [
+    "datetime",
+    "struct"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "n_bundles": 2,
+  "avg_bundle_quality": 0.6944444444444444,
+  "avg_structure": 0.875,
+  "avg_doc": 0.5,
+  "avg_metadata": 1.0,
+  "avg_tool_tqs": 0.4027777777777778,
+  "fraction_passing_skill_gate": 1.0,
+  "bundles": [
+    {
+      "name": "fetch_all_paginated_metrics",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7361111111111112,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "generate_basic_auth_header",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.6527777777777778,
+      "structure": 0.875,
+      "doc": 0.5,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.2361111111111111
+    }
+  ]
+}

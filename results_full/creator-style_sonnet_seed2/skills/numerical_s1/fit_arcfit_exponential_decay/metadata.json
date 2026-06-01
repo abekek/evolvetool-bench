@@ -1,0 +1,10 @@
+{
+  "name": "fit_arcfit_exponential_decay",
+  "version": 1,
+  "created_at_task": "compose_1",
+  "tags": [],
+  "dependencies": [
+    "math",
+    "re"
+  ]
+}

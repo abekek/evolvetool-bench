@@ -1,0 +1,10 @@
+{
+  "name": "fetch_all_paginated_users",
+  "version": 1,
+  "created_at_task": "gap_2",
+  "tags": [],
+  "dependencies": [
+    "json",
+    "urllib"
+  ]
+}

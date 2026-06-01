@@ -1,0 +1,11 @@
+{
+  "name": "decode_abr_binary_record",
+  "version": 1,
+  "created_at_task": "variant_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "sys",
+    "traceback"
+  ]
+}

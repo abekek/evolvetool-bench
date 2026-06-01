@@ -1,0 +1,12 @@
+{
+  "name": "compute_crc32",
+  "created_at_task": "gap_2",
+  "version": 1,
+  "scores": {
+    "tqs": 0.75,
+    "correctness": 0.0,
+    "robustness": 1.0,
+    "generality": 1.0,
+    "code_quality": 1.0
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "system": "creator-style",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.6363636363636365,
+  "avg_tool_quality": 0.4669753086419753,
+  "avg_reuse_rate": 0.5555555555555556,
+  "avg_correct_reuse_rate": 0.14814814814814814,
+  "avg_incorrect_reuse_rate": 0.4074074074074074,
+  "avg_library_health": 0.4962962962962963,
+  "avg_evolvetool_score": 0.6140011223344556,
+  "total_tools": 22,
+  "tool_details": [
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_and_hash_names",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_binary_data",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s2",
+      "name": "parse_vdl_schema",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "decode_qlog_and_count_severity",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack_data",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_and_filter_tpack_data",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack_data",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "repair_guardian_block",
+      "tqs": 0.29166666666666663,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_guardian_data",
+      "tqs": 0.5138888888888888,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.5555555555555556
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "repair_guardian_data",
+      "tqs": 0.5138888888888888,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.5555555555555556
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_and_verify_guardian_data",
+      "tqs": 0.5138888888888888,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.5555555555555556
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "authenticate_and_fetch_users",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_all_users_from_api",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 1.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_authenticated_user",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_all_users_and_compute_average_score",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "authenticate_and_fetch_users",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_arcfit_model",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_arcfit_exponential_decay",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_exponential_decay_robust",
+      "tqs": 0.5416666666666666,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.6666666666666666
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_arcsig_and_compute_spectrum",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s2",
+      "name": "apply_bandpass_filter_to_arcsig",
+      "tqs": 0.3194444444444444,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_arcsig_and_compute_spectrum",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    }
+  ]
+}

@@ -146,6 +146,7 @@ def run_session(system: AgentSystem, session: Session, verbose: bool = True) -> 
             tool_created=tools_created_names[0] if tools_created_names else None,
             tools_used=tools_used,
             tool_reused=tool_reused,
+            tool_reused_correctly=tool_reused and passed,
             llm_calls=agent_result.get("llm_calls", 1),
             duration_ms=duration,
             agent_output=str(output)[:500],

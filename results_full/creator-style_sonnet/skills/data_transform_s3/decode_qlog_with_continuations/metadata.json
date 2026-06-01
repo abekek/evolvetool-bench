@@ -1,0 +1,11 @@
+{
+  "name": "decode_qlog_with_continuations",
+  "version": 1,
+  "created_at_task": "adversarial_2",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "datetime",
+    "struct"
+  ]
+}

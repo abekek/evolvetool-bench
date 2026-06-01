@@ -1,0 +1,18 @@
+{
+  "config": "creator-style_sonnet_seed3",
+  "n_tools": 19,
+  "v1": {
+    "correctness": 0.42105263157894735,
+    "robustness": 0.5,
+    "generality": 0.47368421052631576,
+    "code_quality": 0.7134502923976608,
+    "tqs": 0.527046783625731
+  },
+  "v3": {
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.042105263157894736,
+    "code_quality": 0.7134502923976608,
+    "tqs": 0.31388888888888894
+  }
+}

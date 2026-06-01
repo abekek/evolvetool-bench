@@ -1,0 +1,11 @@
+{
+  "name": "fetch_user_with_auth",
+  "version": 1,
+  "created_at_task": "variant_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "json",
+    "urllib"
+  ]
+}

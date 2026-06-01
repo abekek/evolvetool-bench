@@ -257,19 +257,26 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=_PARSED_1,
         hidden_tests=[
-            {
-                "input": {"arcopt_spec": ARCOPT_2},
-                "expected": _PARSED_2,
-            },
-            {
-                "input": {"arcopt_spec": ARCOPT_3},
-                "expected": _PARSED_3,
-            },
+            # v1
+            {"input": {"arcopt_spec": ARCOPT_2}, "expected": _PARSED_2},
+            {"input": {"arcopt_spec": ARCOPT_3}, "expected": _PARSED_3},
+            # v3 expansion (verify-style)
+            {"input": {"arcopt_spec": ARCOPT_2},
+             "verify": "isinstance(result, dict) and 'vars' in result and 'objective' in result"},
+            {"input": {"arcopt_spec": ARCOPT_3},
+             "verify": "isinstance(result, dict) and 'constraints' in result"},
+            {"input": {"arcopt_spec": ARCOPT_1},
+             "verify": "isinstance(result, dict) and isinstance(result.get('vars'), list)"},
         ],
         adversarial_tests=[
-            {"input": {"arcopt_spec": "ARCOPT:v1;VARS:x1;OBJ:linear:0*x1;CONSTRS:NONE;BOUNDS:NONE"}},  # trivial
-            {"input": {"arcopt_spec": ARCOPT_INFEASIBLE}},   # still parseable
-            {"input": {"arcopt_spec": ARCOPT_UNBOUNDED}},    # unbounded but parseable
+            # v1
+            {"input": {"arcopt_spec": "ARCOPT:v1;VARS:x1;OBJ:linear:0*x1;CONSTRS:NONE;BOUNDS:NONE"}},
+            {"input": {"arcopt_spec": ARCOPT_INFEASIBLE}},
+            {"input": {"arcopt_spec": ARCOPT_UNBOUNDED}},
+            # v3 expansion
+            {"input": {"arcopt_spec": ""}},
+            {"input": {"arcopt_spec": "ARCOPT:v1;malformed"}},
+            {"input": {"arcopt_spec": "completely garbage"}},
         ],
     ),
     Task(
@@ -286,19 +293,26 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=_SOLVED_1,
         hidden_tests=[
-            {
-                "input": {"arcopt_spec": ARCOPT_2},
-                "expected": _SOLVED_2,
-            },
-            {
-                "input": {"arcopt_spec": ARCOPT_REGRESS},
-                "expected": _SOLVED_REGRESS,
-            },
+            # v1
+            {"input": {"arcopt_spec": ARCOPT_2}, "expected": _SOLVED_2},
+            {"input": {"arcopt_spec": ARCOPT_REGRESS}, "expected": _SOLVED_REGRESS},
+            # v3 expansion (verify-style for tolerance)
+            {"input": {"arcopt_spec": ARCOPT_1},
+             "verify": "isinstance(result, dict) and 'minimum' in result and 'at' in result"},
+            {"input": {"arcopt_spec": ARCOPT_2},
+             "verify": "isinstance(result, dict) and isinstance(result['minimum'], (int, float))"},
+            {"input": {"arcopt_spec": ARCOPT_3},
+             "verify": "isinstance(result, dict) and isinstance(result['at'], dict)"},
         ],
         adversarial_tests=[
-            {"input": {"arcopt_spec": ARCOPT_INFEASIBLE}},   # infeasible — must return error/None gracefully
-            {"input": {"arcopt_spec": ARCOPT_UNBOUNDED}},    # unbounded — must detect and report
-            {"input": {"arcopt_spec": "ARCOPT:v1;VARS:x1;OBJ:linear:0*x1;CONSTRS:NONE;BOUNDS:x1:[5,5]"}},  # equality bound
+            # v1
+            {"input": {"arcopt_spec": ARCOPT_INFEASIBLE}},
+            {"input": {"arcopt_spec": ARCOPT_UNBOUNDED}},
+            {"input": {"arcopt_spec": "ARCOPT:v1;VARS:x1;OBJ:linear:0*x1;CONSTRS:NONE;BOUNDS:x1:[5,5]"}},
+            # v3 expansion
+            {"input": {"arcopt_spec": ""}},
+            {"input": {"arcopt_spec": "completely garbage spec"}},
+            {"input": {"arcopt_spec": "ARCOPT:v1;VARS:;OBJ:linear:;CONSTRS:NONE;BOUNDS:NONE"}},  # no vars
         ],
     ),
 

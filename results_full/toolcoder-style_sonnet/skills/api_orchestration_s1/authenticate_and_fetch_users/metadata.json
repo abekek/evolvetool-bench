@@ -1,0 +1,13 @@
+{
+  "name": "authenticate_and_fetch_users",
+  "version": 1,
+  "created_at_task": "gap_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "json",
+    "sys",
+    "traceback",
+    "urllib"
+  ]
+}

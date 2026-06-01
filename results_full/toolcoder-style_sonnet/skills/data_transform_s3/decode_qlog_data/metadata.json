@@ -1,0 +1,12 @@
+{
+  "name": "decode_qlog_data",
+  "version": 1,
+  "created_at_task": "regress_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "struct",
+    "sys",
+    "traceback"
+  ]
+}

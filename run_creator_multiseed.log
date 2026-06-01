@@ -1,0 +1,1824 @@
+[23:33:10] >>> CREATOR-style/Sonnet seed1
+/Users/alibek/anaconda3/lib/python3.11/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.1.0)/charset_normalizer (2.0.4) doesn't match a supported version!
+  warnings.warn(
+Running creator-style/sonnet on 9 sessions
+
+============================================================
+[creator-style/sonnet] SESSION 1/9: Proprietary Format Processing (ABR + RLE)
+============================================================
+
+=== Session: Proprietary Format Processing (ABR + RLE) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+name,age,city
+Alice,30...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "evolvetool-bench-2026"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+product,price,q...
+             ✓ PASS
+[4/11] GAP          | Decode this ARISE Binary Record (ABR) format data. The forma...
+             ✓ PASS
+[5/11] GAP          | Parse this Run-Length Encoded (RLE) matrix format and recons...
+             ✓ PASS
+[6/11] VARIANT      | Decode this ABR (ARISE Binary Record) format data. Same form...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Parse this RLE matrix. Same format as before.
+
+Data: 2,6;5:2...
+             ✓ PASS
+[8/11] COMPOSE      | Decode this ABR data, then compute the SHA-256 hash of each ...
+             ✗ FAIL [CREATED: decode_abr_and_hash_names]
+[9/11] REGRESS      | Decode this ABR data (same format as before):
+
+Data: AgRpdGV...
+             ✗ PARTIAL [CREATED: decode_abr_to_json] [REUSED]
+[10/11] ADVERSARIAL  | Decode this ABR data. WARNING: some field values may contain...
+             ✓ PASS [CREATED: decode_abr_data]
+[11/11] ADVERSARIAL  | Parse this RLE matrix. Note: contains zero-length runs, nega...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s1
+  task_completion: 0.864
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 1.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.667
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.389
+  safety_score: 1.000
+  total_llm_calls: 37
+  evolvetool_score: 0.549
+
+============================================================
+[creator-style/sonnet] SESSION 2/9: Custom Schema Language (VDL)
+============================================================
+
+=== Session: Custom Schema Language (VDL) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+field,type,required
+us...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "vdl-schema-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+schema,version,...
+             ✓ PASS
+[4/11] GAP          | Parse this VDL (Validation Definition Language) schema into ...
+             ✗ FAIL
+[5/11] GAP          | Validate data records against a parsed VDL schema. The schem...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this VDL schema (same format as before):
+
+@schema Prod...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Validate these product records against the product schema:
+
+...
+             ✗ FAIL
+[8/11] COMPOSE      | Parse this VDL schema, then validate the given records again...
+             ✗ FAIL
+[9/11] REGRESS      | Parse this VDL schema (same format as before):
+
+@schema Sens...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Parse this VDL schema with nested objects and array fields:
+...
+             ✓ PASS [CREATED: parse_vdl_schema]
+[11/11] ADVERSARIAL  | Validate these edge-case records against the user schema:
+
+S...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s2
+  task_completion: 0.364
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.278
+  safety_score: 1.000
+  total_llm_calls: 33
+  evolvetool_score: 0.394
+
+============================================================
+[creator-style/sonnet] SESSION 3/9: Proprietary Log Format (QLOG)
+============================================================
+
+=== Session: Proprietary Log Format (QLOG) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+severity,count
+INFO,3
+...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "qlog-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+subsystem,name
+...
+             ✓ PASS
+[4/11] GAP          | Decode this QLOG (Quantized Log Format) binary data into str...
+             ✓ PASS [CREATED: decode_qlog_data]
+[5/11] GAP          | Filter and aggregate parsed QLOG records.
+
+Given these parse...
+             ✓ PASS
+[6/11] VARIANT      | Decode this QLOG data (same format as before):
+
+Data: AMeDAB...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Filter these parsed log records to severity WARN and above:
+...
+             ✓ PASS
+[8/11] COMPOSE      | Decode this QLOG data, then count entries by severity level....
+             ✓ PASS
+[9/11] REGRESS      | Decode this QLOG data (same format as before):
+
+Data: APM8wD...
+             ✓ PASS [REUSED]
+[10/11] ADVERSARIAL  | Decode this QLOG data that includes context fields.
+
+Extende...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Decode this QLOG data with continuation entries (flags bit 2...
+             ✗ PARTIAL
+
+=== Results ===
+  session_id: data_transform_s3
+  task_completion: 0.955
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 1.000
+    compose: 1.000
+    regress: 1.000
+    adversarial: 0.500
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.667
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 1.000
+  regression_rate: 0.000
+  library_health: 0.778
+  safety_score: 1.000
+  total_llm_calls: 36
+  evolvetool_score: 0.689
+
+============================================================
+[creator-style/sonnet] SESSION 4/9: Custom Serialization Format (TPACK)
+============================================================
+
+=== Session: Custom Serialization Format (TPACK) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+tag,type,size
+0x10,uin...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "tpack-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+name,active,sco...
+             ✓ PASS
+[4/11] GAP          | Deserialize this TPACK (Tagged Pack Format) binary data into...
+             ✓ PASS
+[5/11] GAP          | Query/filter deserialized TPACK data. Given this list of use...
+             ✓ PASS
+[6/11] VARIANT      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ PARTIAL [CREATED: deserialize_tpack_data]
+[7/11] VARIANT      | Filter these product records to only those with price > 10.0...
+             ✓ PASS
+[8/11] COMPOSE      | Deserialize this TPACK data, then filter the resulting recor...
+             ✗ FAIL [CREATED: deserialize_and_filter_tpack_data]
+[9/11] REGRESS      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL [CREATED: deserialize_tpack_data]
+[10/11] ADVERSARIAL  | Deserialize this TPACK data that contains:
+- Deeply nested m...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Query this deserialized TPACK data (a single order object, n...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s4
+  task_completion: 0.591
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.250
+  safety_score: 1.000
+  total_llm_calls: 42
+  evolvetool_score: 0.435
+
+============================================================
+[creator-style/sonnet] SESSION 5/9: Custom Checksum & Integrity Format (GUARDIAN)
+============================================================
+
+=== Session: Custom Checksum & Integrity Format (GUARDIAN) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+block_id,crc_valid,par...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "guardian-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+group,block_cou...
+             ✓ PASS
+[4/11] GAP          | Decode and verify this GUARDIAN (Guarded Data Integrity Arch...
+             ✓ PASS [CREATED: decode_guardian_format]
+[5/11] GAP          | Repair a corrupted GUARDIAN block using parity data.
+
+Given ...
+             ✗ FAIL
+[6/11] VARIANT      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Repair this corrupted GUARDIAN data (same format as before):...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Decode this GUARDIAN data, check integrity, and if any block...
+             ✗ FAIL
+[9/11] REGRESS      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Decode this GUARDIAN data that has TWO corrupted blocks in t...
+             ✗ FAIL [CREATED: decode_guardian_with_double_corruption]
+[11/11] ADVERSARIAL  | Decode this minimal GUARDIAN data (single block, only 2 byte...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s5
+  task_completion: 0.364
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 2
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 1.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.417
+  safety_score: 1.000
+  total_llm_calls: 39
+  evolvetool_score: 0.430
+
+============================================================
+[creator-style/sonnet] SESSION 6/9: API Authentication & Paginated Retrieval
+============================================================
+
+=== Session: API Authentication & Paginated Retrieval ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Check if the API server is healthy by making a GET request t...
+             ✓ PASS
+[2/11] SEED         | Get the authentication info from http://127.0.0.1:18080/auth...
+             ✓ PASS
+[3/11] SEED         | Make a GET request to http://127.0.0.1:18080/api/users (with...
+             ✓ PASS
+[4/11] GAP          | Authenticate with the API at http://127.0.0.1:18080. First, ...
+             ✓ PASS [CREATED: authenticate_and_fetch_users]
+[5/11] GAP          | Fetch ALL users from http://127.0.0.1:18080/api/users. The A...
+             ✓ PASS [CREATED: fetch_all_users_with_pagination]
+[6/11] VARIANT      | Authenticate with http://127.0.0.1:18080 and fetch the user ...
+             ✓ PASS [CREATED: fetch_user_with_basic_auth] [REUSED]
+[7/11] VARIANT      | Fetch ALL metrics from http://127.0.0.1:18080/api/metrics. S...
+             ✓ PASS [CREATED: fetch_all_metrics_count] [REUSED]
+[8/11] COMPOSE      | Authenticate with http://127.0.0.1:18080, fetch ALL users (f...
+             ✗ FAIL
+[9/11] REGRESS      | Authenticate with http://127.0.0.1:18080 and fetch the first...
+             ✓ PASS [CREATED: authenticate_and_fetch_users] [REUSED]
+[10/11] ADVERSARIAL  | Authenticate with http://127.0.0.1:18080 and fetch users. WA...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+[11/11] ADVERSARIAL  | Fetch events from http://127.0.0.1:18080/api/events filtered...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+
+=== Results ===
+  session_id: api_orchestration_s1
+  task_completion: 0.909
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 1.000
+    compose: 0.000
+    regress: 1.000
+    adversarial: 1.000
+  tools_created: 5
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 1.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.750
+  composition_success: 0.000
+  regression_rate: 0.000
+  library_health: 0.625
+  safety_score: 1.000
+  total_llm_calls: 63
+  evolvetool_score: 0.608
+
+============================================================
+[creator-style/sonnet] SESSION 7/9: Custom Curve Fitting (ARCFIT format)
+============================================================
+
+=== Session: Custom Curve Fitting (ARCFIT format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for this dataset:
+[4.2, 7.8, 3.1, 9.5, 2....
+             ✓ PASS
+[2/11] SEED         | Solve this 2×2 linear system for [x, y]:
+  2x + 3y = 8
+  5x ...
+             ✓ PASS
+[3/11] SEED         | A sensor reads 14.7 at t=2.0 and 31.3 at t=6.0. Use linear i...
+             ✓ PASS
+[4/11] GAP          | Parse and fit the following ARCFIT model specification.
+
+ARC...
+             ✗ FAIL [CREATED: parse_and_fit_arcfit_model]
+[5/11] GAP          | Evaluate a previously fitted ARCFIT model on new x values.
+
+...
+             ✗ FAIL
+[6/11] VARIANT      | Fit an ARCFIT model specification. Same format as before.
+
+S...
+             ✗ FAIL [CREATED: fit_arcfit_power_law_model] [REUSED]
+[7/11] VARIANT      | Evaluate an ARCFIT fitted model on query points. Same format...
+             ✓ PASS [CREATED: evaluate_arcfit_model] [REUSED]
+[8/11] COMPOSE      | Fit the ARCFIT model, then evaluate it on x = [0, 2, 4, 6, 8...
+             ✗ FAIL [CREATED: fit_arcfit_exp_decay_model]
+[9/11] REGRESS      | Fit the ARCFIT model below (same format as before):
+
+Spec: M...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Fit this ARCFIT spec. WARNING: the data has significant meas...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Evaluate this ARCFIT model at edge-case x values including 0...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s1
+  task_completion: 0.545
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 4
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.500
+  safety_score: 1.000
+  total_llm_calls: 53
+  evolvetool_score: 0.488
+
+============================================================
+[creator-style/sonnet] SESSION 8/9: Custom Signal Processing (ARCSIG format)
+============================================================
+
+=== Session: Custom Signal Processing (ARCSIG format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for these signal amplitude samples:
+[0.84...
+             ✓ PASS
+[2/11] SEED         | A signal is sampled at 50 Hz. At t=0.1 s the amplitude is 3....
+             ✓ PASS
+[3/11] SEED         | Solve for [A, B] in the linear system:
+  3A + 2B = 14
+  A  -...
+             ✓ PASS
+[4/11] GAP          | Decode the following ARCSIG signal and compute its one-sided...
+             ✗ PARTIAL [CREATED: decode_arcsig_and_compute_spectrum]
+[5/11] GAP          | Apply a band-pass filter to an ARCSIG signal.
+
+Filter spec f...
+             ✓ PASS [CREATED: apply_bandpass_filter_to_arcsig]
+[6/11] VARIANT      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Apply a band-pass filter to this ARCSIG signal. Same format ...
+             ✓ PASS [REUSED]
+[8/11] COMPOSE      | Decode the ARCSIG signal, apply the band-pass filter to isol...
+             ✓ PASS [CREATED: decode_and_filter_arcsig_signal]
+[9/11] REGRESS      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ PARTIAL [REUSED]
+[10/11] ADVERSARIAL  | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✓ PASS [CREATED: decode_arcsig_and_compute_spectrum]
+[11/11] ADVERSARIAL  | Apply a very narrow band-pass filter to an ARCSIG signal. Th...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s2
+  task_completion: 0.818
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 4
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.667
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.611
+  safety_score: 1.000
+  total_llm_calls: 43
+  evolvetool_score: 0.599
+
+============================================================
+[creator-style/sonnet] SESSION 9/9: Custom Optimization Format (ARCOPT)
+============================================================
+
+=== Session: Custom Optimization Format (ARCOPT) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Solve this 2×2 linear system:
+  4x + y = 9
+  2x - 3y = 1
+
+Re...
+             ✓ PASS
+[2/11] SEED         | An optimization solver returns objective values at three ite...
+             ✓ PASS
+[3/11] SEED         | A constraint boundary passes through (0, 5) and (10, 0). Use...
+             ✓ PASS
+[4/11] GAP          | Parse the following ARCOPT optimization problem specificatio...
+             ✗ FAIL
+[5/11] GAP          | Solve the following ARCOPT optimization problem — find the v...
+             ✓ PASS [CREATED: solve_arcopt_problem]
+[6/11] VARIANT      | Parse this ARCOPT problem specification. Same format as befo...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Solve this ARCOPT optimization problem. Same format as befor...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Parse and solve this ARCOPT problem. Then sample 5 evenly sp...
+             ✓ PASS [CREATED: solve_arcopt_quadratic_problem]
+[9/11] REGRESS      | Parse this ARCOPT problem (same format as before):
+
+Spec: AR...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the constrain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the objective...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s3
+  task_completion: 0.636
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 2
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 1.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.583
+  safety_score: 1.000
+  total_llm_calls: 42
+  evolvetool_score: 0.546
+
+  creator-style/sonnet: ETS=0.622 TC=0.672 Tools=25
+
+Done!
+[23:55:54] >>> CREATOR-style/Sonnet seed2
+/Users/alibek/anaconda3/lib/python3.11/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.1.0)/charset_normalizer (2.0.4) doesn't match a supported version!
+  warnings.warn(
+Running creator-style/sonnet on 9 sessions
+
+============================================================
+[creator-style/sonnet] SESSION 1/9: Proprietary Format Processing (ABR + RLE)
+============================================================
+
+=== Session: Proprietary Format Processing (ABR + RLE) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+name,age,city
+Alice,30...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "evolvetool-bench-2026"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+product,price,q...
+             ✓ PASS
+[4/11] GAP          | Decode this ARISE Binary Record (ABR) format data. The forma...
+             ✓ PASS
+[5/11] GAP          | Parse this Run-Length Encoded (RLE) matrix format and recons...
+             ✓ PASS
+[6/11] VARIANT      | Decode this ABR (ARISE Binary Record) format data. Same form...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Parse this RLE matrix. Same format as before.
+
+Data: 2,6;5:2...
+             ✗ FAIL
+[8/11] COMPOSE      | Decode this ABR data, then compute the SHA-256 hash of each ...
+             ✓ PASS
+[9/11] REGRESS      | Decode this ABR data (same format as before):
+
+Data: AgRpdGV...
+             ✓ PASS [REUSED]
+[10/11] ADVERSARIAL  | Decode this ABR data. WARNING: some field values may contain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Parse this RLE matrix. Note: contains zero-length runs, nega...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s1
+  task_completion: 0.909
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 1.000
+    regress: 1.000
+    adversarial: 1.000
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.667
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 0.000
+  library_health: 0.611
+  safety_score: 1.000
+  total_llm_calls: 37
+  evolvetool_score: 0.627
+
+============================================================
+[creator-style/sonnet] SESSION 2/9: Custom Schema Language (VDL)
+============================================================
+
+=== Session: Custom Schema Language (VDL) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+field,type,required
+us...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "vdl-schema-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+schema,version,...
+             ✓ PASS
+[4/11] GAP          | Parse this VDL (Validation Definition Language) schema into ...
+             ✗ FAIL [CREATED: parse_vdl_schema]
+[5/11] GAP          | Validate data records against a parsed VDL schema. The schem...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this VDL schema (same format as before):
+
+@schema Prod...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Validate these product records against the product schema:
+
+...
+             ✗ FAIL
+[8/11] COMPOSE      | Parse this VDL schema, then validate the given records again...
+             ✗ FAIL
+[9/11] REGRESS      | Parse this VDL schema (same format as before):
+
+@schema Sens...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Parse this VDL schema with nested objects and array fields:
+...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Validate these edge-case records against the user schema:
+
+S...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s2
+  task_completion: 0.364
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.444
+  safety_score: 1.000
+  total_llm_calls: 35
+  evolvetool_score: 0.442
+
+============================================================
+[creator-style/sonnet] SESSION 3/9: Proprietary Log Format (QLOG)
+============================================================
+
+=== Session: Proprietary Log Format (QLOG) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+severity,count
+INFO,3
+...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "qlog-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+subsystem,name
+...
+             ✓ PASS
+[4/11] GAP          | Decode this QLOG (Quantized Log Format) binary data into str...
+             ✓ PASS
+[5/11] GAP          | Filter and aggregate parsed QLOG records.
+
+Given these parse...
+             ✓ PASS
+[6/11] VARIANT      | Decode this QLOG data (same format as before):
+
+Data: AMeDAB...
+             ✗ FAIL [CREATED: decode_qlog_data] [REUSED]
+[7/11] VARIANT      | Filter these parsed log records to severity WARN and above:
+...
+             ✓ PASS
+[8/11] COMPOSE      | Decode this QLOG data, then count entries by severity level....
+             ✓ PASS
+[9/11] REGRESS      | Decode this QLOG data (same format as before):
+
+Data: APM8wD...
+             ✗ PARTIAL [CREATED: decode_qlog_data]
+[10/11] ADVERSARIAL  | Decode this QLOG data that includes context fields.
+
+Extende...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+[11/11] ADVERSARIAL  | Decode this QLOG data with continuation entries (flags bit 2...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s3
+  task_completion: 0.773
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 2
+  mean_tool_quality: 0.000
+  reuse_rate: 0.333
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.556
+  safety_score: 1.000
+  total_llm_calls: 35
+  evolvetool_score: 0.578
+
+============================================================
+[creator-style/sonnet] SESSION 4/9: Custom Serialization Format (TPACK)
+============================================================
+
+=== Session: Custom Serialization Format (TPACK) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+tag,type,size
+0x10,uin...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "tpack-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+name,active,sco...
+             ✓ PASS
+[4/11] GAP          | Deserialize this TPACK (Tagged Pack Format) binary data into...
+             ✓ PASS
+[5/11] GAP          | Query/filter deserialized TPACK data. Given this list of use...
+             ✓ PASS
+[6/11] VARIANT      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL [CREATED: deserialize_tpack_data]
+[7/11] VARIANT      | Filter these product records to only those with price > 10.0...
+             ✓ PASS
+[8/11] COMPOSE      | Deserialize this TPACK data, then filter the resulting recor...
+             ✗ FAIL [CREATED: deserialize_tpack_and_filter_available]
+[9/11] REGRESS      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL [CREATED: deserialize_tpack_data]
+[10/11] ADVERSARIAL  | Deserialize this TPACK data that contains:
+- Deeply nested m...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Query this deserialized TPACK data (a single order object, n...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s4
+  task_completion: 0.545
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.250
+  safety_score: 1.000
+  total_llm_calls: 40
+  evolvetool_score: 0.425
+
+============================================================
+[creator-style/sonnet] SESSION 5/9: Custom Checksum & Integrity Format (GUARDIAN)
+============================================================
+
+=== Session: Custom Checksum & Integrity Format (GUARDIAN) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+block_id,crc_valid,par...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "guardian-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+group,block_cou...
+             ✓ PASS
+[4/11] GAP          | Decode and verify this GUARDIAN (Guarded Data Integrity Arch...
+             ✗ FAIL
+[5/11] GAP          | Repair a corrupted GUARDIAN block using parity data.
+
+Given ...
+             ✗ FAIL [CREATED: repair_guardian_block]
+[6/11] VARIANT      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [CREATED: decode_guardian_data] [REUSED]
+[7/11] VARIANT      | Repair this corrupted GUARDIAN data (same format as before):...
+             ✗ FAIL [CREATED: repair_guardian_data_advanced] [REUSED]
+[8/11] COMPOSE      | Decode this GUARDIAN data, check integrity, and if any block...
+             ✗ FAIL
+[9/11] REGRESS      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Decode this GUARDIAN data that has TWO corrupted blocks in t...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Decode this minimal GUARDIAN data (single block, only 2 byte...
+             ✗ FAIL [CREATED: decode_guardian_data]
+
+=== Results ===
+  session_id: data_transform_s5
+  task_completion: 0.273
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 4
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 1.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.500
+  safety_score: 1.000
+  total_llm_calls: 49
+  evolvetool_score: 0.424
+
+============================================================
+[creator-style/sonnet] SESSION 6/9: API Authentication & Paginated Retrieval
+============================================================
+
+=== Session: API Authentication & Paginated Retrieval ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Check if the API server is healthy by making a GET request t...
+             ✓ PASS
+[2/11] SEED         | Get the authentication info from http://127.0.0.1:18080/auth...
+             ✓ PASS
+[3/11] SEED         | Make a GET request to http://127.0.0.1:18080/api/users (with...
+             ✓ PASS [CREATED: make_http_get_request]
+[4/11] GAP          | Authenticate with the API at http://127.0.0.1:18080. First, ...
+             ✓ PASS [CREATED: authenticate_and_fetch_users]
+[5/11] GAP          | Fetch ALL users from http://127.0.0.1:18080/api/users. The A...
+             ✓ PASS [CREATED: fetch_all_users_with_pagination]
+[6/11] VARIANT      | Authenticate with http://127.0.0.1:18080 and fetch the user ...
+             ✓ PASS [CREATED: fetch_user_with_basic_auth] [REUSED]
+[7/11] VARIANT      | Fetch ALL metrics from http://127.0.0.1:18080/api/metrics. S...
+             ✓ PASS [CREATED: fetch_all_metrics_count] [REUSED]
+[8/11] COMPOSE      | Authenticate with http://127.0.0.1:18080, fetch ALL users (f...
+             ✗ FAIL [CREATED: fetch_all_users_and_compute_average_score]
+[9/11] REGRESS      | Authenticate with http://127.0.0.1:18080 and fetch the first...
+             ✓ PASS [CREATED: authenticate_and_fetch_users] [REUSED]
+[10/11] ADVERSARIAL  | Authenticate with http://127.0.0.1:18080 and fetch users. WA...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+[11/11] ADVERSARIAL  | Fetch events from http://127.0.0.1:18080/api/events filtered...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+
+=== Results ===
+  session_id: api_orchestration_s1
+  task_completion: 0.909
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 1.000
+    compose: 0.000
+    regress: 1.000
+    adversarial: 1.000
+  tools_created: 7
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 1.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 0.000
+  regression_rate: 0.000
+  library_health: 0.583
+  safety_score: 1.000
+  total_llm_calls: 61
+  evolvetool_score: 0.597
+
+============================================================
+[creator-style/sonnet] SESSION 7/9: Custom Curve Fitting (ARCFIT format)
+============================================================
+
+=== Session: Custom Curve Fitting (ARCFIT format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for this dataset:
+[4.2, 7.8, 3.1, 9.5, 2....
+             ✓ PASS
+[2/11] SEED         | Solve this 2×2 linear system for [x, y]:
+  2x + 3y = 8
+  5x ...
+             ✓ PASS
+[3/11] SEED         | A sensor reads 14.7 at t=2.0 and 31.3 at t=6.0. Use linear i...
+             ✓ PASS
+[4/11] GAP          | Parse and fit the following ARCFIT model specification.
+
+ARC...
+             ✓ PASS [CREATED: parse_and_fit_arcfit_model]
+[5/11] GAP          | Evaluate a previously fitted ARCFIT model on new x values.
+
+...
+             ✗ FAIL
+[6/11] VARIANT      | Fit an ARCFIT model specification. Same format as before.
+
+S...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Evaluate an ARCFIT fitted model on query points. Same format...
+             ✓ PASS [CREATED: evaluate_arcfit_model] [REUSED]
+[8/11] COMPOSE      | Fit the ARCFIT model, then evaluate it on x = [0, 2, 4, 6, 8...
+             ✓ PASS [CREATED: fit_arcfit_exponential_decay]
+[9/11] REGRESS      | Fit the ARCFIT model below (same format as before):
+
+Spec: M...
+             ✓ PASS [REUSED]
+[10/11] ADVERSARIAL  | Fit this ARCFIT spec. WARNING: the data has significant meas...
+             ✓ PASS [CREATED: fit_exponential_decay_arcfit]
+[11/11] ADVERSARIAL  | Evaluate this ARCFIT model at edge-case x values including 0...
+             ✓ PASS [CREATED: evaluate_arcfit_exponential_decay]
+
+=== Results ===
+  session_id: numerical_s1
+  task_completion: 0.909
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 1.000
+    compose: 1.000
+    regress: 1.000
+    adversarial: 1.000
+  tools_created: 5
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 1.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.600
+  composition_success: 1.000
+  regression_rate: 0.000
+  library_health: 0.767
+  safety_score: 1.000
+  total_llm_calls: 54
+  evolvetool_score: 0.658
+
+============================================================
+[creator-style/sonnet] SESSION 8/9: Custom Signal Processing (ARCSIG format)
+============================================================
+
+=== Session: Custom Signal Processing (ARCSIG format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for these signal amplitude samples:
+[0.84...
+             ✓ PASS
+[2/11] SEED         | A signal is sampled at 50 Hz. At t=0.1 s the amplitude is 3....
+             ✓ PASS
+[3/11] SEED         | Solve for [A, B] in the linear system:
+  3A + 2B = 14
+  A  -...
+             ✓ PASS
+[4/11] GAP          | Decode the following ARCSIG signal and compute its one-sided...
+             ✗ PARTIAL [CREATED: decode_arcsig_and_compute_spectrum]
+[5/11] GAP          | Apply a band-pass filter to an ARCSIG signal.
+
+Filter spec f...
+             ✓ PASS [CREATED: apply_bandpass_filter_to_arcsig]
+[6/11] VARIANT      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ PARTIAL [REUSED]
+[7/11] VARIANT      | Apply a band-pass filter to this ARCSIG signal. Same format ...
+             ✓ PASS [REUSED]
+[8/11] COMPOSE      | Decode the ARCSIG signal, apply the band-pass filter to isol...
+             ✓ PASS [CREATED: decode_and_filter_arcsig_signal]
+[9/11] REGRESS      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ PARTIAL [REUSED]
+[10/11] ADVERSARIAL  | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✓ PASS [CREATED: decode_arcsig_and_compute_spectrum]
+[11/11] ADVERSARIAL  | Apply a very narrow band-pass filter to an ARCSIG signal. Th...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s2
+  task_completion: 0.864
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 4
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.333
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.667
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.611
+  safety_score: 1.000
+  total_llm_calls: 44
+  evolvetool_score: 0.609
+
+============================================================
+[creator-style/sonnet] SESSION 9/9: Custom Optimization Format (ARCOPT)
+============================================================
+
+=== Session: Custom Optimization Format (ARCOPT) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Solve this 2×2 linear system:
+  4x + y = 9
+  2x - 3y = 1
+
+Re...
+             ✓ PASS
+[2/11] SEED         | An optimization solver returns objective values at three ite...
+             ✓ PASS
+[3/11] SEED         | A constraint boundary passes through (0, 5) and (10, 0). Use...
+             ✓ PASS
+[4/11] GAP          | Parse the following ARCOPT optimization problem specificatio...
+             ✗ FAIL
+[5/11] GAP          | Solve the following ARCOPT optimization problem — find the v...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this ARCOPT problem specification. Same format as befo...
+             ✗ FAIL
+[7/11] VARIANT      | Solve this ARCOPT optimization problem. Same format as befor...
+             ✗ FAIL [CREATED: solve_arcopt_linear_program]
+[8/11] COMPOSE      | Parse and solve this ARCOPT problem. Then sample 5 evenly sp...
+             ✓ PASS
+[9/11] REGRESS      | Parse this ARCOPT problem (same format as before):
+
+Spec: AR...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the constrain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the objective...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s3
+  task_completion: 0.545
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.333
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.556
+  safety_score: 1.000
+  total_llm_calls: 45
+  evolvetool_score: 0.512
+
+  creator-style/sonnet: ETS=0.638 TC=0.677 Tools=27
+
+Done!
+[00:19:17] >>> CREATOR-style/Sonnet seed3
+/Users/alibek/anaconda3/lib/python3.11/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.1.0)/charset_normalizer (2.0.4) doesn't match a supported version!
+  warnings.warn(
+Running creator-style/sonnet on 9 sessions
+
+============================================================
+[creator-style/sonnet] SESSION 1/9: Proprietary Format Processing (ABR + RLE)
+============================================================
+
+=== Session: Proprietary Format Processing (ABR + RLE) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+name,age,city
+Alice,30...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "evolvetool-bench-2026"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+product,price,q...
+             ✓ PASS
+[4/11] GAP          | Decode this ARISE Binary Record (ABR) format data. The forma...
+             ✓ PASS
+[5/11] GAP          | Parse this Run-Length Encoded (RLE) matrix format and recons...
+             ✓ PASS
+[6/11] VARIANT      | Decode this ABR (ARISE Binary Record) format data. Same form...
+             ✓ PASS [REUSED]
+[7/11] VARIANT      | Parse this RLE matrix. Same format as before.
+
+Data: 2,6;5:2...
+             ✓ PASS
+[8/11] COMPOSE      | Decode this ABR data, then compute the SHA-256 hash of each ...
+             ✓ PASS [CREATED: decode_abr_and_hash_names]
+[9/11] REGRESS      | Decode this ABR data (same format as before):
+
+Data: AgRpdGV...
+             ✓ PASS [REUSED]
+[10/11] ADVERSARIAL  | Decode this ABR data. WARNING: some field values may contain...
+             ✓ PASS [CREATED: decode_abr_binary_data]
+[11/11] ADVERSARIAL  | Parse this RLE matrix. Note: contains zero-length runs, nega...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s1
+  task_completion: 1.000
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 1.000
+    compose: 1.000
+    regress: 1.000
+    adversarial: 1.000
+  tools_created: 2
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.667
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 1.000
+  regression_rate: 0.000
+  library_health: 0.694
+  safety_score: 1.000
+  total_llm_calls: 35
+  evolvetool_score: 0.677
+
+============================================================
+[creator-style/sonnet] SESSION 2/9: Custom Schema Language (VDL)
+============================================================
+
+=== Session: Custom Schema Language (VDL) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+field,type,required
+us...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "vdl-schema-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+schema,version,...
+             ✓ PASS
+[4/11] GAP          | Parse this VDL (Validation Definition Language) schema into ...
+             ✗ FAIL
+[5/11] GAP          | Validate data records against a parsed VDL schema. The schem...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this VDL schema (same format as before):
+
+@schema Prod...
+             ✗ FAIL [REUSED]
+[7/11] VARIANT      | Validate these product records against the product schema:
+
+...
+             ✗ FAIL
+[8/11] COMPOSE      | Parse this VDL schema, then validate the given records again...
+             ✗ FAIL
+[9/11] REGRESS      | Parse this VDL schema (same format as before):
+
+@schema Sens...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Parse this VDL schema with nested objects and array fields:
+...
+             ✓ PASS [CREATED: parse_vdl_schema]
+[11/11] ADVERSARIAL  | Validate these edge-case records against the user schema:
+
+S...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s2
+  task_completion: 0.364
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.278
+  safety_score: 1.000
+  total_llm_calls: 33
+  evolvetool_score: 0.394
+
+============================================================
+[creator-style/sonnet] SESSION 3/9: Proprietary Log Format (QLOG)
+============================================================
+
+=== Session: Proprietary Log Format (QLOG) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+severity,count
+INFO,3
+...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "qlog-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+subsystem,name
+...
+             ✓ PASS
+[4/11] GAP          | Decode this QLOG (Quantized Log Format) binary data into str...
+             ✓ PASS
+[5/11] GAP          | Filter and aggregate parsed QLOG records.
+
+Given these parse...
+             ✓ PASS
+[6/11] VARIANT      | Decode this QLOG data (same format as before):
+
+Data: AMeDAB...
+             ✗ PARTIAL
+[7/11] VARIANT      | Filter these parsed log records to severity WARN and above:
+...
+             ✓ PASS
+[8/11] COMPOSE      | Decode this QLOG data, then count entries by severity level....
+             ✗ FAIL [CREATED: decode_qlog_and_count_severity]
+[9/11] REGRESS      | Decode this QLOG data (same format as before):
+
+Data: APM8wD...
+             ✗ PARTIAL [REUSED]
+[10/11] ADVERSARIAL  | Decode this QLOG data that includes context fields.
+
+Extende...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Decode this QLOG data with continuation entries (flags bit 2...
+             ✓ PASS
+
+=== Results ===
+  session_id: data_transform_s3
+  task_completion: 0.818
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 1
+  mean_tool_quality: 0.000
+  reuse_rate: 0.333
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.389
+  safety_score: 1.000
+  total_llm_calls: 35
+  evolvetool_score: 0.539
+
+============================================================
+[creator-style/sonnet] SESSION 4/9: Custom Serialization Format (TPACK)
+============================================================
+
+=== Session: Custom Serialization Format (TPACK) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+tag,type,size
+0x10,uin...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "tpack-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+name,active,sco...
+             ✓ PASS
+[4/11] GAP          | Deserialize this TPACK (Tagged Pack Format) binary data into...
+             ✓ PASS
+[5/11] GAP          | Query/filter deserialized TPACK data. Given this list of use...
+             ✓ PASS
+[6/11] VARIANT      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL [CREATED: deserialize_tpack_data]
+[7/11] VARIANT      | Filter these product records to only those with price > 10.0...
+             ✓ PASS
+[8/11] COMPOSE      | Deserialize this TPACK data, then filter the resulting recor...
+             ✗ PARTIAL [CREATED: deserialize_and_filter_tpack_data]
+[9/11] REGRESS      | Deserialize this TPACK data (same format as before):
+
+Data: ...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Deserialize this TPACK data that contains:
+- Deeply nested m...
+             ✗ FAIL [CREATED: deserialize_tpack_data]
+[11/11] ADVERSARIAL  | Query this deserialized TPACK data (a single order object, n...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s4
+  task_completion: 0.591
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.333
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.306
+  safety_score: 1.000
+  total_llm_calls: 43
+  evolvetool_score: 0.450
+
+============================================================
+[creator-style/sonnet] SESSION 5/9: Custom Checksum & Integrity Format (GUARDIAN)
+============================================================
+
+=== Session: Custom Checksum & Integrity Format (GUARDIAN) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Read this CSV and convert it to JSON:
+block_id,crc_valid,par...
+             ✓ PASS
+[2/11] SEED         | Compute the SHA-256 hash of "guardian-format-v1"....
+             ✓ PASS
+[3/11] SEED         | Read this CSV, then output the data as JSON:
+group,block_cou...
+             ✓ PASS
+[4/11] GAP          | Decode and verify this GUARDIAN (Guarded Data Integrity Arch...
+             ✗ FAIL
+[5/11] GAP          | Repair a corrupted GUARDIAN block using parity data.
+
+Given ...
+             ✗ FAIL [CREATED: repair_guardian_block]
+[6/11] VARIANT      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [CREATED: decode_guardian_data] [REUSED]
+[7/11] VARIANT      | Repair this corrupted GUARDIAN data (same format as before):...
+             ✗ FAIL [CREATED: repair_guardian_data] [REUSED]
+[8/11] COMPOSE      | Decode this GUARDIAN data, check integrity, and if any block...
+             ✗ FAIL
+[9/11] REGRESS      | Decode and verify this GUARDIAN data (same format as before)...
+             ✗ FAIL [CREATED: decode_and_verify_guardian_data] [REUSED]
+[10/11] ADVERSARIAL  | Decode this GUARDIAN data that has TWO corrupted blocks in t...
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Decode this minimal GUARDIAN data (single block, only 2 byte...
+             ✗ FAIL
+
+=== Results ===
+  session_id: data_transform_s5
+  task_completion: 0.273
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 0.000
+    regress: 0.000
+    adversarial: 0.000
+  tools_created: 4
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 1.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 1.000
+  composition_success: 0.000
+  regression_rate: 1.000
+  library_health: 0.500
+  safety_score: 1.000
+  total_llm_calls: 49
+  evolvetool_score: 0.424
+
+============================================================
+[creator-style/sonnet] SESSION 6/9: API Authentication & Paginated Retrieval
+============================================================
+
+=== Session: API Authentication & Paginated Retrieval ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Check if the API server is healthy by making a GET request t...
+             ✓ PASS
+[2/11] SEED         | Get the authentication info from http://127.0.0.1:18080/auth...
+             ✓ PASS
+[3/11] SEED         | Make a GET request to http://127.0.0.1:18080/api/users (with...
+             ✓ PASS
+[4/11] GAP          | Authenticate with the API at http://127.0.0.1:18080. First, ...
+             ✓ PASS [CREATED: authenticate_and_fetch_users]
+[5/11] GAP          | Fetch ALL users from http://127.0.0.1:18080/api/users. The A...
+             ✓ PASS [CREATED: fetch_all_users_from_api]
+[6/11] VARIANT      | Authenticate with http://127.0.0.1:18080 and fetch the user ...
+             ✓ PASS [CREATED: fetch_authenticated_user] [REUSED]
+[7/11] VARIANT      | Fetch ALL metrics from http://127.0.0.1:18080/api/metrics. S...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Authenticate with http://127.0.0.1:18080, fetch ALL users (f...
+             ✗ FAIL [CREATED: fetch_all_users_and_compute_average_score]
+[9/11] REGRESS      | Authenticate with http://127.0.0.1:18080 and fetch the first...
+             ✓ PASS [CREATED: authenticate_and_fetch_users] [REUSED]
+[10/11] ADVERSARIAL  | Authenticate with http://127.0.0.1:18080 and fetch users. WA...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+[11/11] ADVERSARIAL  | Fetch events from http://127.0.0.1:18080/api/events filtered...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+
+=== Results ===
+  session_id: api_orchestration_s1
+  task_completion: 0.818
+  task_completion_by_type:
+    seed: 1.000
+    gap: 1.000
+    variant: 0.500
+    compose: 0.000
+    regress: 1.000
+    adversarial: 1.000
+  tools_created: 5
+  mean_tool_quality: 0.000
+  reuse_rate: 1.000
+  correct_reuse_rate: 0.667
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.750
+  composition_success: 0.000
+  regression_rate: 0.000
+  library_health: 0.625
+  safety_score: 1.000
+  total_llm_calls: 61
+  evolvetool_score: 0.587
+
+============================================================
+[creator-style/sonnet] SESSION 7/9: Custom Curve Fitting (ARCFIT format)
+============================================================
+
+=== Session: Custom Curve Fitting (ARCFIT format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for this dataset:
+[4.2, 7.8, 3.1, 9.5, 2....
+             ✓ PASS
+[2/11] SEED         | Solve this 2×2 linear system for [x, y]:
+  2x + 3y = 8
+  5x ...
+             ✓ PASS
+[3/11] SEED         | A sensor reads 14.7 at t=2.0 and 31.3 at t=6.0. Use linear i...
+             ✓ PASS
+[4/11] GAP          | Parse and fit the following ARCFIT model specification.
+
+ARC...
+             ✓ PASS
+[5/11] GAP          | Evaluate a previously fitted ARCFIT model on new x values.
+
+...
+             ✗ FAIL
+[6/11] VARIANT      | Fit an ARCFIT model specification. Same format as before.
+
+S...
+             ✗ FAIL [CREATED: fit_arcfit_model]
+[7/11] VARIANT      | Evaluate an ARCFIT fitted model on query points. Same format...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Fit the ARCFIT model, then evaluate it on x = [0, 2, 4, 6, 8...
+             ✓ PASS [CREATED: fit_arcfit_exponential_decay]
+[9/11] REGRESS      | Fit the ARCFIT model below (same format as before):
+
+Spec: M...
+             ✗ FAIL [REUSED]
+[10/11] ADVERSARIAL  | Fit this ARCFIT spec. WARNING: the data has significant meas...
+             ✓ PASS [CREATED: fit_exponential_decay_robust]
+[11/11] ADVERSARIAL  | Evaluate this ARCFIT model at edge-case x values including 0...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s1
+  task_completion: 0.636
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.667
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.667
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.667
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.556
+  safety_score: 1.000
+  total_llm_calls: 48
+  evolvetool_score: 0.532
+
+============================================================
+[creator-style/sonnet] SESSION 8/9: Custom Signal Processing (ARCSIG format)
+============================================================
+
+=== Session: Custom Signal Processing (ARCSIG format) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Compute statistics for these signal amplitude samples:
+[0.84...
+             ✓ PASS
+[2/11] SEED         | A signal is sampled at 50 Hz. At t=0.1 s the amplitude is 3....
+             ✓ PASS
+[3/11] SEED         | Solve for [A, B] in the linear system:
+  3A + 2B = 14
+  A  -...
+             ✓ PASS
+[4/11] GAP          | Decode the following ARCSIG signal and compute its one-sided...
+             ✗ PARTIAL [CREATED: decode_arcsig_and_compute_spectrum]
+[5/11] GAP          | Apply a band-pass filter to an ARCSIG signal.
+
+Filter spec f...
+             ✓ PASS [CREATED: apply_bandpass_filter_to_arcsig]
+[6/11] VARIANT      | Decode this ARCSIG signal and compute its frequency spectrum...
+             ✗ FAIL [CREATED: decode_arcsig_and_compute_spectrum]
+[7/11] VARIANT      | Apply a band-pass filter to this ARCSIG signal. Same format ...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+[8/11] COMPOSE      | Decode the ARCSIG signal, apply the band-pass filter to isol...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+[9/11] REGRESS      | Decode this ARCSIG signal and compute its frequency spectrum...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+[10/11] ADVERSARIAL  | Decode this ARCSIG signal and compute its frequency spectrum...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✗ FAIL
+[11/11] ADVERSARIAL  | Apply a very narrow band-pass filter to an ARCSIG signal. Th...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s2
+  task_completion: 0.682
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.500
+    variant: 0.500
+    compose: 1.000
+    regress: 0.000
+    adversarial: 0.500
+  tools_created: 3
+  mean_tool_quality: 0.000
+  reuse_rate: 0.000
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.000
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.500
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.417
+  safety_score: 1.000
+  total_llm_calls: 32
+  evolvetool_score: 0.516
+
+============================================================
+[creator-style/sonnet] SESSION 9/9: Custom Optimization Format (ARCOPT)
+============================================================
+
+=== Session: Custom Optimization Format (ARCOPT) ===
+Tasks: 11 | Seed tools: 3
+
+[1/11] SEED         | Solve this 2×2 linear system:
+  4x + y = 9
+  2x - 3y = 1
+
+Re...
+             ✓ PASS
+[2/11] SEED         | An optimization solver returns objective values at three ite...
+             ✓ PASS
+[3/11] SEED         | A constraint boundary passes through (0, 5) and (10, 0). Use...
+             ✓ PASS
+[4/11] GAP          | Parse the following ARCOPT optimization problem specificatio...
+             ✗ FAIL
+[5/11] GAP          | Solve the following ARCOPT optimization problem — find the v...
+             ✗ FAIL
+[6/11] VARIANT      | Parse this ARCOPT problem specification. Same format as befo...
+             ✗ FAIL
+[7/11] VARIANT      | Solve this ARCOPT optimization problem. Same format as befor...
+             ✗ FAIL [REUSED]
+[8/11] COMPOSE      | Parse and solve this ARCOPT problem. Then sample 5 evenly sp...
+             ✓ PASS
+[9/11] REGRESS      | Parse this ARCOPT problem (same format as before):
+
+Spec: AR...
+             ✗ FAIL
+[10/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the constrain...
+             ✓ PASS
+[11/11] ADVERSARIAL  | Attempt to solve this ARCOPT problem. WARNING: the objective...
+             ✓ PASS
+
+=== Results ===
+  session_id: numerical_s3
+  task_completion: 0.545
+  task_completion_by_type:
+    seed: 1.000
+    gap: 0.000
+    variant: 0.000
+    compose: 1.000
+    regress: 0.000
+    adversarial: 1.000
+  tools_created: 0
+  mean_tool_quality: 0.000
+  reuse_rate: 0.333
+  correct_reuse_rate: 0.000
+  incorrect_reuse_rate: 0.333
+  redundancy_rate: 0.000
+  library_precision: 0.000
+  creation_efficiency: 0.000
+  composition_success: 1.000
+  regression_rate: 1.000
+  library_health: 0.389
+  safety_score: 1.000
+  total_llm_calls: 34
+  evolvetool_score: 0.472
+
+  creator-style/sonnet: ETS=0.614 TC=0.636 Tools=22
+
+Done!
+[00:40:47] all CREATOR seeds done
+Loaded 29 aggregate files across 14 (system,model) combos
+  ('arise', 'gpt4o'): n=1
+  ('arise', 'haiku'): n=1
+  ('arise', 'sonnet'): n=4
+  ('arise-v2', 'sonnet'): n=1
+  ('creator-style', 'sonnet'): n=4
+  ('evoskill', 'gpt4o'): n=1
+  ('evoskill', 'sonnet'): n=4
+  ('no-evolution', 'gpt4o'): n=1
+  ('no-evolution', 'haiku'): n=1
+  ('no-evolution', 'sonnet'): n=4
+  ('oneshot', 'gpt4o'): n=1
+  ('oneshot', 'sonnet'): n=4
+  ('toolcoder-style', 'sonnet'): n=1
+  ('toolmaker-style', 'sonnet'): n=1
+
+Generated:
+  paper/v2/auto_results_table.tex
+  paper/v2/auto_results_summary.csv
+  paper/v2/fig_comparison.pdf
+  paper/kdd2026/auto_results_table.tex
+  paper/kdd2026/fig_comparison.pdf
+config                             n  bundle Q  struct   doc  meta  %pass
+---------------------------------------------------------------------------
+arise_sonnet_v2                   15     0.850   1.000 0.844 1.000 100.0%
+creator-style_sonnet              18     0.769   0.875 0.667 1.000 100.0%
+creator-style_sonnet_seed1        22     0.758   0.875 0.659 1.000 100.0%
+creator-style_sonnet_seed2        22     0.764   0.875 0.667 1.000 100.0%
+creator-style_sonnet_seed3        19     0.767   0.875 0.667 1.000 100.0%
+oneshot_sonnet_seed1               3     0.685   0.875 0.500 1.000 100.0%
+oneshot_sonnet_seed2               2     0.694   0.875 0.500 1.000 100.0%
+oneshot_sonnet_seed3               4     0.705   0.875 0.500 1.000 100.0%
+toolcoder-style_sonnet            15     0.741   0.875 0.500 1.000 100.0%

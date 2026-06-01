@@ -1,0 +1,11 @@
+{
+  "name": "process_signal_spectrum",
+  "version": 1,
+  "created_at_task": "gap_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "math",
+    "struct"
+  ]
+}

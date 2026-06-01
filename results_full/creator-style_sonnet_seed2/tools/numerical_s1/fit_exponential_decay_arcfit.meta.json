@@ -1,0 +1,12 @@
+{
+  "name": "fit_exponential_decay_arcfit",
+  "created_at_task": "adversarial_1",
+  "version": 1,
+  "scores": {
+    "tqs": 0.5416666666666666,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 0.6666666666666666
+  }
+}

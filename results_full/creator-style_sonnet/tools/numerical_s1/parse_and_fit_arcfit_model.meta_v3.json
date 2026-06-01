@@ -1,0 +1,21 @@
+{
+  "name": "parse_and_fit_arcfit_model",
+  "created_at_task": "gap_1",
+  "session_id": "numerical_s1",
+  "scores_v1": {
+    "tqs": 0.8333333333333333,
+    "correctness": 1.0,
+    "robustness": 0.6666666666666666,
+    "generality": 1.0,
+    "code_quality": 0.6666666666666666
+  },
+  "scores_v3": {
+    "tqs": 0.5520833333333333,
+    "correctness": 0.5,
+    "robustness": 0.5416666666666666,
+    "generality": 0.5,
+    "code_quality": 0.6666666666666666
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 12
+}

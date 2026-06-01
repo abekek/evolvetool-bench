@@ -324,24 +324,29 @@ TASKS = [
             "integrity": INTEGRITY_1,
         },
         hidden_tests=[
-            {
-                "input": {"data": GUARDIAN_TINY},
-                "expected": {
-                    "text": TEXT_TINY,
-                    "blocks": 1,
-                    "integrity": [{"block_id": 0, "crc_valid": True, "parity_valid": True}],
-                },
-            },
-            {
-                "input": {"data": GUARDIAN_3_CORRUPT},
-                "verify": ("any(not b['crc_valid'] for b in result['integrity'])"
-                           " and result['blocks'] > 0"),
-            },
+            # v1
+            {"input": {"data": GUARDIAN_TINY},
+             "expected": {"text": TEXT_TINY, "blocks": 1,
+                          "integrity": [{"block_id": 0, "crc_valid": True, "parity_valid": True}]}},
+            {"input": {"data": GUARDIAN_3_CORRUPT},
+             "verify": "any(not b['crc_valid'] for b in result['integrity']) and result['blocks'] > 0"},
+            # v3 expansion
+            {"input": {"data": GUARDIAN_1},
+             "verify": f"result['text'] == {TEXT_1!r} and all(b['crc_valid'] for b in result['integrity'])"},
+            {"input": {"data": _encode_guardian(b'Short text under 16 bytes')},
+             "verify": "result['text'] == 'Short text under 16 bytes' and result['blocks'] >= 1"},
+            {"input": {"data": _encode_guardian(b'A' * 64)},
+             "verify": "result['text'] == 'A' * 64 and result['blocks'] == 4"},
         ],
         adversarial_tests=[
-            {"input": {"data": ""}},                                    # empty
-            {"input": {"data": base64.b64encode(b'\x47\x44').decode()}},  # truncated header
-            {"input": {"data": base64.b64encode(b'\x00\x00\x01\x10\x03\x00').decode()}},  # wrong magic
+            # v1
+            {"input": {"data": ""}},
+            {"input": {"data": base64.b64encode(b'\x47\x44').decode()}},
+            {"input": {"data": base64.b64encode(b'\x00\x00\x01\x10\x03\x00').decode()}},
+            # v3 expansion
+            {"input": {"data": "!!!not-base64!!!"}},
+            {"input": {"data": base64.b64encode(b'\x47\x44\x01\x10\xff\xff').decode()}},  # impossible block count
+            {"input": {"data": base64.b64encode(b'\x47\x44' + b'\x00' * 100).decode()}},   # header ok, junk body
         ],
     ),
     Task(
@@ -369,26 +374,27 @@ TASKS = [
             "repair_success": True,
         },
         hidden_tests=[
-            {
-                "input": {"data": GUARDIAN_4_CORRUPT},
-                "expected": {
-                    "repaired_text": TEXT_4,
-                    "corrupted_blocks": [2],
-                    "repair_success": True,
-                },
-            },
-            {
-                "input": {"data": GUARDIAN_1},  # no corruption
-                "expected": {
-                    "repaired_text": TEXT_1,
-                    "corrupted_blocks": [],
-                    "repair_success": True,
-                },
-            },
+            # v1
+            {"input": {"data": GUARDIAN_4_CORRUPT},
+             "expected": {"repaired_text": TEXT_4, "corrupted_blocks": [2], "repair_success": True}},
+            {"input": {"data": GUARDIAN_1},
+             "expected": {"repaired_text": TEXT_1, "corrupted_blocks": [], "repair_success": True}},
+            # v3 expansion (use uncorrupted reference data for verifiability)
+            {"input": {"data": _encode_guardian(b'Plain undamaged input data here')},
+             "verify": "result['corrupted_blocks'] == [] and result['repair_success'] is True"},
+            {"input": {"data": _encode_guardian(b'Another clean payload XXX')},
+             "verify": "result['repair_success'] is True"},
+            {"input": {"data": _corrupt_block(_encode_guardian(b'Sixteen bytes a' * 3), block_id=0)},
+             "verify": "0 in result['corrupted_blocks']"},
         ],
         adversarial_tests=[
+            # v1
             {"input": {"data": ""}},
-            {"input": {"data": GUARDIAN_ADV_DOUBLE}},  # double corruption — unrepairable
+            {"input": {"data": GUARDIAN_ADV_DOUBLE}},
+            # v3 expansion
+            {"input": {"data": "!!!not-base64!!!"}},
+            {"input": {"data": base64.b64encode(b'\x47\x44\x00\x00').decode()}},   # truncated header
+            {"input": {"data": base64.b64encode(b'\x47\x44\x01\x10\x00\x00').decode()}},  # zero blocks
         ],
     ),
 

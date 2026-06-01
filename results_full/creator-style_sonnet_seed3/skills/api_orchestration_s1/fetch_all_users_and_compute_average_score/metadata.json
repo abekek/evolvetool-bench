@@ -1,0 +1,11 @@
+{
+  "name": "fetch_all_users_and_compute_average_score",
+  "version": 1,
+  "created_at_task": "compose_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "json",
+    "urllib"
+  ]
+}

@@ -286,19 +286,27 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=USERS_DATA,
         hidden_tests=[
-            {
-                "input": {"data": TPACK_SINGLE},
-                "expected": SINGLE_RECORD,
-            },
-            {
-                "input": {"data": _encode_tpack_b64([1, "two", 3.0, None, True])},
-                "expected": [1, "two", 3.0, None, True],
-            },
+            # v1
+            {"input": {"data": TPACK_SINGLE}, "expected": SINGLE_RECORD},
+            {"input": {"data": _encode_tpack_b64([1, "two", 3.0, None, True])},
+             "expected": [1, "two", 3.0, None, True]},
+            # v3 expansion
+            {"input": {"data": _encode_tpack_b64({"key": "value", "num": 42})},
+             "expected": {"key": "value", "num": 42}},
+            {"input": {"data": _encode_tpack_b64([])},
+             "expected": []},
+            {"input": {"data": _encode_tpack_b64([{"a": 1}, {"a": 2}, {"a": 3}])},
+             "expected": [{"a": 1}, {"a": 2}, {"a": 3}]},
         ],
         adversarial_tests=[
-            {"input": {"data": ""}},                           # empty
-            {"input": {"data": "AQ=="}},                       # just null (tag 0x01)
-            {"input": {"data": base64.b64encode(b'\xFF').decode()}},  # unknown tag
+            # v1
+            {"input": {"data": ""}},
+            {"input": {"data": "AQ=="}},
+            {"input": {"data": base64.b64encode(b'\xFF').decode()}},
+            # v3 expansion
+            {"input": {"data": "not-base64-at-all"}},
+            {"input": {"data": base64.b64encode(b'\x05\x80\x80\x80\x80').decode()}},   # malformed varint
+            {"input": {"data": base64.b64encode(b'\x06\x10unfinished').decode()}},     # truncated string payload
         ],
     ),
     Task(
@@ -312,27 +320,28 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=ACTIVE_USERS,
         hidden_tests=[
-            {
-                "input": {
-                    "records": PRODUCTS_DATA,
-                    "filter_field": "available",
-                    "filter_value": True,
-                },
-                "expected": AVAILABLE_PRODUCTS,
-            },
-            {
-                "input": {
-                    "records": USERS_DATA,
-                    "filter_field": "role",
-                    "filter_value": "admin",
-                },
-                "expected": [USERS_DATA[0]],
-            },
+            # v1
+            {"input": {"records": PRODUCTS_DATA, "filter_field": "available", "filter_value": True},
+             "expected": AVAILABLE_PRODUCTS},
+            {"input": {"records": USERS_DATA, "filter_field": "role", "filter_value": "admin"},
+             "expected": [USERS_DATA[0]]},
+            # v3 expansion
+            {"input": {"records": USERS_DATA, "filter_field": "active", "filter_value": False},
+             "verify": "all(not r['active'] for r in result)"},
+            {"input": {"records": USERS_DATA, "filter_field": "role", "filter_value": "user"},
+             "verify": "len(result) >= 1 and all(r['role'] == 'user' for r in result)"},
+            {"input": {"records": [{"x": 1}, {"x": 2}, {"x": 1}], "filter_field": "x", "filter_value": 1},
+             "expected": [{"x": 1}, {"x": 1}]},
         ],
         adversarial_tests=[
+            # v1
             {"input": {"records": [], "filter_field": "active", "filter_value": True}},
             {"input": {"records": USERS_DATA, "filter_field": "nonexistent", "filter_value": True}},
             {"input": {"records": [{"a": None}], "filter_field": "a", "filter_value": None}},
+            # v3 expansion
+            {"input": {"records": None, "filter_field": "x", "filter_value": 1}},
+            {"input": {"records": "not a list", "filter_field": "x", "filter_value": 1}},
+            {"input": {"records": [{"x": 1}], "filter_field": None, "filter_value": 1}},
         ],
     ),
 

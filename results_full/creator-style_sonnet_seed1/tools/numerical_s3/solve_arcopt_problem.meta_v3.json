@@ -1,0 +1,21 @@
+{
+  "name": "solve_arcopt_problem",
+  "created_at_task": "gap_2",
+  "session_id": "numerical_s3",
+  "scores_v1": {
+    "tqs": 0.2638888888888889,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.5555555555555556
+  },
+  "scores_v3": {
+    "tqs": 0.2638888888888889,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.5555555555555556
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 12
+}

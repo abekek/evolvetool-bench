@@ -173,19 +173,28 @@ TASKS = [
         task_type=TaskType.GAP,
         expected={"a": round(_EXP_TRUE["a"], 6), "b": round(_EXP_TRUE["b"], 6), "c": round(_EXP_TRUE["c"], 6)},
         hidden_tests=[
-            {
-                "input": {"arcfit_spec": ARCFIT_POW},
-                "expected": {k: round(v, 6) for k, v in _POW_TRUE.items()},
-            },
-            {
-                "input": {"arcfit_spec": ARCFIT_LOG},
-                "expected": {k: round(v, 6) for k, v in _LOG_TRUE.items()},
-            },
+            # v1
+            {"input": {"arcfit_spec": ARCFIT_POW},
+             "expected": {k: round(v, 6) for k, v in _POW_TRUE.items()}},
+            {"input": {"arcfit_spec": ARCFIT_LOG},
+             "expected": {k: round(v, 6) for k, v in _LOG_TRUE.items()}},
+            # v3 expansion: verify-style checks for tolerance to fit precision
+            {"input": {"arcfit_spec": ARCFIT_POW},
+             "verify": "isinstance(result, dict) and all(k in result for k in ('a','b','c'))"},
+            {"input": {"arcfit_spec": ARCFIT_LOG},
+             "verify": "isinstance(result, dict) and any(k in result for k in ('L','k','x0'))"},
+            {"input": {"arcfit_spec": ARCFIT_POW},
+             "verify": "isinstance(result, dict) and abs(result.get('b', 0) - " + str(round(_POW_TRUE['b'], 1)) + ") < 2.0"},
         ],
         adversarial_tests=[
-            {"input": {"arcfit_spec": "MODEL:exp_decay;PARAMS:a=?,b=?,c=?;DATA:"}},  # no data
-            {"input": {"arcfit_spec": "MODEL:exp_decay;PARAMS:a=?,b=?,c=?;DATA:0,1"}},  # single point
-            {"input": {"arcfit_spec": ARCFIT_ADV}},  # near-degenerate (near-flat curve)
+            # v1
+            {"input": {"arcfit_spec": "MODEL:exp_decay;PARAMS:a=?,b=?,c=?;DATA:"}},
+            {"input": {"arcfit_spec": "MODEL:exp_decay;PARAMS:a=?,b=?,c=?;DATA:0,1"}},
+            {"input": {"arcfit_spec": ARCFIT_ADV}},
+            # v3 expansion
+            {"input": {"arcfit_spec": "MODEL:unknown_model;PARAMS:a=?;DATA:1,2;2,3"}},
+            {"input": {"arcfit_spec": "completely garbage input"}},
+            {"input": {"arcfit_spec": "MODEL:exp_decay;PARAMS:a=?,b=?,c=?;DATA:0,nan"}},
         ],
     ),
     Task(
@@ -201,21 +210,31 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=_EVAL_EXP_EXPECTED,
         hidden_tests=[
-            {
-                "input": {"eval_spec": ARCFIT_EVAL_POW},
-                "expected": _EVAL_POW_EXPECTED,
-            },
-            {
-                "input": {
-                    "eval_spec": _arcfit_eval_encode("logistic", {"L": 10.0, "k": 1.0, "x0": 5.0}, [3.0, 5.0, 7.0])
-                },
-                "expected": [round(_logistic(x, 10.0, 1.0, 5.0), 6) for x in [3.0, 5.0, 7.0]],
-            },
+            # v1
+            {"input": {"eval_spec": ARCFIT_EVAL_POW}, "expected": _EVAL_POW_EXPECTED},
+            {"input": {"eval_spec": _arcfit_eval_encode(
+                "logistic", {"L": 10.0, "k": 1.0, "x0": 5.0}, [3.0, 5.0, 7.0])},
+             "expected": [round(_logistic(x, 10.0, 1.0, 5.0), 6) for x in [3.0, 5.0, 7.0]]},
+            # v3 expansion
+            {"input": {"eval_spec": _arcfit_eval_encode(
+                "logistic", {"L": 1.0, "k": 1.0, "x0": 0.0}, [-5.0, 0.0, 5.0])},
+             "verify": "isinstance(result, list) and len(result) == 3 and abs(result[1] - 0.5) < 0.01"},
+            {"input": {"eval_spec": _arcfit_eval_encode(
+                "exp_decay", {"a": 2.0, "b": 1.0, "c": 0.0}, [0.0])},
+             "verify": "isinstance(result, list) and abs(result[0] - 2.0) < 0.01"},
+            {"input": {"eval_spec": _arcfit_eval_encode(
+                "power_law", {"a": 1.0, "b": 2.0, "c": 0.0}, [2.0, 3.0])},
+             "verify": "isinstance(result, list) and abs(result[0] - 4.0) < 0.01 and abs(result[1] - 9.0) < 0.01"},
         ],
         adversarial_tests=[
-            {"input": {"eval_spec": ARCFIT_EVAL_EDGE}},          # x=0, x=-1, x=100
-            {"input": {"eval_spec": _arcfit_eval_encode("power_law", {"a": 1.0, "b": 0.5, "c": 0.0}, [0.0001])}},  # near-zero x
-            {"input": {"eval_spec": _arcfit_eval_encode("exp_decay", {"a": 1e6, "b": 0.001, "c": 0.0}, [1000.0])}},  # large values
+            # v1
+            {"input": {"eval_spec": ARCFIT_EVAL_EDGE}},
+            {"input": {"eval_spec": _arcfit_eval_encode("power_law", {"a": 1.0, "b": 0.5, "c": 0.0}, [0.0001])}},
+            {"input": {"eval_spec": _arcfit_eval_encode("exp_decay", {"a": 1e6, "b": 0.001, "c": 0.0}, [1000.0])}},
+            # v3 expansion
+            {"input": {"eval_spec": "FITTED:unknown;PARAMS:a=1.0;QUERY:1.0"}},
+            {"input": {"eval_spec": ""}},
+            {"input": {"eval_spec": "FITTED:exp_decay;PARAMS:a=nan;QUERY:1.0"}},
         ],
     ),
 

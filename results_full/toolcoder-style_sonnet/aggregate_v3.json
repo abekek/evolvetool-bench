@@ -1,0 +1,18 @@
+{
+  "config": "toolcoder-style_sonnet",
+  "n_tools": 15,
+  "v1": {
+    "correctness": 0.4666666666666667,
+    "robustness": 0.5,
+    "generality": 0.4666666666666667,
+    "code_quality": 0.9185185185185187,
+    "tqs": 0.587962962962963
+  },
+  "v3": {
+    "correctness": 0.0,
+    "robustness": 0.5166666666666667,
+    "generality": 0.1,
+    "code_quality": 0.9185185185185187,
+    "tqs": 0.38379629629629636
+  }
+}

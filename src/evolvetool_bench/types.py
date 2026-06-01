@@ -72,6 +72,31 @@ class ToolRecord:
 
 
 @dataclass
+class SkillBundle:
+    """A multi-file skill bundle (the richer artifact unit).
+
+    Maps to Anthropic Claude Skills / CoEvoSkills format: a callable function
+    accompanied by a SKILL.md description, auto-generated tests, and a
+    metadata.json manifest. A SkillBundle wraps a ToolRecord and adds
+    bundle-level metadata + quality scores.
+    """
+    name: str
+    tool: ToolRecord                  # the underlying callable
+    skill_md: str                     # human-readable description (Markdown)
+    metadata: dict                    # {name, version, dependencies, tags, ...}
+    # Bundle-level quality scores (parallel to ToolRecord's per-tool scores)
+    structure_score: float = 0.0      # all four pieces present & well-formed
+    doc_score: float = 0.0            # SKILL.md has utility, args, returns, example
+    metadata_score: float = 0.0       # required fields filled in correctly
+
+    @property
+    def bundle_quality_score(self) -> float:
+        """Skill Bundle Quality Score = mean of tool TQS + 3 bundle dimensions."""
+        return (self.tool.quality_score + self.structure_score
+                + self.doc_score + self.metadata_score) / 4
+
+
+@dataclass
 class TaskResult:
     """Result of running a single task."""
     task_id: str
@@ -81,6 +106,7 @@ class TaskResult:
     tool_created: str | None = None  # name of tool created (if any)
     tools_used: list[str] = field(default_factory=list)  # tools invoked
     tool_reused: bool = False  # was an existing tool reused?
+    tool_reused_correctly: bool = False  # reused AND task passed
     llm_calls: int = 0
     duration_ms: float = 0.0
     error: str | None = None
@@ -136,6 +162,26 @@ class SessionResult:
             return 0.0
         reused = sum(1 for r in variant_regress if r.tool_reused)
         return reused / len(variant_regress)
+
+    @property
+    def correct_reuse_rate(self) -> float:
+        """How often reuse led to a correct outcome."""
+        variant_regress = [r for r in self.task_results
+                          if r.task_type in (TaskType.VARIANT, TaskType.REGRESS)]
+        if not variant_regress:
+            return 0.0
+        correct_reused = sum(1 for r in variant_regress if r.tool_reused_correctly)
+        return correct_reused / len(variant_regress)
+
+    @property
+    def incorrect_reuse_rate(self) -> float:
+        """How often reuse led to a failed outcome."""
+        variant_regress = [r for r in self.task_results
+                          if r.task_type in (TaskType.VARIANT, TaskType.REGRESS)]
+        if not variant_regress:
+            return 0.0
+        incorrect = sum(1 for r in variant_regress if r.tool_reused and not r.tool_reused_correctly)
+        return incorrect / len(variant_regress)
 
     @property
     def redundancy_rate(self) -> float:
@@ -237,6 +283,8 @@ class SessionResult:
             "tools_created": len(self.tools_created),
             "mean_tool_quality": self.mean_tool_quality,
             "reuse_rate": self.reuse_rate,
+            "correct_reuse_rate": self.correct_reuse_rate,
+            "incorrect_reuse_rate": self.incorrect_reuse_rate,
             "redundancy_rate": self.redundancy_rate,
             "library_precision": self.library_precision,
             "creation_efficiency": self.creation_efficiency,

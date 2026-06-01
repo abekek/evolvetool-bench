@@ -1,0 +1,12 @@
+{
+  "name": "decode_guardian_minimal_data",
+  "created_at_task": "adversarial_2",
+  "version": 1,
+  "scores": {
+    "tqs": 0.5972222222222222,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 0.8888888888888888
+  }
+}

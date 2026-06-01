@@ -1,0 +1,7 @@
+{
+  "bundle_quality": 0.75,
+  "structure": 0.875,
+  "doc": 0.5,
+  "metadata": 1.0,
+  "underlying_tool_tqs": 0.625
+}

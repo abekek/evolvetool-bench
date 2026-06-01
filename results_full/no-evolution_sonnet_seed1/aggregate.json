@@ -1,0 +1,14 @@
+{
+  "system": "no-evolution",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.6868686868686869,
+  "avg_tool_quality": 0.0,
+  "avg_reuse_rate": 0.4444444444444444,
+  "avg_correct_reuse_rate": 0.18518518518518517,
+  "avg_incorrect_reuse_rate": 0.25925925925925924,
+  "avg_library_health": 0.4074074074074074,
+  "avg_evolvetool_score": 0.5223232323232323,
+  "total_tools": 0,
+  "tool_details": []
+}

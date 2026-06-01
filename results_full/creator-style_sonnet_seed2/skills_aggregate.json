@@ -1,0 +1,209 @@
+{
+  "n_bundles": 22,
+  "avg_bundle_quality": 0.7638888888888892,
+  "avg_structure": 0.875,
+  "avg_doc": 0.6666666666666664,
+  "avg_metadata": 1.0,
+  "avg_tool_tqs": 0.513888888888889,
+  "fraction_passing_skill_gate": 1.0,
+  "bundles": [
+    {
+      "name": "authenticate_and_fetch_users",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fetch_all_metrics_count",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fetch_all_users_and_compute_average_score",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7638888888888888,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5138888888888888
+    },
+    {
+      "name": "fetch_all_users_with_pagination",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7847222222222222,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5972222222222222
+    },
+    {
+      "name": "fetch_user_with_basic_auth",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "make_http_get_request",
+      "session": "api_orchestration_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "parse_vdl_schema",
+      "session": "data_transform_s2",
+      "bundle_quality": 0.7013888888888888,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.2638888888888889
+    },
+    {
+      "name": "decode_qlog_data",
+      "session": "data_transform_s3",
+      "bundle_quality": 0.7847222222222222,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5972222222222222
+    },
+    {
+      "name": "deserialize_tpack_and_filter_available",
+      "session": "data_transform_s4",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "deserialize_tpack_data",
+      "session": "data_transform_s4",
+      "bundle_quality": 0.7638888888888888,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5138888888888888
+    },
+    {
+      "name": "decode_guardian_data",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "repair_guardian_block",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.7152777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    },
+    {
+      "name": "repair_guardian_data_advanced",
+      "session": "data_transform_s5",
+      "bundle_quality": 0.7708333333333333,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5416666666666666
+    },
+    {
+      "name": "evaluate_arcfit_exponential_decay",
+      "session": "numerical_s1",
+      "bundle_quality": 0.7847222222222222,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5972222222222222
+    },
+    {
+      "name": "evaluate_arcfit_model",
+      "session": "numerical_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fit_arcfit_exponential_decay",
+      "session": "numerical_s1",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "fit_exponential_decay_arcfit",
+      "session": "numerical_s1",
+      "bundle_quality": 0.7708333333333333,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5416666666666666
+    },
+    {
+      "name": "parse_and_fit_arcfit_model",
+      "session": "numerical_s1",
+      "bundle_quality": 0.7152777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    },
+    {
+      "name": "apply_bandpass_filter_to_arcsig",
+      "session": "numerical_s2",
+      "bundle_quality": 0.7152777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.3194444444444444
+    },
+    {
+      "name": "decode_and_filter_arcsig_signal",
+      "session": "numerical_s2",
+      "bundle_quality": 0.7708333333333333,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5416666666666666
+    },
+    {
+      "name": "decode_arcsig_and_compute_spectrum",
+      "session": "numerical_s2",
+      "bundle_quality": 0.7777777777777778,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5694444444444444
+    },
+    {
+      "name": "solve_arcopt_linear_program",
+      "session": "numerical_s3",
+      "bundle_quality": 0.7638888888888888,
+      "structure": 0.875,
+      "doc": 0.6666666666666666,
+      "metadata": 1.0,
+      "underlying_tool_tqs": 0.5138888888888888
+    }
+  ]
+}

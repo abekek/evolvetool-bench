@@ -1,0 +1,21 @@
+{
+  "name": "make_get_request_to_users_api",
+  "created_at_task": "seed_3",
+  "session_id": "api_orchestration_s1",
+  "scores_v1": {
+    "tqs": 0.5972222222222222,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 0.8888888888888888
+  },
+  "scores_v3": {
+    "tqs": 0.3972222222222222,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.2,
+    "code_quality": 0.8888888888888888
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 10
+}

@@ -9,6 +9,7 @@ bench_trajectories/
 results.json
 *.db
 .ai_agent_credentials.json
+.ai_credentials.json
 .DS_Store
 paper/*.log
 paper/*.aux
@@ -16,10 +17,5 @@ paper/*.bbl
 paper/*.blg
 paper/*.out
 paper/src/
-.ai_agent_credentials.json
-.DS_Store
-paper/*.log
-paper/*.aux
-paper/*.bbl
-paper/*.blg
-paper/*.out
+texput.log
+*.out

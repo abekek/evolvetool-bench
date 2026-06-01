@@ -1,0 +1,195 @@
+{
+  "system": "arise",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.6616161616161617,
+  "avg_tool_quality": 0.34760802469135804,
+  "avg_reuse_rate": 0.6666666666666665,
+  "avg_correct_reuse_rate": 0.2222222222222222,
+  "avg_incorrect_reuse_rate": 0.4444444444444444,
+  "avg_library_health": 0.4799382716049383,
+  "avg_evolvetool_score": 0.6008263187429854,
+  "total_tools": 20,
+  "tool_details": [
+    {
+      "session": "data_transform_s1",
+      "name": "parse_binary_format",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s1",
+      "name": "decode_base64",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s2",
+      "name": "parse_schema",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "parse_binary_data",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "parse_qlog",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "count_log_severity",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_binary",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "filter_records",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "parse_binary_format",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_base64",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "calculate_crc16",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_utf8",
+      "tqs": 0.75,
+      "correctness": 0.0,
+      "robustness": 1.0,
+      "generality": 1.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "extract_bytes",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "xor_binary_data",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "validate_block_integrity",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "serialize_binary_format",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "generate_hmac_auth",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s3",
+      "name": "optimize",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "numerical_s3",
+      "name": "execute_python",
+      "tqs": 0.33333333333333337,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8333333333333334
+    }
+  ]
+}

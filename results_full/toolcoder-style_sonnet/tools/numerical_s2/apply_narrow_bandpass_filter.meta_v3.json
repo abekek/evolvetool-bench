@@ -1,0 +1,21 @@
+{
+  "name": "apply_narrow_bandpass_filter",
+  "created_at_task": "adversarial_2",
+  "session_id": "numerical_s2",
+  "scores_v1": {
+    "tqs": 0.5972222222222222,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 0.8888888888888888
+  },
+  "scores_v3": {
+    "tqs": 0.3472222222222222,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.8888888888888888
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 12
+}

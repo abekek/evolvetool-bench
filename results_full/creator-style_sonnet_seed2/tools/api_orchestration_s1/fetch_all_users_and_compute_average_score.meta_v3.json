@@ -1,0 +1,21 @@
+{
+  "name": "fetch_all_users_and_compute_average_score",
+  "created_at_task": "compose_1",
+  "session_id": "api_orchestration_s1",
+  "scores_v1": {
+    "tqs": 0.5138888888888888,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 0.5555555555555556
+  },
+  "scores_v3": {
+    "tqs": 0.3138888888888889,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.2,
+    "code_quality": 0.5555555555555556
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 10
+}

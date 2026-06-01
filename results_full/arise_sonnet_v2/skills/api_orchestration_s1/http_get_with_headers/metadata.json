@@ -1,0 +1,9 @@
+{
+  "name": "http_get_with_headers",
+  "version": 1,
+  "created_at_task": "variant_1",
+  "tags": [],
+  "dependencies": [
+    "urllib"
+  ]
+}

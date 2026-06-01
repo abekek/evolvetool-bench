@@ -1,0 +1,168 @@
+{
+  "system": "toolcoder-style",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.5454545454545455,
+  "avg_tool_quality": 0.4492798353909466,
+  "avg_reuse_rate": 0.4444444444444444,
+  "avg_correct_reuse_rate": 0.07407407407407407,
+  "avg_incorrect_reuse_rate": 0.37037037037037035,
+  "avg_library_health": 0.49197530864197536,
+  "avg_evolvetool_score": 0.580478862701085,
+  "total_tools": 17,
+  "tool_details": [
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_binary_record",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_data_to_json",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s1",
+      "name": "decode_abr_data_with_edge_cases",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s2",
+      "name": "parse_vdl_schema",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "decode_qlog_data",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "decode_qlog_data",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack_data",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_and_filter_tpack_data",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack_data",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "get_authentication_scheme_info",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "make_get_request_to_users_api",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "authenticate_and_fetch_users",
+      "tqs": 0.3472222222222222,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "authenticate_and_fetch_user",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "fetch_filtered_events",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s1",
+      "name": "fit_arcfit_exp_decay_model",
+      "tqs": 0.5694444444444444,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.7777777777777778
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_arcsig_and_compute_spectrum",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s2",
+      "name": "apply_narrow_bandpass_filter",
+      "tqs": 0.5972222222222222,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8888888888888888
+    }
+  ]
+}

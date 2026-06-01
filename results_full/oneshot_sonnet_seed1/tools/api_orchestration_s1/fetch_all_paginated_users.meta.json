@@ -1,0 +1,12 @@
+{
+  "name": "fetch_all_paginated_users",
+  "created_at_task": "gap_2",
+  "version": 1,
+  "scores": {
+    "tqs": 0.3194444444444444,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.7777777777777778
+  }
+}

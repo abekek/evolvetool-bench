@@ -183,19 +183,27 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=_SPECTRUM1,
         hidden_tests=[
-            {
-                "input": {"arcsig": ARCSIG_2},
-                "expected": _fft_spectrum(_SAMPLES2, _SR),
-            },
-            {
-                "input": {"arcsig": _encode_arcsig([1.0, -1.0, 1.0, -1.0], _SR)},
-                "expected": _fft_spectrum([1.0, -1.0, 1.0, -1.0], _SR),
-            },
+            # v1
+            {"input": {"arcsig": ARCSIG_2}, "expected": _fft_spectrum(_SAMPLES2, _SR)},
+            {"input": {"arcsig": _encode_arcsig([1.0, -1.0, 1.0, -1.0], _SR)},
+             "expected": _fft_spectrum([1.0, -1.0, 1.0, -1.0], _SR)},
+            # v3 expansion
+            {"input": {"arcsig": ARCSIG_1},
+             "verify": "isinstance(result, list) and all('freq_hz' in d and 'magnitude' in d for d in result)"},
+            {"input": {"arcsig": _encode_arcsig([1.0] + [0.0] * 7, _SR)},
+             "verify": "isinstance(result, list) and len(result) > 0"},
+            {"input": {"arcsig": _encode_arcsig([0.5] * 16, _SR)},
+             "verify": "isinstance(result, list) and result[0]['magnitude'] > result[1]['magnitude']"},  # DC dominant
         ],
         adversarial_tests=[
-            {"input": {"arcsig": ARCSIG_SINGLE}},           # 1-sample signal
-            {"input": {"arcsig": ARCSIG_ADV}},              # DC-dominated signal
-            {"input": {"arcsig": _encode_arcsig([0.0] * 8, _SR)}},  # all-zeros
+            # v1
+            {"input": {"arcsig": ARCSIG_SINGLE}},
+            {"input": {"arcsig": ARCSIG_ADV}},
+            {"input": {"arcsig": _encode_arcsig([0.0] * 8, _SR)}},
+            # v3 expansion
+            {"input": {"arcsig": ""}},
+            {"input": {"arcsig": "ARCSIG:malformed_no_payload"}},
+            {"input": {"arcsig": "SR=44100;LEN=4;ENC=f32le_b64;DATA=!!!not-base64!!!"}},
         ],
     ),
     Task(
@@ -219,19 +227,26 @@ TASKS = [
         task_type=TaskType.GAP,
         # Verifier checks that decoded filtered signal has dominant freq in [1,10] Hz
         hidden_tests=[
-            {
-                "input": {"arcsig": ARCSIG_2, "bandpass": BANDPASS_SPEC_3},
-                # verifier: dominant peak should be near 10 Hz
-            },
-            {
-                "input": {"arcsig": ARCSIG_1, "bandpass": BANDPASS_SPEC_2},
-                # verifier: dominant peak should be near 20 Hz
-            },
+            # v1
+            {"input": {"arcsig": ARCSIG_2, "bandpass": BANDPASS_SPEC_3}},
+            {"input": {"arcsig": ARCSIG_1, "bandpass": BANDPASS_SPEC_2}},
+            # v3 expansion
+            {"input": {"arcsig": ARCSIG_1, "bandpass": "BANDPASS:0,1000"},
+             "verify": "isinstance(result, str) and 'ARCSIG' in result"},
+            {"input": {"arcsig": ARCSIG_2, "bandpass": "BANDPASS:10,30"},
+             "verify": "isinstance(result, str) and 'ENC=f32le_b64' in result"},
+            {"input": {"arcsig": _encode_arcsig([1.0] * 16, _SR), "bandpass": "BANDPASS:0,100"},
+             "verify": "isinstance(result, str) and len(result) > 20"},
         ],
         adversarial_tests=[
-            {"input": {"arcsig": ARCSIG_1, "bandpass": BANDPASS_SPEC_NARROW}},  # near-zero output
-            {"input": {"arcsig": ARCSIG_SINGLE, "bandpass": BANDPASS_SPEC_1}},  # 1-sample
-            {"input": {"arcsig": ARCSIG_ADV, "bandpass": "BANDPASS:0,0"}},      # zero-width band
+            # v1
+            {"input": {"arcsig": ARCSIG_1, "bandpass": BANDPASS_SPEC_NARROW}},
+            {"input": {"arcsig": ARCSIG_SINGLE, "bandpass": BANDPASS_SPEC_1}},
+            {"input": {"arcsig": ARCSIG_ADV, "bandpass": "BANDPASS:0,0"}},
+            # v3 expansion
+            {"input": {"arcsig": ARCSIG_1, "bandpass": "BANDPASS:-1,1"}},   # negative low
+            {"input": {"arcsig": ARCSIG_1, "bandpass": "BANDPASS:100,50"}}, # inverted range
+            {"input": {"arcsig": "", "bandpass": "BANDPASS:1,10"}},          # empty signal
         ],
     ),
 

@@ -322,22 +322,34 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=PARSED_1,
         hidden_tests=[
-            {
-                "input": {"data": QLOG_2},
-                "expected": PARSED_2,
-            },
-            {
-                "input": {"data": _encode_qlog([
-                    {"timestamp": "2025-01-01T00:00:00+00:00", "severity": "TRACE",
-                     "subsystem": 0, "message": "boot"},
-                ])},
-                "expected": [{"severity": "TRACE", "subsystem": 0, "message": "boot"}],
-            },
+            # v1
+            {"input": {"data": QLOG_2}, "expected": PARSED_2},
+            {"input": {"data": _encode_qlog([
+                {"timestamp": "2025-01-01T00:00:00+00:00", "severity": "TRACE",
+                 "subsystem": 0, "message": "boot"}])},
+             "expected": [{"severity": "TRACE", "subsystem": 0, "message": "boot"}]},
+            # v3 expansion
+            {"input": {"data": _encode_qlog([
+                {"timestamp": "2025-06-15T12:30:00+00:00", "severity": "FATAL", "subsystem": 1, "message": "crash"}])},
+             "verify": "result[0]['severity'] == 'FATAL' and result[0]['message'] == 'crash'"},
+            {"input": {"data": _encode_qlog([
+                {"timestamp": "2025-01-01T00:00:00+00:00", "severity": "INFO", "subsystem": i, "message": f"msg{i}"}
+                for i in range(5)])},
+             "verify": "len(result) == 5 and all(r['severity'] == 'INFO' for r in result)"},
+            {"input": {"data": _encode_qlog([
+                {"timestamp": "2025-03-10T08:15:00+00:00", "severity": "DEBUG", "subsystem": 2,
+                 "message": "a long message with multiple words and punctuation: foo, bar; baz!"}])},
+             "verify": "'punctuation' in result[0]['message']"},
         ],
         adversarial_tests=[
-            {"input": {"data": ""}},                          # empty
-            {"input": {"data": "AAAA"}},                       # too short for header
-            {"input": {"data": base64.b64encode(b'\x00' * 8 + b'\x00\x00').decode()}},  # zero-length payload
+            # v1
+            {"input": {"data": ""}},
+            {"input": {"data": "AAAA"}},
+            {"input": {"data": base64.b64encode(b'\x00' * 8 + b'\x00\x00').decode()}},
+            # v3 expansion
+            {"input": {"data": "!!!not-base64!!!"}},
+            {"input": {"data": base64.b64encode(b'\xff' * 4).decode()}},                # invalid magic
+            {"input": {"data": base64.b64encode(b'QLOG\x00\x01\x00\x00\xff\xff\xff\xff').decode()}},  # impossible length
         ],
     ),
     Task(
@@ -352,31 +364,34 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=ERRORS_ONLY_1,
         hidden_tests=[
-            {
-                "input": {
-                    "records": PARSED_1,
-                    "min_severity": "WARN",
-                },
-                "expected": [
-                    {"severity": "WARN", "subsystem": 3, "message": "Slow query detected: 1532ms"},
-                    {"severity": "ERROR", "subsystem": 1, "message": "Connection timeout to redis:6379"},
-                    {"severity": "ERROR", "subsystem": 1, "message": "Connection failed after 3 retries"},
-                ],
-            },
-            {
-                "input": {
-                    "records": PARSED_2,
-                    "min_severity": "FATAL",
-                },
-                "expected": [
-                    {"severity": "FATAL", "subsystem": 0, "message": "Out of memory: heap exhausted"},
-                ],
-            },
+            # v1
+            {"input": {"records": PARSED_1, "min_severity": "WARN"},
+             "expected": [
+                 {"severity": "WARN", "subsystem": 3, "message": "Slow query detected: 1532ms"},
+                 {"severity": "ERROR", "subsystem": 1, "message": "Connection timeout to redis:6379"},
+                 {"severity": "ERROR", "subsystem": 1, "message": "Connection failed after 3 retries"},
+             ]},
+            {"input": {"records": PARSED_2, "min_severity": "FATAL"},
+             "expected": [{"severity": "FATAL", "subsystem": 0, "message": "Out of memory: heap exhausted"}]},
+            # v3 expansion
+            {"input": {"records": PARSED_1, "min_severity": "ERROR"},
+             "verify": "len(result) == 2 and all(r['severity'] == 'ERROR' for r in result)"},
+            {"input": {"records": PARSED_1, "min_severity": "INFO"},
+             "verify": "len(result) >= 4"},
+            {"input": {"records": [{'severity': 'DEBUG', 'subsystem': 1, 'message': 'x'},
+                                   {'severity': 'ERROR', 'subsystem': 2, 'message': 'y'}],
+                       "min_severity": "WARN"},
+             "verify": "len(result) == 1 and result[0]['severity'] == 'ERROR'"},
         ],
         adversarial_tests=[
+            # v1
             {"input": {"records": [], "min_severity": "ERROR"}},
-            {"input": {"records": PARSED_1, "min_severity": "TRACE"}},  # should return all
-            {"input": {"records": PARSED_1, "min_severity": "FATAL"}},  # should return none
+            {"input": {"records": PARSED_1, "min_severity": "TRACE"}},
+            {"input": {"records": PARSED_1, "min_severity": "FATAL"}},
+            # v3 expansion
+            {"input": {"records": PARSED_1, "min_severity": "BOGUS"}},                # invalid severity
+            {"input": {"records": None, "min_severity": "ERROR"}},                    # None records
+            {"input": {"records": [{"severity": "ERROR"}], "min_severity": "ERROR"}}, # missing fields
         ],
     ),
 

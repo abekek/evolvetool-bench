@@ -112,10 +112,19 @@ def _eval_generality(tool: ToolRecord, hidden_tests: list[dict]) -> float:
 
 
 def _eval_code_quality(tool: ToolRecord) -> float:
-    """Automated code quality checks."""
+    """Automated code quality checks (surface + semantic).
+
+    This metric was previously ``surface-only'' (docstring, type hints, length, etc.)
+    and saturated at 0.88--0.94 across systems, failing to discriminate. The v2 version
+    keeps the original six surface checks but adds three semantic checks based on
+    radon's static analysis: cyclomatic complexity, maintainability index, and
+    presence of meaningful control flow.
+    """
     score = 0.0
     checks = 0
     code = tool.implementation
+
+    # ── Surface checks (kept for backward comparison) ──────────────
 
     # Has docstring
     checks += 1
@@ -136,7 +145,6 @@ def _eval_code_quality(tool: ToolRecord) -> float:
     # No hardcoded values (magic numbers > 2 digits outside of known constants)
     checks += 1
     magic_numbers = re.findall(r'(?<!=)\b\d{3,}\b', code)
-    # Filter out common ones (like port 443, 8080, etc.)
     suspicious = [n for n in magic_numbers if int(n) not in {100, 200, 404, 500, 1000}]
     if len(suspicious) <= 2:
         score += 1
@@ -154,7 +162,69 @@ def _eval_code_quality(tool: ToolRecord) -> float:
     except SyntaxError:
         pass
 
+    # ── Semantic checks (added in v2 to address reviewer L7 saturation concern) ──
+
+    # Cyclomatic complexity sits in a sensible band: ≥ 2 (some branching present;
+    # complexity 1 = straight-line code) and ≤ 20 (not pathologically complex).
+    # Penalises both extremes.
+    checks += 1
+    complexities = _radon_complexities(code)
+    if complexities:
+        peak = max(complexities)
+        if 2 <= peak <= 20:
+            score += 1
+        # else: complexity 1 = identity-like, complexity >20 = unmaintainable
+
+    # Maintainability Index ≥ 20 (radon's threshold for "moderate" maintainability)
+    checks += 1
+    mi = _radon_mi(code)
+    if mi is not None and mi >= 20:
+        score += 1
+
+    # Non-trivial control flow: at least one branching or looping node (if/for/while/try).
+    # Catches degenerate "return None" or "return arg" stubs that satisfy other checks.
+    checks += 1
+    if _has_meaningful_control_flow(code):
+        score += 1
+
     return score / checks if checks > 0 else 0.0
+
+
+def _radon_complexities(code: str) -> list[int]:
+    """Return cyclomatic complexity for each function in code, or [] on failure."""
+    try:
+        from radon.complexity import cc_visit
+        return [c.complexity for c in cc_visit(code)]
+    except Exception:
+        return []
+
+
+def _radon_mi(code: str) -> float | None:
+    """Return radon maintainability index, or None on failure."""
+    try:
+        from radon.metrics import mi_visit
+        return mi_visit(code, True)
+    except Exception:
+        return None
+
+
+def _has_meaningful_control_flow(code: str) -> bool:
+    """True if the function has at least one real branch or loop.
+
+    Counts: if/for/while/comprehensions/BoolOp. Does NOT count: try/except alone
+    (a wrapper isn't 'meaningful logic') or With statements (context managers).
+    A `return constant` / `return arg` / `return f(arg)` / `try: return arg except: ...`
+    stub has zero of these nodes and should not earn semantic credit.
+    """
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return False
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.If, ast.For, ast.While, ast.ListComp,
+                              ast.DictComp, ast.SetComp, ast.GeneratorExp, ast.BoolOp)):
+            return True
+    return False
 
 
 def detect_redundancy(tools: list[ToolRecord], test_inputs: list[dict]) -> float:

@@ -1,0 +1,12 @@
+{
+  "name": "parse_binary_data",
+  "created_at_task": "gap_1",
+  "version": 1,
+  "scores": {
+    "tqs": 0.375,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 1.0
+  }
+}

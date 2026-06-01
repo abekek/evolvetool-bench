@@ -1,0 +1,141 @@
+{
+  "system": "arise",
+  "model": "sonnet",
+  "sessions": 9,
+  "avg_task_completion": 0.6464646464646465,
+  "avg_tool_quality": 0.3287037037037037,
+  "avg_reuse_rate": 0.6296296296296295,
+  "avg_correct_reuse_rate": 0.18518518518518517,
+  "avg_incorrect_reuse_rate": 0.4444444444444444,
+  "avg_library_health": 0.47530864197530853,
+  "avg_evolvetool_score": 0.5947979797979799,
+  "total_tools": 14,
+  "tool_details": [
+    {
+      "session": "data_transform_s1",
+      "name": "decode_rle",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "display_output",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "filter_data",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "decode_base64",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s3",
+      "name": "filter_by_severity",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "deserialize_tpack",
+      "tqs": 0.5833333333333334,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 0.8333333333333334
+    },
+    {
+      "session": "data_transform_s4",
+      "name": "filter_records",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "decode_base64",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "xor_bytes",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "data_transform_s5",
+      "name": "compute_crc16",
+      "tqs": 0.75,
+      "correctness": 0.0,
+      "robustness": 1.0,
+      "generality": 1.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "compute_hmac",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "api_orchestration_s1",
+      "name": "http_get_with_headers",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s2",
+      "name": "compute_statistics",
+      "tqs": 0.625,
+      "correctness": 0.5,
+      "robustness": 0.5,
+      "generality": 0.5,
+      "code_quality": 1.0
+    },
+    {
+      "session": "numerical_s2",
+      "name": "decode_binary_data",
+      "tqs": 0.375,
+      "correctness": 0.0,
+      "robustness": 0.5,
+      "generality": 0.0,
+      "code_quality": 1.0
+    }
+  ]
+}

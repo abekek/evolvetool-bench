@@ -1,0 +1,11 @@
+{
+  "name": "make_get_request_to_users_api",
+  "version": 1,
+  "created_at_task": "seed_3",
+  "tags": [],
+  "dependencies": [
+    "sys",
+    "traceback",
+    "urllib"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "fit_arcfit_model",
+  "version": 1,
+  "created_at_task": "variant_1",
+  "tags": [],
+  "dependencies": [
+    "json",
+    "math"
+  ]
+}

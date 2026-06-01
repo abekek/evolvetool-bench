@@ -1,0 +1,11 @@
+{
+  "name": "decode_abr_data_to_json",
+  "version": 1,
+  "created_at_task": "regress_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "sys",
+    "traceback"
+  ]
+}

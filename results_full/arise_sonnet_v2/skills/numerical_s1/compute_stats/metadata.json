@@ -1,0 +1,9 @@
+{
+  "name": "compute_stats",
+  "version": 1,
+  "created_at_task": "seed_2",
+  "tags": [],
+  "dependencies": [
+    "math"
+  ]
+}

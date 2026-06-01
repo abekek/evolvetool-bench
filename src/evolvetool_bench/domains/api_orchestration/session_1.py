@@ -98,10 +98,27 @@ TASKS = [
         ),
         task_type=TaskType.GAP,
         hidden_tests=[
-            {"input": {"url": f"{BASE_URL}/api/users"}, "verify": "isinstance(result, dict) and 'data' in str(result)"},
+            # v1
+            {"input": {"url": f"{BASE_URL}/api/users"},
+             "verify": "isinstance(result, dict) and 'data' in str(result)"},
+            # v3 expansion
+            {"input": {"url": f"{BASE_URL}/api/users?cursor=cursor_5"},
+             "verify": "isinstance(result, (dict, str)) and ('data' in str(result) or 'error' not in str(result).lower()[:20])"},
+            {"input": {"url": f"{BASE_URL}/health"},
+             "verify": "result is not None"},
+            {"input": {"url": f"{BASE_URL}/auth/info"},
+             "verify": "'algorithm' in str(result) or 'scheme' in str(result) or isinstance(result, dict)"},
+            {"input": {"url": f"{BASE_URL}/api/users/3"},
+             "verify": "isinstance(result, (dict, str))"},
         ],
         adversarial_tests=[
+            # v1
             {"input": {"url": f"{BASE_URL}/api/nonexistent"}},
+            # v3 expansion
+            {"input": {"url": "http://127.0.0.1:65535/api/users"}},     # unreachable port
+            {"input": {"url": f"{BASE_URL}/api/users?cursor=BAD_CURSOR_!@#$"}},
+            {"input": {"url": ""}},                                       # empty URL
+            {"input": {"url": f"{BASE_URL}/api/users?cursor=" + "x" * 1000}},  # huge cursor
         ],
     ),
     Task(
@@ -114,10 +131,26 @@ TASKS = [
         ),
         task_type=TaskType.GAP,
         hidden_tests=[
+            # v1
             {"input": {}, "verify": "'10' in str(result) or 'Jack' in str(result)"},
+            # v3 expansion
+            {"input": {"page_size": 3},
+             "verify": "isinstance(result, (dict, list, int, str)) and len(str(result)) > 0"},
+            {"input": {"start_cursor": None},
+             "verify": "result is not None"},
+            {"input": {"max_pages": 10},
+             "verify": "result is not None"},
+            {"input": {},
+             "verify": "any(name in str(result) for name in ['Alice','Bob','Charlie','Diana','Eve','Frank','Grace','Henry','Ivy','Jack'])"},
         ],
         adversarial_tests=[
+            # v1
             {"input": {"cursor": "invalid_cursor_value"}},
+            # v3 expansion
+            {"input": {"cursor": ""}},
+            {"input": {"page_size": 0}},
+            {"input": {"page_size": -1}},
+            {"input": {"max_pages": 0}},
         ],
     ),
 

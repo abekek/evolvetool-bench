@@ -1,0 +1,12 @@
+{
+  "name": "get_authentication_scheme_info",
+  "version": 1,
+  "created_at_task": "seed_2",
+  "tags": [],
+  "dependencies": [
+    "json",
+    "sys",
+    "traceback",
+    "urllib"
+  ]
+}

@@ -333,33 +333,35 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=USER_VDL_PARSED,
         hidden_tests=[
-            {
-                "input": {"vdl_text": "@schema Test @version 1\nfoo : S [R]\nbar : I [N]"},
-                "expected": {
-                    "name": "Test",
-                    "version": 1,
-                    "fields": [
-                        {"name": "foo", "type": "string", "is_array": False, "flags": ["R"]},
-                        {"name": "bar", "type": "integer", "is_array": False, "flags": ["N"]},
-                    ],
-                },
-            },
-            {
-                "input": {"vdl_text": "@schema Enum @version 1\ncolor : E(red|green|blue) [R]"},
-                "expected": {
-                    "name": "Enum",
-                    "version": 1,
-                    "fields": [
-                        {"name": "color", "type": "enum", "values": ["red", "green", "blue"],
-                         "is_array": False, "flags": ["R"]},
-                    ],
-                },
-            },
+            # v1
+            {"input": {"vdl_text": "@schema Test @version 1\nfoo : S [R]\nbar : I [N]"},
+             "expected": {"name": "Test", "version": 1,
+                          "fields": [{"name": "foo", "type": "string", "is_array": False, "flags": ["R"]},
+                                     {"name": "bar", "type": "integer", "is_array": False, "flags": ["N"]}]}},
+            {"input": {"vdl_text": "@schema Enum @version 1\ncolor : E(red|green|blue) [R]"},
+             "expected": {"name": "Enum", "version": 1,
+                          "fields": [{"name": "color", "type": "enum", "values": ["red", "green", "blue"],
+                                       "is_array": False, "flags": ["R"]}]}},
+            # v3 expansion
+            {"input": {"vdl_text": "@schema Bool @version 2\nactive : B [R]\ndeleted : B [N]"},
+             "expected": {"name": "Bool", "version": 2,
+                          "fields": [{"name": "active", "type": "boolean", "is_array": False, "flags": ["R"]},
+                                     {"name": "deleted", "type": "boolean", "is_array": False, "flags": ["N"]}]}},
+            {"input": {"vdl_text": "@schema Arr @version 1\ntags : S[] [R]"},
+             "expected": {"name": "Arr", "version": 1,
+                          "fields": [{"name": "tags", "type": "string", "is_array": True, "flags": ["R"]}]}},
+            {"input": {"vdl_text": "@schema Float @version 3\nscore : F V(0..100) [R]"},
+             "verify": "result['name'] == 'Float' and result['version'] == 3 and result['fields'][0]['type'] == 'float'"},
         ],
         adversarial_tests=[
-            {"input": {"vdl_text": ""}},                      # empty schema
-            {"input": {"vdl_text": "# just a comment\n"}},     # only comments
-            {"input": {"vdl_text": "@schema X @version 0"}},   # no fields
+            # v1
+            {"input": {"vdl_text": ""}},
+            {"input": {"vdl_text": "# just a comment\n"}},
+            {"input": {"vdl_text": "@schema X @version 0"}},
+            # v3 expansion
+            {"input": {"vdl_text": "@schema NoVer\nfoo : S"}},            # missing version
+            {"input": {"vdl_text": "@schema X @version 1\nfoo : ?"}},     # unknown type code
+            {"input": {"vdl_text": "@schema X @version abc\nfoo : S"}},   # non-numeric version
         ],
     ),
     Task(
@@ -380,25 +382,32 @@ TASKS = [
         task_type=TaskType.GAP,
         expected=INVALID_USERS_RESULTS,
         hidden_tests=[
-            {
-                "input": {
-                    "schema": USER_VDL_PARSED,
-                    "records": VALID_USERS,
-                },
-                "expected": VALID_USERS_RESULTS,
-            },
-            {
-                "input": {
-                    "schema": USER_VDL_PARSED,
-                    "records": [{"username": "x", "email": "x@x.com", "age": -1, "role": "admin"}],
-                },
-                "verify": "result[0]['valid'] is False and 'range' in result[0]['errors'][0]",
-            },
+            # v1
+            {"input": {"schema": USER_VDL_PARSED, "records": VALID_USERS},
+             "expected": VALID_USERS_RESULTS},
+            {"input": {"schema": USER_VDL_PARSED,
+                       "records": [{"username": "x", "email": "x@x.com", "age": -1, "role": "admin"}]},
+             "verify": "result[0]['valid'] is False and 'range' in result[0]['errors'][0]"},
+            # v3 expansion
+            {"input": {"schema": USER_VDL_PARSED,
+                       "records": [{"username": "ok", "email": "ok@ok.com", "age": 30, "role": "admin"}]},
+             "verify": "result[0]['valid'] is True"},
+            {"input": {"schema": USER_VDL_PARSED,
+                       "records": [{"username": "x", "email": "x@x.com", "role": "admin"}]},   # missing required age
+             "verify": "result[0]['valid'] is False"},
+            {"input": {"schema": USER_VDL_PARSED,
+                       "records": [{"username": "x", "email": "x@x.com", "age": "thirty", "role": "admin"}]},   # wrong type
+             "verify": "result[0]['valid'] is False"},
         ],
         adversarial_tests=[
+            # v1
             {"input": {"schema": USER_VDL_PARSED, "records": []}},
             {"input": {"schema": {"name": "Empty", "version": 1, "fields": []}, "records": [{"x": 1}]}},
             {"input": {"schema": USER_VDL_PARSED, "records": [{}]}},
+            # v3 expansion
+            {"input": {"schema": USER_VDL_PARSED, "records": [None]}},                                # None record
+            {"input": {"schema": None, "records": [{"x": 1}]}},                                       # None schema
+            {"input": {"schema": USER_VDL_PARSED, "records": [{"username": None, "email": None, "age": None, "role": None}]}},
         ],
     ),
 

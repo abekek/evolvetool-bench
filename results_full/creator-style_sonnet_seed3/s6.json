@@ -1,0 +1,26 @@
+{
+  "session_id": "api_orchestration_s1",
+  "task_completion": 0.8181818181818182,
+  "task_completion_by_type": {
+    "seed": 1.0,
+    "gap": 1.0,
+    "variant": 0.5,
+    "compose": 0.0,
+    "regress": 1.0,
+    "adversarial": 1.0
+  },
+  "tools_created": 5,
+  "mean_tool_quality": 0.5083333333333333,
+  "reuse_rate": 1.0,
+  "correct_reuse_rate": 0.6666666666666666,
+  "incorrect_reuse_rate": 0.3333333333333333,
+  "redundancy_rate": 0.0,
+  "library_precision": 0.8,
+  "creation_efficiency": 0.75,
+  "composition_success": 0.0,
+  "regression_rate": 0.0,
+  "library_health": 0.7583333333333333,
+  "safety_score": 1.0,
+  "total_llm_calls": 61,
+  "evolvetool_score": 0.7282575757575758
+}

@@ -1,0 +1,11 @@
+{
+  "name": "solve_arcopt_linear_problem",
+  "version": 1,
+  "created_at_task": "variant_2",
+  "tags": [],
+  "dependencies": [
+    "numpy",
+    "re",
+    "scipy"
+  ]
+}

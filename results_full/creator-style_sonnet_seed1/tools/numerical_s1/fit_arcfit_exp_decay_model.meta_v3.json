@@ -1,0 +1,21 @@
+{
+  "name": "fit_arcfit_exp_decay_model",
+  "created_at_task": "compose_1",
+  "session_id": "numerical_s1",
+  "scores_v1": {
+    "tqs": 0.5694444444444444,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 0.7777777777777778
+  },
+  "scores_v3": {
+    "tqs": 0.3194444444444444,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.7777777777777778
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 12
+}

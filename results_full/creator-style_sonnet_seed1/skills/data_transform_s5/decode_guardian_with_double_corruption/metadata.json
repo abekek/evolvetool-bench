@@ -1,0 +1,10 @@
+{
+  "name": "decode_guardian_with_double_corruption",
+  "version": 1,
+  "created_at_task": "adversarial_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "struct"
+  ]
+}

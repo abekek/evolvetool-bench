@@ -1,0 +1,11 @@
+{
+  "name": "decode_abr_and_hash_names",
+  "version": 1,
+  "created_at_task": "compose_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "hashlib",
+    "json"
+  ]
+}

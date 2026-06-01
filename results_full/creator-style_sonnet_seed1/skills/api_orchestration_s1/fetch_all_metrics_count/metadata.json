@@ -1,0 +1,12 @@
+{
+  "name": "fetch_all_metrics_count",
+  "version": 1,
+  "created_at_task": "variant_2",
+  "tags": [],
+  "dependencies": [
+    "json",
+    "socket",
+    "ssl",
+    "urllib"
+  ]
+}

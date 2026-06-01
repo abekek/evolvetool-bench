@@ -1,0 +1,11 @@
+{
+  "name": "decode_arcsig_and_compute_spectrum",
+  "version": 1,
+  "created_at_task": "adversarial_1",
+  "tags": [],
+  "dependencies": [
+    "base64",
+    "math",
+    "struct"
+  ]
+}

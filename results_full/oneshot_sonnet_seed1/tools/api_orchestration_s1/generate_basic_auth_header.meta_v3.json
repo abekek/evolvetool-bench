@@ -1,0 +1,21 @@
+{
+  "name": "generate_basic_auth_header",
+  "created_at_task": "gap_1",
+  "session_id": "api_orchestration_s1",
+  "scores_v1": {
+    "tqs": 0.2361111111111111,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.4444444444444444
+  },
+  "scores_v3": {
+    "tqs": 0.2361111111111111,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.4444444444444444
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 10
+}

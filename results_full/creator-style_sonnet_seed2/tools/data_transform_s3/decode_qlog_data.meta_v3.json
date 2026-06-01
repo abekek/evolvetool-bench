@@ -1,0 +1,21 @@
+{
+  "name": "decode_qlog_data",
+  "created_at_task": "regress_1",
+  "session_id": "data_transform_s3",
+  "scores_v1": {
+    "tqs": 0.5972222222222222,
+    "correctness": 0.5,
+    "robustness": 0.5,
+    "generality": 0.5,
+    "code_quality": 0.8888888888888888
+  },
+  "scores_v3": {
+    "tqs": 0.3472222222222222,
+    "correctness": 0.0,
+    "robustness": 0.5,
+    "generality": 0.0,
+    "code_quality": 0.8888888888888888
+  },
+  "n_hidden_v3": 10,
+  "n_adversarial_v3": 12
+}
