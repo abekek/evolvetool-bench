@@ -116,8 +116,8 @@ def run_session(system: AgentSystem, session: Session, verbose: bool = True) -> 
                     ratio = found / len(key_values) if key_values else 0
                     passed = ratio >= 0.8
         else:
-            # No verification — pass if output is non-trivial
-            passed = len(str(output)) > 20
+            # No verifier and no expected output — task is unverified, mark failed
+            passed = False
 
         # Track tool creation
         tools_created_names = []
@@ -127,6 +127,8 @@ def run_session(system: AgentSystem, session: Session, verbose: bool = True) -> 
                 implementation=tc.get("implementation", ""),
                 test_suite=tc.get("test_suite", ""),
                 created_at_task=task.id,
+                capability_id=task.capability_id,
+                source_task_id=task.id,
             )
             result.tools_created.append(tool_record)
             tools_created_names.append(tc["name"])

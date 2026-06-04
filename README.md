@@ -1,154 +1,98 @@
 # EvolveTool-Bench
 
-**Diagnosing tool library quality in self-evolving LLM agents.**
+**A diagnostic framework for evaluating evolving LLM-generated tool libraries as auditable software artifacts.**
 
-[![Paper](https://img.shields.io/badge/paper-LLM4SE%202026-blue)](paper/submission/main.tex)
+[![Paper](https://img.shields.io/badge/paper-KDD%20Eval%202026-blue)](paper/kdd_eval2026/main.tex)
 [![arXiv](https://img.shields.io/badge/arXiv-2604.00392-b31b1b.svg)](https://arxiv.org/abs/2604.00392)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The first benchmark that evaluates the quality of LLM-generated tool libraries as **software artifacts** — not just whether the agent solves tasks, but whether the tools are correct, reusable, composable, and regression-free.
+EvolveTool-Bench evaluates LLM agents that create and accumulate tools at runtime — not just whether they solve the immediate task, but whether the generated tool library is **correct, reusable, composable, auditable, and regression-free**.
 
-## The Problem
+## What the Benchmark Diagnoses
 
-Every existing benchmark (Tool-Genesis, EvoSkill, VOYAGER) treats the tool library as a black box — if the agent solves tasks, the library is deemed good. This is like evaluating a software engineer solely by whether their code runs, ignoring redundancy, regression, and technical debt.
+| Question | Metric |
+|----------|--------|
+| Did the agent solve the task? | Verified task completion (TC) |
+| Does the generated tool pass independent tests? | Tool conformance / correctness |
+| Did tool reuse help or hurt? | Correct reuse vs. incorrect reuse |
+| Is the library accumulating duplicates? | Redundancy rate |
+| Are created tools actually used later? | Utilization |
+| Can tools be chained across tasks? | Composition success |
+| Did library growth break prior behavior? | Regression rate |
+| Can the run be inspected and reproduced? | Per-task audit trace |
 
-**Our finding:** Systems with similar task completion (63–68%) differ by up to 18% in library health. Task completion alone hides critical software quality differences.
+The contribution is a **diagnostic methodology and set of reusable evaluation practices**, not a leaderboard. Any tool-generating or skill-generating agent can be evaluated against the same tasks and metrics.
 
-## Key Results
+## Key Finding
 
-| System | Model | ETS↑ | TC (%) | Tools | Reuse (%) | LH (%) |
-|--------|-------|------|--------|-------|-----------|--------|
-| No-Evolution | Sonnet | .518 | 66.7 | 0 | 48.1 | 41.4 |
-| EvoSkill | Sonnet | .520 | **68.2** | 0 | 48.1 | 41.4 |
-| One-Shot | Sonnet | .519 | 67.7 | 3 | 48.1 | 38.3 |
-| **ARISE** | **Sonnet** | .603 | 63.6 | **22** | **70.4** | **51.7** |
-| No-Evolution | Haiku | .516 | 66.7 | 0 | 51.9 | 40.1 |
-| **ARISE** | **Haiku** | **.612** | 65.2 | 13 | 66.7 | 51.2 |
-
-**6 findings:**
-1. Task completion hides software quality differences
-2. Code generation outperforms prompt engineering (ARISE vs EvoSkill)
-3. Untested code generation is worse than no generation (One-Shot LH < No-Evolution)
-4. Reward design is the critical bottleneck, not the synthesis pipeline
-5. Tool quality (TQS=0.34) is the frontier — correctness is the weakest dimension
-6. Cheaper models produce comparable library quality (Haiku slightly beats Sonnet)
-
-## What We Measure
-
-### Per-Tool: Tool Quality Score (TQS)
-| Dimension | What It Tests |
-|-----------|---------------|
-| Correctness | Hidden unit tests the agent never sees |
-| Robustness | Adversarial inputs (empty, null, malformed) |
-| Generality | Held-out inputs from the same distribution |
-| Code Quality | Docstrings, type hints, error handling, length |
-
-### Per-Library: Library Health (LH)
-| Metric | SE Analog |
-|--------|-----------|
-| Reuse Rate | Code reuse vs duplication |
-| Redundancy | Dead/duplicate code detection |
-| Precision | Quality gate (TQS ≥ 0.5) |
-| Efficiency | Dead code (created but never used) |
-| Composition | Function composability |
-| Regression | Regression testing |
-
-### Composite: EvolveTool Score (ETS)
-```
-ETS = 0.25·TC + 0.20·TQS + 0.10·(1-RC) + 0.30·LH + 0.15·SS
-```
+Task completion alone is insufficient for tool-evolving agents. Systems with similar TC (63–72%) differ substantially in library quality dimensions. The *reuse paradox* illustrates why: an agent with high raw reuse can still propagate defects, making **correct vs. incorrect reuse decomposition** essential for honest reporting.
 
 ## Benchmark Structure
 
-**3 domains, 9 sessions, 99 tasks:**
+**3 domains · 9 sessions · 99 tasks**, each task deterministically verified:
 
-| Domain | Sessions | Format | Tasks |
-|--------|----------|--------|-------|
-| A: Data Transform | 5 | ABR, RLE, VDL, QLOG, TPACK | 55 |
-| B: API Orchestration | 1 | HMAC-timestamp auth, encrypted cursors | 11 |
-| C: Numerical | 3 | ARCFIT, ARCSIG, ARCOPT | 33 |
+| Domain | Sessions | What it probes |
+|--------|----------|----------------|
+| A: Data Transform | 5 | Proprietary binary formats (ABR, RLE, VDL, QLOG, TPACK) |
+| B: API Orchestration | 1 | HMAC auth, encrypted cursors, mock server |
+| C: Numerical | 3 | Curve fitting, signal processing, optimization |
 
-Each session has **11 tasks** with known dependency relationships:
+Each session contains **11 tasks with known dependency relationships**:
+
+| Task type | What it diagnoses |
+|-----------|------------------|
+| Seed (×3) | Can the agent use provided tools? |
+| Gap (×2) | Can it create a missing capability? |
+| Variant (×2) | Does it reuse or duplicate? |
+| Compose (×1) | Can it chain self-created tools? |
+| Regress (×1) | Did library growth break prior behavior? |
+| Adversarial (×2) | Does the tool handle edge cases? |
+
+All proprietary formats are designed so the agent must create and execute tools — prior training data is insufficient.
+
+## Metrics
+
+### Per-tool: Tool Quality Score (TQS)
+
+| Dimension | Test source |
+|-----------|-------------|
+| Correctness | Capability-aligned hidden unit tests |
+| Generality | Held-out same-distribution inputs |
+| Robustness | Adversarial edge cases |
+| Code quality | Static analysis (radon CC, MI, control flow) |
+
+### Per-library: Library Health (LH)
+
+Correct reuse rate · incorrect reuse rate · redundancy · utilization · composition · regression stability.
+
+### Composite: EvolveTool Score (ETS)
 
 ```
-Seed (3)  →  Can the agent use provided tools?
-Gap (2)   →  Can it create new tools? (proprietary formats)
-Variant (2) → Does it reuse or duplicate?
-Compose (1) → Can it chain its own tools?
-Regress (1) → Do old tools still work?
-Adversarial (2) → Can it handle edge cases?
+ETS = 0.30·TC + 0.20·TQS + 0.10·(1−cost) + 0.40·LH
 ```
 
-All proprietary formats are designed so LLMs **cannot solve them from training data** — the agent must create and execute tools.
+Safety is excluded from the composite pending a proper implementation (see Limitations).
 
 ## Quick Start
 
 ```bash
-# Install
-pip install -e .
+pip install -e ".[dev]"
 
-# Run ARISE on all domains (requires Bedrock access)
-AWS_PROFILE=your_profile python run_full_matrix.py 2
+# Audit that all tasks have deterministic verifiers
+python scripts/audit_tasks.py
 
-# Run no-evolution baseline
-AWS_PROFILE=your_profile python run_full_matrix.py 1
+# Run a session against the no-evolution baseline
+python -c "
+from evolvetool_bench.domains.data_transform.session_1 import SESSION
+from evolvetool_bench.baselines.no_evolution import NoEvolution
+from evolvetool_bench.harness.runner import run_session
+result = run_session(NoEvolution(), SESSION)
+print(result.summary())
+"
 
-# Run all 6 configurations sequentially
-bash run_remaining.sh
-
-# Regenerate paper figures from results
-python generate_figures.py
-```
-
-### Run IDs
-| ID | System | Model |
-|----|--------|-------|
-| 1 | No-Evolution | Claude Sonnet |
-| 2 | ARISE | Claude Sonnet |
-| 3 | EvoSkill | Claude Sonnet |
-| 4 | One-Shot | Claude Sonnet |
-| 5 | No-Evolution | Claude Haiku |
-| 6 | ARISE | Claude Haiku |
-| 7 | Human Oracle | Claude Sonnet |
-
-## Baselines
-
-| System | Type | Description |
-|--------|------|-------------|
-| **No-Evolution** | Lower bound | Seed tools only, no code generation |
-| **ARISE** | Code-level | Iterative synthesis + sandbox + adversarial testing |
-| **EvoSkill** | Strategy-level | Text prompt evolution, no executable code |
-| **One-Shot** | Ablation | Single synthesis attempt, no validation |
-| **Human Oracle** | Upper bound | Hand-written reference tools for all gap tasks |
-
-## Project Structure
-
-```
-evolvetool-bench/
-├── src/evolvetool_bench/
-│   ├── types.py                    # Core types: Task, Session, ToolRecord, SessionResult
-│   ├── harness/runner.py           # Session runner + AgentSystem interface
-│   ├── evaluation/
-│   │   ├── tool_quality.py         # TQS evaluator (correctness, robustness, generality, code)
-│   │   └── run_quality.py          # Run quality eval on session results
-│   ├── baselines/
-│   │   ├── no_evolution.py         # Seed tools only
-│   │   ├── arise_system.py         # ARISE with LLM-as-judge reward
-│   │   ├── evoskill_system.py      # Strategy-level evolution
-│   │   ├── oneshot_system.py       # One-shot creation, no validation
-│   │   └── human_oracle.py         # Hand-written reference tools
-│   └── domains/
-│       ├── data_transform/         # Domain A: 5 sessions, proprietary binary formats
-│       ├── api_orchestration/      # Domain B: mock server + HMAC auth + pagination
-│       └── numerical/              # Domain C: curve fitting, signals, optimization
-├── paper/
-│   ├── submission/                 # LLM4SE 2026 submission (CEUR format)
-│   └── *.pdf                       # Figures
-├── results_full/                   # All experimental results (JSON)
-├── run_full_matrix.py              # Run benchmark for any system/model
-├── run_remaining.sh                # Run all remaining configurations
-└── generate_figures.py             # Generate paper figures from results
+# Regenerate paper tables from canonical results
+python scripts/make_tables.py --results-dir results_canonical/ --output paper/kdd_eval2026/
 ```
 
 ## Adding Your Own System
@@ -159,45 +103,65 @@ Implement the `AgentSystem` interface:
 from evolvetool_bench.harness.runner import AgentSystem
 
 class MySystem(AgentSystem):
-    def setup(self, seed_tools: list[dict]) -> None:
-        """Initialize with seed tools."""
-        ...
-
-    def run_task(self, task_description: str) -> dict:
-        """Run a task. Return {output, tools_created, tools_used, llm_calls}."""
-        ...
-
-    def get_library(self) -> list[dict]:
-        """Return current tool library."""
-        ...
+    def setup(self, seed_tools: list[dict]) -> None: ...
+    def run_task(self, task_description: str) -> dict: ...
+    def get_library(self) -> list[dict]: ...
 ```
 
-Then run:
+Return format for `run_task`:
 ```python
-from evolvetool_bench.domains.data_transform.session_1 import create_session
-from evolvetool_bench.harness.runner import run_session
+{
+    "output": str,           # agent's answer
+    "tools_created": [...],  # [{name, implementation, test_suite}]
+    "tools_used": [...],     # [tool_name, ...]
+    "llm_calls": int,
+}
+```
 
-session = create_session()
-result = run_session(MySystem(), session)
-print(result.summary())
+## Reusable Evaluation Practices
+
+EvolveTool-Bench is intended less as a fixed leaderboard than as a set of reusable evaluation practices for tool-evolving agents. We recommend that future benchmarks:
+
+1. Separate task success from generated-artifact conformance
+2. Report correct and incorrect reuse rather than raw reuse alone
+3. Include explicit regression tasks after library growth
+4. Preserve generated artifacts and source hashes
+5. Publish per-task traces sufficient to reproduce decisions
+6. Evaluate library-management policies (promotion, deduplication, retirement)
+7. Use capability-aligned hidden tests, not a single test pool per session
+
+## Repository Structure
+
+```
+evolvetool-bench/
+├── src/evolvetool_bench/
+│   ├── types.py                    # Task, Session, ToolRecord, SessionResult
+│   ├── harness/runner.py           # Session runner + AgentSystem interface
+│   ├── evaluation/tool_quality.py  # TQS (capability-aligned hidden tests)
+│   ├── baselines/                  # no_evolution, arise, creator, oneshot, toolmaker, toolcoder
+│   └── domains/                    # data_transform, api_orchestration, numerical
+├── paper/kdd_eval2026/             # Canonical KDD 2026 workshop submission
+├── results_canonical/              # Canonical result manifests
+│   ├── run_manifest.jsonl
+│   ├── tool_manifest.jsonl
+│   └── aggregate.json
+└── scripts/
+    ├── audit_tasks.py              # Verify all tasks have deterministic verifiers
+    ├── audit_results.py            # Check result file completeness
+    ├── make_tables.py              # Regenerate LaTeX tables from results
+    └── make_figures.py             # Regenerate figures from results
 ```
 
 ## Citation
 
 ```bibtex
 @inproceedings{kaliyev2026evolvetoolbench,
-  title={EvolveTool-Bench: Evaluating the Quality of LLM-Generated Tool Libraries as Software Artifacts},
-  author={Kaliyev, Alibek T. and Maryanskyy, Artem},
-  booktitle={LLM4SE 2026: Workshop on Large Language Models for Software Engineering},
-  year={2026}
+  title     = {EvolveTool-Bench: A Diagnostic Framework for Trustworthy Tool-Library Evolution},
+  author    = {Kaliyev, Alibek T. and Maryanskyy, Artem},
+  booktitle = {Workshop on Evaluation and Trustworthiness of Agentic AI at KDD 2026},
+  year      = {2026}
 }
 ```
-
-## Links
-
-- [ARISE Framework](https://github.com/abekek/arise) — the code-level evolution system evaluated
-- [ARISE Documentation](https://arise-ai.dev)
-- [strands-arise](https://github.com/abekek/strands-arise) — ARISE as a Strands Agents plugin
 
 ## License
 
