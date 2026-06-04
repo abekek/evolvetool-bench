@@ -30,8 +30,13 @@ def audit_results(results_dir: pathlib.Path) -> int:
             continue
 
         # Normalise: results can be a list or a single session dict
+        # Skip placeholder/metadata files that are not session records
+        if isinstance(data, dict) and "_note" in data:
+            continue
         records = data if isinstance(data, list) else [data]
         for rec in records:
+            if not isinstance(rec, dict) or "session_id" not in rec:
+                continue  # skip non-session objects
             system = rec.get("system", f.stem)
             by_system.setdefault(system, []).append(rec)
             missing = REQUIRED_FIELDS - set(rec.keys())
