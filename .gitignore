@@ -19,3 +19,4 @@ paper/*.out
 paper/src/
 texput.log
 *.out
+.venv/

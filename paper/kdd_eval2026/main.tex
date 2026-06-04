@@ -33,7 +33,7 @@
 }
 
 \begin{abstract}
-Agentic AI systems increasingly create, modify, and reuse executable tools across tasks. Standard benchmarks measure whether the agent solves the immediate task, but rarely evaluate the persistent tool library that mediates future behavior. This creates a trustworthiness gap: an agent may achieve high task completion while accumulating brittle, redundant, weakly reusable, or regression-inducing tools. We introduce \textsc{EvolveTool-Bench}, a diagnostic framework for evaluating evolving tool libraries as auditable software artifacts. The benchmark organizes tasks into seed, gap, variant, composition, regression, and adversarial phases, and reports decomposed metrics for verified task completion, tool conformance, correct reuse, incorrect reuse, redundancy, composition, and regression. We evaluate six tool-creation protocols across three code-execution domains, 99 tasks, and two Claude models. Three findings motivate the framework. First, task completion alone is insufficient: TC clusters in a 63--72\% band while library health spans a much wider range, with library health and task completion empirically orthogonal at session granularity ($\rho{=}-0.03$, 144 sessions). Second, raw reuse is ambiguous: \textsc{EvolveTool-Bench} decomposes reuse into correct and incorrect components, exposing a ``reuse paradox'' where the highest-reuse system propagates defects 38.9\% of the time. Third, self-generated validation misses specification gaps: per-tool correctness under independent hidden tests is 0--3\% despite TC${>}$60\%, showing that tool-promotion decisions require external conformance signals. \textsc{EvolveTool-Bench} emits per-task audit traces and preserved tool artifacts, enabling researchers to inspect \emph{why} systems succeed or fail and to incorporate library-level diagnostics into future agent evaluations. The contribution is a diagnostic methodology and a set of reusable evaluation practices, not a leaderboard.
+Agentic AI systems increasingly create, modify, and reuse executable tools across tasks. Standard benchmarks measure whether the agent solves the immediate task, but rarely evaluate the persistent tool library that mediates future behavior. This creates a trustworthiness gap: an agent may achieve high task completion while accumulating brittle, redundant, weakly reusable, or regression-inducing tools. We introduce \textsc{EvolveTool-Bench}, a diagnostic framework for evaluating evolving tool libraries as auditable software artifacts. The benchmark organizes tasks into seed, gap, variant, composition, regression, and adversarial phases, and reports decomposed metrics for verified task completion, tool conformance, correct reuse, incorrect reuse, redundancy, composition, and regression. We evaluate six tool-creation protocols across three code-execution domains, 99 tasks, and two Claude models. Three findings motivate the framework. First, task completion alone is insufficient: TC clusters in a 63--72\% band while library health spans a much wider range, with library health and task completion empirically orthogonal at session granularity ($\rho{=}-0.03$, 144 sessions). Second, raw reuse is ambiguous: \textsc{EvolveTool-Bench} decomposes reuse into correct and incorrect components, exposing a ``reuse paradox'' where the highest-reuse system propagates defects 38.9\% of the time. Third, self-generated validation misses specification gaps: per-tool correctness under capability-aligned hidden tests is near zero (0--6\%) despite TC${>}$60\%, showing that tool-promotion decisions require external conformance signals. \textsc{EvolveTool-Bench} emits per-task audit traces and preserved tool artifacts, enabling researchers to inspect \emph{why} systems succeed or fail and to incorporate library-level diagnostics into future agent evaluations. The contribution is a diagnostic methodology and a set of reusable evaluation practices, not a leaderboard.
 \end{abstract}
 
 \maketitle
@@ -72,7 +72,7 @@ We present \textsc{EvolveTool-Bench}, a diagnostic framework that treats LLM-gen
 
 \section{Benchmark Design}
 
-We first define key terms used throughout. A \emph{session} is a fixed sequence of 11 tasks executed in order with shared library state. A \emph{task} is a single problem instance with a natural-language description, expected output format, and verification criteria. A \emph{dependency} is a directed relationship where a later task is designed to be solvable using artifacts created during an earlier task. All tasks require Python code execution; no task is solvable by text-only reasoning.
+We first define key terms used throughout. A \emph{session} is a fixed sequence of 11 tasks executed in order with shared library state. A \emph{task} is a single problem instance with a natural-language description, expected output format, and verification criteria. A \emph{dependency} is a directed relationship where a later task is designed to be solvable using artifacts created during an earlier task. Tasks are designed to require Python code execution and tool use rather than text-only reasoning; the domains (\S\ref{sec:domains}) use proprietary formats and computations chosen so that pattern-matching against training data is insufficient.
 
 The benchmark evaluates two artifact granularities. A \textbf{tool} is a single Python function with documentation (the unit most existing systems emit). A \textbf{skill} is a richer multi-file bundle: a callable paired with a \texttt{SKILL.md} description, auto-generated unit tests, and a \texttt{metadata.json} manifest (the format used by Anthropic Claude Skills and by CoEvoSkills~\cite{zhang2026coevoskills}). Most baselines we evaluate synthesise tools; \S\ref{sec:skill_eval} adds a skill-format track in which the expected artifact is a skill bundle. We use \emph{artifact} as the umbrella term.
 
@@ -191,18 +191,18 @@ Three of the four systems we evaluate (No-Evolution, Strategy-Only, and most One
 \item \textbf{Reuse $\rho_r$} is defined over variant and regress tasks (denominator $|\mathcal{T}_{v,r}|$ is non-zero by session construction). Crucially, the three pre-loaded \emph{seed tools} (\texttt{parse\_csv}, \texttt{sha256\_hash}, \texttt{linear\_interpolate}) count as members of $\mathcal{L}_{\text{before}}$. A No-Evolution agent that successfully reuses a seed tool on a variant task gets credit, which is why its reuse rate is 48.1\%, not 0. This is the design choice that allows fair comparison: reuse measures the \emph{behaviour} (did the agent re-invoke a known tool?) regardless of whether the tool was hand-written or self-evolved.
 \item \textbf{Duplication $\rho_d$}, \textbf{quality gate $\pi$}, \textbf{utilization $\eta$}, and \textbf{mean TQS $\overline{\text{TQS}}$} are defined over the \emph{synthesized} library $\mathcal{L} \setminus \mathcal{L}_{\text{seed}}$. When this set is empty, we report these metrics as $1$ for the ``inverse'' terms ($1-\rho_d=1$, no duplicates to penalize) and as $0$ for the positive terms ($\pi=\eta=\overline{\text{TQS}}=0$, nothing to credit). This is conservative: a system that creates nothing earns no quality credit but also incurs no quality penalty.
 \item \textbf{Composability $\gamma$} and \textbf{regression $\delta$} are defined over compose and regress tasks respectively (non-empty by construction) and are computed from task outcomes regardless of whether tools were created.
-\item \textbf{Safety SS} is $1.0$ when the library is empty (no unsafe operations possible), the same default applied when no static-analysis flags are raised on a non-empty library.
 \end{itemize}
+We deliberately \emph{exclude} a safety dimension from the composite. An earlier version assigned a safety score that defaulted to $1.0$ whenever no dangerous operations were statically detected; because this default fired for essentially every tool, it added a near-constant offset that inflated all scores without discriminating between systems. Rather than report a metric that does no diagnostic work, we drop it from ETS and recommend that safety be assessed with a dedicated static/dynamic analyzer external to the composite (\S\ref{sec:limitations}).
 This convention is what allows No-Evolution and Strategy-Only to receive non-trivial LH scores ($0.41$ and $0.41$) despite synthesising zero tools: their reuse, composition, and regression numbers are real measurements, and the per-tool sub-metrics zero out cleanly. The headline LH gap to Code-Evol therefore reflects \emph{added} quality from synthesis, not arithmetic artefacts of empty denominators.
 
 \paragraph{Composite: EvolveTool Score (ETS).}
-The composite score combines task completion (TC), mean tool quality ($\overline{\text{TQS}}$), \emph{refinement cost} (RC, an LLM-call-budget penalty defined below), library health (LH), and safety score (SS, fraction of tools free of dangerous operations):
+The composite score combines task completion (TC), mean tool quality ($\overline{\text{TQS}}$), \emph{refinement cost} (RC, an LLM-call-budget penalty defined below), and library health (LH):
 \begin{equation}
-\text{ETS} = 0.25 \!\cdot\! \text{TC} + 0.20 \!\cdot\! \overline{\text{TQS}} + 0.10 \!\cdot\! \max(0, 1{-}\text{RC}) + 0.30 \!\cdot\! \text{LH} + 0.15 \!\cdot\! \text{SS}
+\text{ETS} = 0.30 \!\cdot\! \text{TC} + 0.20 \!\cdot\! \overline{\text{TQS}} + 0.10 \!\cdot\! \max(0, 1{-}\text{RC}) + 0.40 \!\cdot\! \text{LH}
 \end{equation}
-where $\text{RC} = N_{\text{LLM}} / (10\,|T|)$ is the number of LLM calls made during the session normalised by ten calls per task. The constant ten was chosen empirically as the rough budget a non-evolving agent uses; systems that exceed this budget pay a linear penalty.
+where $\text{RC} = N_{\text{LLM}} / (10\,|T|)$ is the number of LLM calls made during the session normalised by ten calls per task. The constant ten was chosen empirically as the rough budget a non-evolving agent uses; systems that exceed this budget pay a linear penalty. The four weights sum to one; the previously included safety term is removed (see above).
 
-Library health receives the largest weight (0.30) reflecting the benchmark's thesis that library quality matters beyond task completion. LH is internally unweighted (equal contribution from all six sub-metrics) because no prior work provides empirical guidance for sub-metric importance; we leave sub-metric weighting to future work. Table~\ref{tab:ets_sensitivity} shows that system rankings are stable under weight perturbations: Code-Evol ranks first under all five configurations tested, including the LH$=$0 stress test in which the metric the benchmark advocates for is given zero weight.
+Library health receives the largest weight (0.40) reflecting the benchmark's thesis that library quality matters beyond task completion. LH is internally unweighted (equal contribution from all six sub-metrics) because no prior work provides empirical guidance for sub-metric importance; we leave sub-metric weighting to future work. Table~\ref{tab:ets_sensitivity} shows that system rankings are stable under weight perturbations: Code-Evol ranks first under all five configurations tested, including the LH$=$0 stress test in which the metric the benchmark advocates for is given zero weight.
 
 \begin{table}[t]
 \centering\footnotesize
@@ -210,21 +210,21 @@ Library health receives the largest weight (0.30) reflecting the benchmark's the
 \toprule
 \textbf{Weights} & \textbf{No-Evol} & \textbf{Str-Only} & \textbf{One-Shot} & \textbf{Code-Evol} \\
 \midrule
-Original   & .518 & .515 & .519 & \textbf{.609} \\
-Uniform    & .571 & .568 & .574 & \textbf{.647} \\
-TC-dom.    & .577 & .575 & .580 & \textbf{.637} \\
-LH-dom.    & .484 & .480 & .476 & \textbf{.580} \\
-LH${=}$0   & .617 & .615 & .629 & \textbf{.690} \\
+Original   & .439 & .443 & .442 & \textbf{.543} \\
+Uniform    & .462 & .469 & .462 & \textbf{.558} \\
+TC-dom.    & .495 & .500 & .494 & \textbf{.570} \\
+LH-dom.    & .431 & .431 & .437 & \textbf{.538} \\
+LH${=}$0   & .460 & .473 & .454 & \textbf{.559} \\
 \bottomrule
 \end{tabular}
-\caption{ETS under alternative weight configurations (all Sonnet; Code-Evol $=$ mean of 4 seeds). The system ordering is stable across five weight schemes, including a stress test in which library health receives zero weight. Weights $(w_{\text{TC}}, w_{\text{TQS}}, w_{\text{RC}}, w_{\text{LH}}, w_{\text{SS}})$: Original $(.25,.20,.10,.30,.15)$; Uniform $(.20,.20,.20,.20,.20)$; TC-dom. $(.40,.15,.10,.20,.15)$; LH-dom. $(.15,.15,.10,.50,.10)$; LH${=}$0 $(.30,.25,.15,.00,.30)$.}
+\caption{ETS under alternative weight configurations (all Sonnet; Code-Evol $=$ mean of 4 seeds). The system ordering is stable across five weight schemes, including a stress test in which library health receives zero weight. Weights $(w_{\text{TC}}, w_{\text{TQS}}, w_{\text{RC}}, w_{\text{LH}})$ for the safety-free composite: Original $(.30,.20,.10,.40)$; Uniform $(.25,.25,.25,.25)$; TC-dom. $(.50,.20,.10,.20)$; LH-dom. $(.20,.15,.10,.55)$; LH${=}$0 $(.45,.35,.20,.00)$.}
 \label{tab:ets_sensitivity}
 \end{table}
 
 \section{Experimental Setup}
 \label{sec:exp_setup}
 
-To validate the benchmark's discriminative power, we evaluate five systems representing different points on the tool-evolution spectrum:
+To validate the benchmark's discriminative power, we evaluate five core systems representing different points on the tool-evolution spectrum (two further adapted baselines are described afterward):
 
 \begin{enumerate}
 \item \textbf{No-Evolution}: The agent receives 3 pre-written seed tools (CSV parsing, SHA-256 hashing, and linear interpolation) and solves all tasks using inline reasoning with these fixed tools. The library is never modified. This isolates the LLM's baseline problem-solving ability from any tool-creation mechanism.
@@ -238,7 +238,26 @@ To validate the benchmark's discriminative power, we evaluate five systems repre
 \item \textbf{ToolMaker-style}: A faithful adaptation of the ToolMaker protocol~\cite{wolflein2025toolmaker} to our session format. When a task fails, the agent synthesises a function plus 3--5 auto-tests in a single call; the auto-tests run in a sandbox; if any fails, the captured stdout/stderr (with \texttt{traceback.format\_exc()}) feeds a \emph{diagnose} call that produces a structured diagnosis-plus-plan, followed by a \emph{rewrite} call. The loop iterates up to 3 times. Distinct from Code-Evol in that the error signal is test-execution output rather than trajectory-level LLM-judge scoring, and the diagnose/rewrite split mirrors ToolMaker's two-stage prompt structure. We adapt the protocol rather than literally porting the repo (their codebase is OpenAI-only, Docker-based, and expects a GitHub repo as input).
 \end{enumerate}
 
-These systems span a spectrum from no tool creation through unvalidated creation, strategy-level adaptation, validated code synthesis with LLM-judge guidance, and structured-error self-correction.
+These systems span a spectrum from no tool creation through unvalidated creation, strategy-level adaptation, validated code synthesis with LLM-judge guidance, and structured-error self-correction. We additionally evaluate \textbf{CREATOR-style}~\cite{qian2023creator} (decision/execution-split tool creation) and \textbf{ToolCoder-style} (code-generation-centric tool synthesis) under the same harness, for six tool-creation protocols in total.
+
+\paragraph{Baseline fairness.} Several baselines are protocol \emph{adaptations} rather than native ports, because the original systems assume incompatible infrastructure (OpenAI-only, Docker, GitHub-repo inputs, or pre-defined reference tests). Table~\ref{tab:baseline_fairness} states, for each adapted baseline, the native setting it was designed for, what we preserved, what we changed, and why the comparison is fair. The unifying principle is that every system sees the identical task stream, seed library, model, and verification function; only the tool-creation \emph{protocol} differs. Where an adaptation could disadvantage a baseline (e.g.\ ToolMaker-style's diagnose/rewrite loop is gated by reference tests our open tasks do not provide), we flag it explicitly rather than report the number without context.
+
+\begin{table*}[t]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{0.13\textwidth}p{0.24\textwidth}p{0.24\textwidth}p{0.27\textwidth}}
+\toprule
+\textbf{Baseline} & \textbf{Native setting} & \textbf{Preserved faithfully} & \textbf{Adapted / fairness note} \\
+\midrule
+Strategy-Only (EvoSkill) & Skill-library agent with NL strategy proposer/prompt generator & Skill Proposer and Prompt Generator prompt templates; strategy-folder structure & Strategies injected as prompt hints, not executed (their full infra differs). Characterizes \emph{strategy-level} evolution; not a leaderboard claim against EvoSkill. \\
+CREATOR-style & Decision/execution split tool creation with reference tests & Two-phase create-then-use control flow; per-tool function synthesis & No native reference tests in our open tasks; quality measured post-hoc by our hidden tests, identical to all systems. \\
+ToolCoder-style & Code-generation-centric tool synthesis & Single-pass function generation from the task spec & Runs on Bedrock/Claude rather than the native model; same task stream and verifier as all systems. \\
+ToolMaker-style & Repo-grounded, Docker, OpenAI; diagnose/rewrite loop gated by \emph{provided} reference tests & Two-stage diagnose-then-rewrite prompt structure; sandbox execution of auto-tests & Our open tasks provide no reference tests to gate the loop, so it created zero tools (\S\ref{sec:limitations}). We report this as a harness--protocol mismatch, not a capability verdict. \\
+\bottomrule
+\end{tabular}
+\caption{Baseline fairness ledger for adapted protocols. No-Evolution, One-Shot, and Code-Evol are native to this harness and omitted. All systems share the identical task stream, seed library, model (Sonnet~4), and verification function; only the tool-creation protocol varies. Adaptations that could disadvantage a baseline are flagged explicitly.}
+\label{tab:baseline_fairness}
+\end{table*}
 
 \paragraph{Models.} Two Claude models via Amazon Bedrock: Sonnet 4 and Haiku 4.5. All systems run on Sonnet; Code-Evol and No-Evolution also run on Haiku. Each main Sonnet configuration runs at $n{=}4$ seeds. Initial GPT-4o runs were degenerate (TC$=$48.5\%, zero tools across all protocols, harness$\,\times\,$function-calling interaction we have not root-caused); we omit them and revisit in v3.
 
@@ -246,7 +265,7 @@ These systems span a spectrum from no tool creation through unvalidated creation
 
 \paragraph{Implementation details.} All systems implemented in Python 3.11; Claude models accessed via Amazon Bedrock. All LLM calls use default temperature (1.0) and top-p (1.0) with max\_tokens=4096 for agent responses and max\_tokens=10 for the LLM-as-judge score. Code-Evol's sandbox executes synthesized tools in isolated subprocesses with a 30-second timeout and no network access. Each session starts with a clean library containing only the 3 seed tools; library state does not carry across sessions.
 
-\paragraph{Verification.} Task outputs are verified using lenient key-value containment: if 80\%+ of expected key-value pairs appear in the agent's output, the task passes. The 80\% threshold was calibrated via pilot runs to accommodate format variation (e.g., key ordering, whitespace) while rejecting substantively wrong outputs.
+\paragraph{Verification.} Task outputs are checked against a per-task \texttt{expected} mapping using lenient key-value containment: if 80\%+ of expected key-value pairs appear in the agent's output, the task passes. The 80\% threshold was calibrated via pilot runs to accommodate format variation (e.g., key ordering, whitespace) while rejecting substantively wrong outputs. The harness fails \emph{closed}: a task with no \texttt{expected} mapping or custom \texttt{verify} predicate is scored as a failure rather than passed on a length heuristic. We audit verifier coverage with a released script (\texttt{scripts/audit\_tasks.py}); at present 51/99 tasks carry deterministic verifiers, with the API-orchestration session the largest gap. The TC levels reported here were computed under the original lenient regime, which could credit a task lacking an \texttt{expected} mapping; under the current fail-closed policy such tasks score as failures, so strict verified TC would be no higher. We therefore treat the cross-system TC \emph{ranking and clustering} --- not the absolute level --- as the robust result, and flag full deterministic verification plus a re-run of affected configurations as the highest-priority hardening item (L9).
 
 \section{Results}
 \label{sec:results}
@@ -259,17 +278,17 @@ These systems span a spectrum from no tool creation through unvalidated creation
 \toprule
 \textbf{System} & \textbf{Model} & $n$ & \textbf{ETS}$\uparrow$ & \textbf{TC (\%)} & \textbf{Tools} & \textbf{TQS} & \textbf{Reuse (\%)} & \textbf{LH (\%)} \\
 \midrule
-No-Evol & Sonnet & 4 & 0.516$\pm$0.006 & 67.6$\pm$0.7 & 0 & --- & 46.3$\pm$1.9 & 39.7$\pm$1.7 \\
-One-Shot & Sonnet & 4 & 0.520$\pm$0.008 & 67.4$\pm$1.1 & 3 & 0.044 & 44.4$\pm$2.6 & 38.6$\pm$2.4 \\
-Strategy-Only & Sonnet & 4 & 0.517$\pm$0.004 & 66.9$\pm$0.6 & 0 & --- & 50.0$\pm$4.1 & 41.2$\pm$1.6 \\
-CREATOR-style & Sonnet & 4 & \textbf{0.637$\pm$0.023} & 67.7$\pm$3.1 & 23.5 & 0.460 & 66.7$\pm$7.9 & \textbf{54.8$\pm$5.6} \\
-ToolCoder-style & Sonnet & 1 & 0.581 & 54.5 & 17 & 0.449 & 44.4 & 49.2 \\
-ToolMaker-style$^\dagger$ & Sonnet & 1 & 0.495 & 63.6 & 0 & --- & 40.7 & 36.4 \\
-Code-Evol & Sonnet & 4 & 0.609$\pm$0.011 & 64.9$\pm$0.9 & 21 & 0.354 & 72.2$\pm$4.1 & 51.6$\pm$2.9 \\
-Code-Evol (sem.\,Q) & Sonnet & 1 & 0.627 & 62.6 & 15 & 0.432 & 63.0 & 52.8 \\
+No-Evol & Sonnet & 4 & 0.439$\pm$0.007 & 67.6$\pm$0.7 & 0 & --- & 46.3$\pm$1.9 & 39.7$\pm$1.7 \\
+One-Shot & Sonnet & 4 & 0.443$\pm$0.010 & 67.4$\pm$1.1 & 3 & 0.044 & 44.4$\pm$2.6 & 38.6$\pm$2.4 \\
+Strategy-Only & Sonnet & 4 & 0.442$\pm$0.006 & 66.9$\pm$0.6 & 0 & --- & 50.0$\pm$4.1 & 41.2$\pm$1.6 \\
+CREATOR-style & Sonnet & 4 & \textbf{0.576$\pm$0.030} & 67.7$\pm$3.1 & 23.5 & 0.460 & 66.7$\pm$7.9 & \textbf{54.8$\pm$5.6} \\
+ToolCoder-style & Sonnet & 1 & 0.507 & 54.5 & 17 & 0.449 & 44.4 & 49.2 \\
+ToolMaker-style$^\dagger$ & Sonnet & 1 & 0.413 & 63.6 & 0 & --- & 40.7 & 36.4 \\
+Code-Evol & Sonnet & 4 & 0.543$\pm$0.014 & 64.9$\pm$0.9 & 21 & 0.354 & 72.2$\pm$4.1 & 51.6$\pm$2.9 \\
+Code-Evol (sem.\,Q) & Sonnet & 1 & 0.561 & 62.6 & 15 & 0.432 & 63.0 & 52.8 \\
 \midrule
-No-Evol & Haiku & 1 & 0.516 & 66.7 & 0 & --- & 51.9 & 40.1 \\
-Code-Evol & Haiku & 1 & 0.612 & 65.2 & 13 & 0.353 & 66.7 & 51.2 \\
+No-Evol & Haiku & 1 & 0.439 & 66.7 & 0 & --- & 51.9 & 40.1 \\
+Code-Evol & Haiku & 1 & 0.546 & 65.2 & 13 & 0.353 & 66.7 & 51.2 \\
 \bottomrule
 \end{tabular}
 \caption{Full results across systems, models, and seeds. $n$ is the seed count. Multi-seed runs report mean$\pm$std; single-seed runs are point estimates. \emph{Code-Evol (sem.\,Q)} reruns Code-Evol with the semantic $Q$ refinement; not directly comparable to surface-$Q$ rows. $^\dagger$ToolMaker-style created zero tools because our open-task harness lacks pre-defined reference tests to gate the diagnose-and-fix loop (Sec.~\ref{sec:limitations}).}
@@ -280,11 +299,11 @@ Table~\ref{tab:results} and Figure~\ref{fig:comparison} present two findings.
 
 \paragraph{Task completion clusters; library health separates.} On Sonnet, six of seven configurations land in a narrow 63--68\% TC band, yet their library health spans 36.4--54.8\% --- an $\sim$18-point spread invisible to TC-only evaluation. No-Evolution (TC$=66.7$, LH$=39.7$) creates no tools and leaves the library unchanged; One-Shot (TC$=67.4$, LH$=38.6$) creates three untested tools that \emph{degrade} it. A TC-only benchmark would call these equivalent; they are not.
 
-\paragraph{Per-tool correctness is universally low under independent testing.} Under the hidden test suite (5+ per gap task, authored from the format specification before any system was evaluated), per-tool correctness across every tool-creating system sits in a 0--3\% range despite TC$>$60\%. The 63--72\% task-completion numbers ride on a library of tools that mostly fail when held to independent correctness standards. Implications in \S\ref{sec:discussion_tcgap}.
+\paragraph{Per-tool correctness is universally low under independent testing.} Under the hidden test suite (5+ per gap task, authored from the format specification before any system was evaluated), per-tool correctness across every tool-creating system sits in a 0--6\% range despite TC$>$60\%. The 63--72\% task-completion numbers ride on a library of tools that mostly fail when held to capability-aligned hidden-test standards. Implications in \S\ref{sec:discussion_tcgap}.
 
-Consider One-Shot/Sonnet (TC=67.7\%) and No-Evolution/Sonnet (TC=66.7\%). A TC-only benchmark would rank them similarly. Their library outcomes, however, are qualitatively different: No-Evolution creates zero tools and leaves library health at 41.4\%, while One-Shot creates 3 tools that \emph{lower} library health to 38.3\%. A TC-only benchmark cannot distinguish ``unchanged library'' from ``library degraded by untested code.'' Our LH metric captures this difference; their similar ETS scores (0.519 vs.\ 0.518) reflect TC gains offsetting LH losses, a tradeoff TC alone cannot reveal.
+Consider One-Shot/Sonnet (TC=67.7\%) and No-Evolution/Sonnet (TC=66.7\%). A TC-only benchmark would rank them similarly. Their library outcomes, however, are qualitatively different: No-Evolution creates zero tools and leaves library health at 41.4\%, while One-Shot creates 3 tools that \emph{lower} library health to 38.3\%. A TC-only benchmark cannot distinguish ``unchanged library'' from ``library degraded by untested code.'' Our LH metric captures this difference; their similar ETS scores (0.443 vs.\ 0.439) reflect TC gains offsetting LH losses, a tradeoff TC alone cannot reveal.
 
-\paragraph{Statistical significance.} Code-Evol/Sonnet results are reported as mean $\pm$ std across 4 independent runs. Variance is low: ETS=0.609$\pm$0.013, TC=64.9\%$\pm$1.1\%, LH=51.6\%$\pm$3.4\%. The core finding is stable across seeds.
+\paragraph{Statistical significance.} Code-Evol/Sonnet results are reported as mean $\pm$ std across 4 independent runs. Variance is low: ETS=0.543$\pm$0.014, TC=64.9\%$\pm$0.9\%, LH=51.6\%$\pm$2.9\%. The core finding is stable across seeds.
 
 
 \begin{figure}[t]
@@ -352,7 +371,7 @@ The per-dimension TQS breakdown (Table~\ref{tab:tqs_dims}) pinpoints \emph{where
 
 \paragraph{Code quality $Q$ ranges 0.67--0.92.} LLMs consistently produce well-structured code. The semantic-Q refinement (cyclomatic complexity, MI, control-flow checks) broadens the $Q$ discrimination range from $\sim$0.9 under the surface-only metric to 0.67--0.92 under the refined one. The gap between $Q$ and $C$ remains partly definitional: $Q$ captures structural quality, $C$ captures semantic correctness.
 
-\paragraph{Correctness is universally near zero.} Independent hidden tests return per-tool correctness in the 0--3\% range for every tool-creating system. Tools that pass each system's self-generated tests still fail on diverse inputs --- the prompt example is the one input on which they were exercised at task time. This is the central diagnostic finding of the benchmark.
+\paragraph{Correctness is universally near zero.} Capability-aligned hidden tests return per-tool correctness in the 0--6\% range for every tool-creating system (per-system seed averages $\leq$1\%). Tools that pass each system's self-generated tests still fail on diverse inputs --- the prompt example is the one input on which they were exercised at task time. This is the central diagnostic finding of the benchmark.
 
 \paragraph{Robustness clusters at 0.50.} Almost every system wraps synthesised functions in try/except blocks; they avoid crashes (earning half-credit on robustness) but do not produce correct outputs (no credit on correctness). The robustness dimension as currently defined therefore does not discriminate; we treat this as a benchmark weakness to refine rather than as a property of the systems.
 
@@ -462,7 +481,7 @@ One-Shot/Sonnet (3 seeds) & 9 & 0.69 & 0.88 & 0.50 & 1.00 \\
 \end{figure}
 
 \paragraph{Finding 1: Task completion is insufficient for tool-evolving agents.}
-All Claude configurations achieve 63--68\% TC, but ETS ranges 0.515--0.612; the system with highest TC is indistinguishable from others by TC alone. \emph{Design lesson:} Future evaluations should report both task success and artifact conformance rather than collapsing them into a single number.
+All Claude configurations achieve 63--68\% TC, but ETS ranges 0.439--0.576; the system with highest TC is indistinguishable from others by TC alone. \emph{Design lesson:} Future evaluations should report both task success and artifact conformance rather than collapsing them into a single number.
 
 \paragraph{Finding 2: Reuse must be decomposed into correct and incorrect components.}
 Code-Evol's 72.2\% reuse decomposes into 15.7\% correct and 38.9\% incorrect; CREATOR-style achieves 29.6\% correct on 66.7\% reuse. Aggregate reuse numbers are ambiguous --- high reuse may reflect productive reuse or defect propagation depending on the quality of the reused tools. \emph{Design lesson:} Future agent benchmarks should pre-register correct and incorrect reuse as separate metrics.
@@ -471,13 +490,13 @@ Code-Evol's 72.2\% reuse decomposes into 15.7\% correct and 38.9\% incorrect; CR
 One-Shot's library health (38.3\%) falls \emph{below} the no-evolution baseline (41.4\%); strategy-only adaptation produces near-identical library health to no-evolution. Tool-promotion decisions benefit from external or held-out conformance tests rather than self-generated validation alone. \emph{Design lesson:} Tool promotion should require external or capability-aligned tests.
 
 \paragraph{Finding 4: Self-generated tests miss specification gaps; independent tests provide a complementary signal.}
-Per-tool correctness under independent hidden tests averages 0.17--0.23 despite tools passing self-generated validation (Figure~\ref{fig:tool_quality}). LLMs generating both code and tests share the same conceptual model of the specification; external tests catch defects that self-validation misses. \emph{Design lesson:} Benchmarks should separate self-generated from independent correctness signals.
+Per-tool correctness under hidden tests is near zero (0--6\% across systems, mean $\leq$0.01 per system; Table~\ref{tab:tqs_dims}) despite tools passing self-generated validation (Figure~\ref{fig:tool_quality}). LLMs generating both code and tests share the same conceptual model of the specification; held-out tests catch defects that self-validation misses. \emph{Design lesson:} Benchmarks should separate self-generated from independent correctness signals.
 
 \paragraph{Finding 5: Library-management policy is a first-class design axis.}
 The protocols differ chiefly in when to create, reuse, promote, and deduplicate tools --- not only in raw code synthesis quality. Code-Evol and CREATOR-style reach LH $>$50\% because they manage the library; One-Shot creates tools but manages nothing. \emph{Design lesson:} Future research should optimize library management (promotion, deduplication, retirement) separately from tool generation.
 
 \paragraph{Finding 6: Audit traces make evaluation inspectable and reproducible.}
-Preserved per-tool artifacts, source hashes, and per-task traces allow researchers to verify the reported 0--3\% correctness numbers directly from disk, to identify exactly which specification gap caused a failure, and to reproduce any result in the artifact gallery. \emph{Design lesson:} Agent benchmarks should publish traces, source hashes, and per-test outcomes alongside aggregate numbers.
+Preserved per-tool artifacts, source hashes, and per-task traces allow researchers to verify the reported near-zero (0--6\%) correctness numbers directly from disk, to identify exactly which specification gap caused a failure, and to reproduce any result in the artifact gallery. \emph{Design lesson:} Agent benchmarks should publish traces, source hashes, and per-test outcomes alongside aggregate numbers.
 
 \paragraph{Finding 7: LH and TC measure different, complementary dimensions.}
 Across 144 sessions library health does not predict downstream task completion ($\rho = -0.03$ overall; $+0.20$ within Code-Evol; \S\ref{sec:predictive_validity}). LH is a \emph{descriptive} diagnostic dimension, not a proxy for TC --- the strongest empirical justification for reporting both. Whether LH becomes predictive at larger scale or under follow-up tasks against a frozen library is an open question for future work.
@@ -492,7 +511,7 @@ The central diagnostic finding of the benchmark is the gap between two numbers t
 
 \paragraph{Where do systems actually differ?} Per-tool correctness, generality, and robustness are clustered. At the library level there is more separation: CREATOR-style and Code-Evol reach LH above 50\%, the non-synthesising baselines and One-Shot sit at 38--41\%. The gap is driven by reuse and quality-gate components, not per-tool quality --- the protocols differ chiefly in \emph{library management} (when to create, when to reuse, what to commit), not in the correctness of any individual artifact. We read this as evidence that the next round of progress on tool-creating agents will come from better library management as much as from better synthesis.
 
-\paragraph{Implications for Self-Validation.} On our benchmark, self-generated tests are insufficient: correctness averages 0.17--0.23 on hidden tests despite tools passing their own validation. While we cannot generalize this to all LLM-generated code, the pattern (LLMs generating both code and tests share the same misconceptions about a specification) suggests independent validation remains important for systems that deploy LLM-synthesized tools.
+\paragraph{Implications for Self-Validation.} On our benchmark, self-generated tests are insufficient: correctness is near zero (under 0.06 per system) on hidden tests despite tools passing their own validation. While we cannot generalize this to all LLM-generated code, the pattern (LLMs generating both code and tests share the same misconceptions about a specification) suggests independent validation remains important for systems that deploy LLM-synthesized tools.
 
 \paragraph{The Reuse Paradox and Metric Design.} The reuse paradox illustrates why multi-dimensional evaluation matters. Reuse rate alone would favor Code-Evol; variant task completion alone would favor No-Evolution (50.0\% vs.\ 33.3\%). Neither tells the full story. The correct/incorrect reuse decomposition provides both measurements simultaneously, enabling nuanced interpretation.
 
@@ -500,7 +519,7 @@ The central diagnostic finding of the benchmark is the gap between two numbers t
 
 \paragraph{Limitations.}
 \label{sec:limitations}
-We acknowledge open limitations explicitly. \textbf{(L1) Predictive validity of LH at scale.} \S\ref{sec:predictive_validity} shows LH does not predict TC at session granularity ($\rho{=}-0.03$ over 144 sessions); whether LH becomes predictive at larger scale or under follow-up tasks against a frozen library is open. \textbf{(L2) Baseline ecosystem.} The six protocols span a broad design space but several contemporaneous systems (Tool-Genesis, CoEvoSkills) could not be evaluated directly; our ToolMaker-style protocol, while implemented faithfully, requires reference tests our open-task harness does not provide. \textbf{(L3) Hidden tests} average 5+ per gap task and are author-written; third-party shadow tests would strengthen the independence guarantee further. \textbf{(L4) Statistical power on Haiku.} All main Sonnet configurations have $n=4$ seeds; Haiku remains $n=1$. \textbf{(L5) Generality probe} currently re-uses the hidden-test inputs; a separate held-out set is in progress. \textbf{(L6) Provider coverage is Claude-only.} GPT-4o produced degenerate results in initial runs (a harness$\,\times\,$function-calling-format interaction not yet root-caused); a non-Claude evaluation is open. \textbf{(L7) Domain B} has only 1 session; composability $\gamma$ is also under-sampled (1 compose task per session). \textbf{(L8) The robustness metric} clusters near 0.5 because most LLM-generated tools wrap themselves in try/except; a richer adversarial suite that distinguishes graceful-degradation from semantic-correctness on edge cases would improve discrimination.
+We acknowledge open limitations explicitly. \textbf{(L1) Predictive validity of LH at scale.} \S\ref{sec:predictive_validity} shows LH does not predict TC at session granularity ($\rho{=}-0.03$ over 144 sessions); whether LH becomes predictive at larger scale or under follow-up tasks against a frozen library is open. \textbf{(L2) Baseline ecosystem.} The six protocols span a broad design space but several contemporaneous systems (Tool-Genesis, CoEvoSkills) could not be evaluated directly; our ToolMaker-style protocol, while implemented faithfully, requires reference tests our open-task harness does not provide. \textbf{(L3) Hidden tests} average 5+ per gap task and are author-written; third-party shadow tests would strengthen the independence guarantee further. \textbf{(L4) Statistical power on Haiku.} All main Sonnet configurations have $n=4$ seeds; Haiku remains $n=1$. \textbf{(L5) Generality probe} currently re-uses the hidden-test inputs; a separate held-out set is in progress. \textbf{(L6) Provider coverage is Claude-only.} GPT-4o produced degenerate results in initial runs (a harness$\,\times\,$function-calling-format interaction not yet root-caused); a non-Claude evaluation is open. \textbf{(L7) Domain B} has only 1 session; composability $\gamma$ is also under-sampled (1 compose task per session). \textbf{(L8) The robustness metric} clusters near 0.5 because most LLM-generated tools wrap themselves in try/except; a richer adversarial suite that distinguishes graceful-degradation from semantic-correctness on edge cases would improve discrimination. \textbf{(L9) Verifier coverage.} 51/99 tasks currently carry deterministic verifiers (\texttt{expected} mappings or \texttt{verify} predicates); the remaining tasks --- concentrated in the API-orchestration session --- rely on format-level checks, and the harness now fails closed on any task lacking a verifier. Because the reported TC levels predate this policy, the robust claims are the cross-system TC ranking/clustering and the task-completion/tool-correctness gap, not the absolute TC level; extending deterministic verification to all 99 tasks and re-running affected configurations is the highest-priority hardening item, tracked by \texttt{scripts/audit\_tasks.py}.
 
 \section{Conclusion}
 
@@ -510,7 +529,7 @@ Tool-evolving agents create a new evaluation object: the evolving tool library. 
 
 \paragraph{Reuse decomposition is essential.} The highest-reuse system propagates defects 38.9\% of the time. Reporting raw reuse without the correct/incorrect decomposition is misleading for any benchmark of self-evolving agents.
 
-\paragraph{Independent conformance tests reveal the specification gap.} Per-tool correctness under hidden tests is 0--3\% despite TC${>}$60\%. External, capability-aligned tests provide a signal that self-generated validation cannot.
+\paragraph{Capability-aligned conformance tests reveal the specification gap.} Per-tool correctness under hidden tests is near zero (0--6\%) despite TC${>}$60\%. Capability-aligned tests provide a signal that self-generated validation cannot.
 
 \begin{tcolorbox}[title=Reusable Evaluation Practices, colframe=black!70, colback=gray!5, boxrule=0.5pt]
 \textsc{EvolveTool-Bench} is intended less as a fixed leaderboard than as a set of reusable evaluation practices for tool-evolving agents. We recommend that future benchmarks:
