@@ -32,6 +32,7 @@ import textwrap
 from typing import Any
 
 from ..harness.runner import AgentSystem
+from ..harness.safe_exec import call_with_timeout
 
 
 _MAX_RECTIFICATION_ROUNDS = 3
@@ -361,7 +362,7 @@ class CREATORStyleSystem(AgentSystem):
                 else:
                     try:
                         args = json.loads(tc.function.arguments)
-                        tool_result = str(fn(**args))
+                        tool_result = call_with_timeout(fn, args)
                     except Exception as e:
                         tool_result = f"Error: {e}"
                 messages.append({

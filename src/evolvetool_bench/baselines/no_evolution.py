@@ -6,6 +6,7 @@ import json
 from typing import Any
 
 from ..harness.runner import AgentSystem
+from ..harness.safe_exec import call_with_timeout
 
 
 class NoEvolutionSystem(AgentSystem):
@@ -70,7 +71,7 @@ class NoEvolutionSystem(AgentSystem):
                 else:
                     try:
                         args = json.loads(tc.function.arguments)
-                        result = str(fn(**args))
+                        result = call_with_timeout(fn, args)
                     except Exception as e:
                         result = f"Error: {e}"
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
