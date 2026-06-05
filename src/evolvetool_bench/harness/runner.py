@@ -18,8 +18,14 @@ class AgentSystem(ABC):
         """Initialize with seed tools."""
 
     @abstractmethod
-    def run_task(self, task_description: str) -> dict:
+    def run_task(self, task_description: str, verify_fn=None) -> dict:
         """Run a single task.
+
+        Args:
+            task_description: natural-language task to solve.
+            verify_fn: optional callable(output: str) -> bool that returns True
+                if the output is correct.  Baselines MAY use this as a more
+                reliable success signal than their default heuristic.
 
         Returns:
             {
@@ -57,7 +63,28 @@ def run_session(system: AgentSystem, session: Session, verbose: bool = True) -> 
             print(f"[{i}/{len(session.tasks)}] {task.task_type.value.upper():12s} | {task.description[:60]}...")
 
         start = time.time()
+        # Build a verifier callable for the baseline to use as success signal
+        def _make_verify_fn(t: Task):
+            if t.verify is not None:
+                return t.verify
+            if t.expected is not None:
+                exp = t.expected
+                def _check(out: str) -> bool:
+                    if isinstance(exp, str):
+                        return exp.lower() in out.lower()
+                    try:
+                        parsed = json.loads(out) if isinstance(out, str) else out
+                        return parsed == exp
+                    except Exception:
+                        return False
+                return _check
+            return None
+
+        verify_fn = _make_verify_fn(task)
         try:
+            agent_result = system.run_task(task.description, verify_fn=verify_fn)
+        except TypeError:
+            # Baseline doesn't accept verify_fn — call without it
             agent_result = system.run_task(task.description)
         except Exception as e:
             agent_result = {"output": f"Error: {e}", "tools_created": [], "tools_used": [], "llm_calls": 1}

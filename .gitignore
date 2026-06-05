@@ -29,3 +29,5 @@ supplement.log
 supplement.out
 supplement.bbl
 supplement.blg
+results_strict_run/
+*.log

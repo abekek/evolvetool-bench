@@ -50,12 +50,13 @@ class OneShotSystem(AgentSystem):
         for tool_def in seed_tools:
             self._register_tool(tool_def)
 
-    def run_task(self, task_description: str) -> dict:
+    def run_task(self, task_description: str, verify_fn=None) -> dict:
         import litellm
 
         self._tools_used = []
         self._tools_created_this_task = []
         self._llm_calls = 0
+        self._verify_fn = verify_fn
 
         # Phase 1: attempt the task with the current library
         output, succeeded = self._attempt_task(task_description)
@@ -132,6 +133,12 @@ class OneShotSystem(AgentSystem):
                     "content": tool_result,
                 })
 
+        verify_fn = getattr(self, "_verify_fn", None)
+        if verify_fn is not None:
+            try:
+                return final_output, bool(verify_fn(final_output))
+            except Exception:
+                pass
         success = len(final_output.strip()) > 20
         return final_output, success
 

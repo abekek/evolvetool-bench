@@ -40,7 +40,7 @@ class NoEvolutionSystem(AgentSystem):
                 "function": {"name": name, "description": tool_def.get("description", ""), "parameters": params},
             })
 
-    def run_task(self, task_description: str) -> dict:
+    def run_task(self, task_description: str, verify_fn=None) -> dict:
         import litellm
         self._tools_used = []
         self._llm_calls = 0
