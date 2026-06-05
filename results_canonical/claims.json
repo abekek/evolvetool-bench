@@ -1,0 +1,23 @@
+{
+  "oneshot_vs_no_evolution": {
+    "contrast": "oneshot - no_evolution",
+    "point_est": 0.0208,
+    "ci_95_lo": -0.0347,
+    "ci_95_hi": 0.0729,
+    "supported": false
+  },
+  "creator_vs_oneshot": {
+    "contrast": "creator - oneshot",
+    "point_est": -0.071,
+    "ci_95_lo": -0.1389,
+    "ci_95_hi": -0.0012,
+    "supported": false
+  },
+  "toolmaker_vs_oneshot": {
+    "contrast": "toolmaker - oneshot",
+    "point_est": -0.0655,
+    "ci_95_lo": -0.1443,
+    "ci_95_hi": 0.0174,
+    "supported": false
+  }
+}

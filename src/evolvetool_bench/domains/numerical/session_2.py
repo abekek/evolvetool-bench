@@ -181,6 +181,7 @@ TASKS = [
             "Return a JSON list of objects: [{\"freq_hz\": ..., \"magnitude\": ...}, ...]"
         ),
         task_type=TaskType.GAP,
+        capability_id="arcsig_fft_spectrum",
         expected=_SPECTRUM1,
         hidden_tests=[
             # v1
@@ -225,6 +226,7 @@ TASKS = [
             "Return the filtered ARCSIG string."
         ),
         task_type=TaskType.GAP,
+        capability_id="arcsig_bandpass_filter",
         # Verifier checks that decoded filtered signal has dominant freq in [1,10] Hz
         hidden_tests=[
             # v1
@@ -260,6 +262,7 @@ TASKS = [
             "Return a JSON list of {\"freq_hz\": ..., \"magnitude\": ...} objects."
         ),
         task_type=TaskType.VARIANT,
+        capability_id="arcsig_fft_spectrum",
         reuses_task="gap_1",
         expected=_fft_spectrum(_SAMPLES2, _SR),
     ),
@@ -272,6 +275,7 @@ TASKS = [
             "Return the filtered ARCSIG string."
         ),
         task_type=TaskType.VARIANT,
+        capability_id="arcsig_bandpass_filter",
         reuses_task="gap_2",
     ),
 
@@ -288,6 +292,7 @@ TASKS = [
             "and 'stats' (mean, median, std of the filtered samples)."
         ),
         task_type=TaskType.COMPOSE,
+        capability_id="arcsig_filter_plus_stats",
         composes_tasks=["gap_1", "gap_2", "seed_1"],
     ),
 
@@ -301,6 +306,7 @@ TASKS = [
             "Return a JSON list of {\"freq_hz\": ..., \"magnitude\": ...} objects."
         ),
         task_type=TaskType.REGRESS,
+        capability_id="arcsig_fft_spectrum",
         reuses_task="gap_1",
         expected=_fft_spectrum(_SAMPLES3, _SR),
     ),
@@ -317,6 +323,7 @@ TASKS = [
             "The DC bin (freq_hz=0) magnitude should be approximately 100."
         ),
         task_type=TaskType.ADVERSARIAL,
+        capability_id="arcsig_fft_spectrum",
         breaks_task="gap_1",
         expected=_fft_spectrum(_SAMPLES_ADV, _SR),
     ),
@@ -332,6 +339,7 @@ TASKS = [
             "Return the filtered ARCSIG string. All sample magnitudes should be < 0.01."
         ),
         task_type=TaskType.ADVERSARIAL,
+        capability_id="arcsig_bandpass_filter",
         breaks_task="gap_2",
     ),
 ]
