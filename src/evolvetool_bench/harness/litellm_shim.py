@@ -11,8 +11,8 @@ and consume:
     tc.function.name / tc.function.arguments # str JSON
 
 This shim reproduces that interface using the Anthropic SDK wired to
-genai-api.example-gateway.com so tests pass without litellm needing to work
-against the Uber gateway.
+the configured backend (set ANTHROPIC_BASE_URL + ANTHROPIC_API_KEY for custom
+endpoints, or leave defaults to auto-detect via llm_client's USSO integration).
 
 Import pattern in baselines:
     try:

@@ -1,14 +1,15 @@
-"""Anthropic LLM client — Anthropic API gateway or direct Anthropic.
+"""Anthropic LLM client — internal gen-AI gateway or direct Anthropic.
 
 Auto-selects backend:
-  Anthropic API (internal):
-    Fetches USSO token via `usso -ussh genai-api -print`
-    Uses https://genai-api.example-gateway.com/ as base URL
-    Sends token as Authorization: Bearer (auth_token parameter)
-    Compatible models: claude-haiku-4-5, claude-sonnet-4-6, claude-opus-4-6, etc.
+  Internal gateway (default):
+    Fetches token via `usso -ussh genai-api -print` or ANTHROPIC_API_KEY env.
+    Uses ANTHROPIC_BASE_URL (default: https://genai-api.example-gateway.com/).
+    Sends token as Authorization: Bearer (Anthropic SDK auth_token parameter).
+    Compatible models: claude-haiku-4-5, claude-sonnet-4-6, etc.
 
   Direct Anthropic:
-    Set ANTHROPIC_API_KEY to fall back to direct access.
+    Set ANTHROPIC_API_KEY to use the public Anthropic API instead.
+    Set ANTHROPIC_DIRECT=1 to force direct even if API key is available.
 
 Usage:
     from evolvetool_bench.harness.llm_client import LLMClient
