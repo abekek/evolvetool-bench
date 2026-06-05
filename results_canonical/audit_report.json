@@ -1,0 +1,18 @@
+{
+  "verifier_coverage": {
+    "verified": 51,
+    "total": 99,
+    "fraction": 0.5152
+  },
+  "capability_coverage": {
+    "non_seed_with_capability_id": 72,
+    "non_seed_total": 72,
+    "all_covered": true
+  },
+  "hidden_test_coverage": {
+    "gaps_with_hidden_tests": 18,
+    "gap_total": 18,
+    "all_covered": true
+  },
+  "strict_tc_policy": "fail-closed: unverified tasks marked FAIL, never lenient-pass"
+}

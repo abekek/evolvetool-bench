@@ -1,3 +1,343 @@
 {
-  "_note": "Populated by scripts/make_tables.py after canonical runs are complete."
+  "_schema": "safety-free ETS; means over n_seeds main runs",
+  "systems": {
+    "arise/gpt4o": {
+      "system": "arise",
+      "model": "gpt4o",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.35383838383838384,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.48484848484848486,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.2777777777777778,
+        "std": 0.0
+      },
+      "tools_total": 0.0
+    },
+    "arise/haiku": {
+      "system": "arise",
+      "model": "haiku",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.5455639730639731,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.6515151515151515,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.35262345679012347,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.6666666666666666,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.5123456790123456,
+        "std": 0.0
+      },
+      "tools_total": 13.0
+    },
+    "arise/sonnet": {
+      "system": "arise",
+      "model": "sonnet",
+      "n_seeds": 4,
+      "ets": {
+        "mean": 0.5434282307198974,
+        "std": 0.014063859707259731
+      },
+      "task_completion": {
+        "mean": 0.648989898989899,
+        "std": 0.009104927463292922
+      },
+      "mean_tool_quality": {
+        "mean": 0.35446979717813054,
+        "std": 0.016002642284815266
+      },
+      "reuse_rate": {
+        "mean": 0.7222222222222222,
+        "std": 0.04140866624999612
+      },
+      "library_health": {
+        "mean": 0.5161210317460317,
+        "std": 0.02924073108292056
+      },
+      "tools_total": 21.0
+    },
+    "creator-style/sonnet": {
+      "system": "creator-style",
+      "model": "sonnet",
+      "n_seeds": 4,
+      "ets": {
+        "mean": 0.5758136256747368,
+        "std": 0.03027250877181436
+      },
+      "task_completion": {
+        "mean": 0.6767676767676768,
+        "std": 0.03051274235756205
+      },
+      "mean_tool_quality": {
+        "mean": 0.45981407995296886,
+        "std": 0.015702993070139802
+      },
+      "reuse_rate": {
+        "mean": 0.6666666666666666,
+        "std": 0.07856742013183861
+      },
+      "library_health": {
+        "mean": 0.5481371252204585,
+        "std": 0.05634915783277839
+      },
+      "tools_total": 23.5
+    },
+    "evoskill/gpt4o": {
+      "system": "evoskill",
+      "model": "gpt4o",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.3465656565656566,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.48484848484848486,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.2777777777777778,
+        "std": 0.0
+      },
+      "tools_total": 0.0
+    },
+    "evoskill/sonnet": {
+      "system": "evoskill",
+      "model": "sonnet",
+      "n_seeds": 4,
+      "ets": {
+        "mean": 0.44213804713804716,
+        "std": 0.005789399408986323
+      },
+      "task_completion": {
+        "mean": 0.6691919191919192,
+        "std": 0.00564663630681765
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.5,
+        "std": 0.041408666249996125
+      },
+      "library_health": {
+        "mean": 0.412037037037037,
+        "std": 0.01596308708763674
+      },
+      "tools_total": 0.0
+    },
+    "no-evolution/gpt4o": {
+      "system": "no-evolution",
+      "model": "gpt4o",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.3465656565656566,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.48484848484848486,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.2777777777777778,
+        "std": 0.0
+      },
+      "tools_total": 0.0
+    },
+    "no-evolution/haiku": {
+      "system": "no-evolution",
+      "model": "haiku",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.4389786756453423,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.6666666666666666,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.5185185185185185,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.4012345679012345,
+        "std": 0.0
+      },
+      "tools_total": 0.0
+    },
+    "no-evolution/sonnet": {
+      "system": "no-evolution",
+      "model": "sonnet",
+      "n_seeds": 4,
+      "ets": {
+        "mean": 0.4390712682379349,
+        "std": 0.007443245511791115
+      },
+      "task_completion": {
+        "mean": 0.6755050505050505,
+        "std": 0.0074697977059338646
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.4629629629629629,
+        "std": 0.018518518518518517
+      },
+      "library_health": {
+        "mean": 0.3966049382716049,
+        "std": 0.01654908224500556
+      },
+      "tools_total": 0.0
+    },
+    "oneshot/gpt4o": {
+      "system": "oneshot",
+      "model": "gpt4o",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.3465656565656566,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.48484848484848486,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.2777777777777778,
+        "std": 0.0
+      },
+      "tools_total": 0.0
+    },
+    "oneshot/sonnet": {
+      "system": "oneshot",
+      "model": "sonnet",
+      "n_seeds": 4,
+      "ets": {
+        "mean": 0.4425888514777404,
+        "std": 0.010222850558639305
+      },
+      "task_completion": {
+        "mean": 0.6742424242424243,
+        "std": 0.011007320564496645
+      },
+      "mean_tool_quality": {
+        "mean": 0.04372427983539095,
+        "std": 0.0037272059532380236
+      },
+      "reuse_rate": {
+        "mean": 0.4444444444444444,
+        "std": 0.026189140043946204
+      },
+      "library_health": {
+        "mean": 0.38618827160493824,
+        "std": 0.024016010026984422
+      },
+      "tools_total": 3.0
+    },
+    "toolcoder-style/sonnet": {
+      "system": "toolcoder-style",
+      "model": "sonnet",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.5069491208380097,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.5454545454545454,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.4492798353909465,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.4444444444444444,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.4919753086419753,
+        "std": 0.0
+      },
+      "tools_total": 17.0
+    },
+    "toolmaker-style/sonnet": {
+      "system": "toolmaker-style",
+      "model": "sonnet",
+      "n_seeds": 1,
+      "ets": {
+        "mean": 0.4133557800224467,
+        "std": 0.0
+      },
+      "task_completion": {
+        "mean": 0.6363636363636364,
+        "std": 0.0
+      },
+      "mean_tool_quality": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "reuse_rate": {
+        "mean": 0.4074074074074074,
+        "std": 0.0
+      },
+      "library_health": {
+        "mean": 0.3641975308641975,
+        "std": 0.0
+      },
+      "tools_total": 0.0
+    }
+  }
 }

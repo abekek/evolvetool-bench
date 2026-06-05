@@ -1,0 +1,141 @@
+\documentclass[sigconf,anonymous,review,natbib=false]{acmart}
+
+% Supplemental material — reproducibility appendix for the anonymous submission.
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
+
+\acmConference[KDD AgenticAI Eval 2026]{Workshop on Evaluation and Trustworthiness of Agentic AI at KDD 2026}{August 2026}{Jeju, Republic of Korea}
+\acmYear{2026}
+\copyrightyear{2026}
+\acmISBN{}
+\acmDOI{}
+
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\lstset{breaklines=true, basicstyle=\small\ttfamily, language=Python}
+\setlength{\emergencystretch}{3em}
+\sloppy
+
+\begin{document}
+
+\title{Supplemental Material:\\Beyond Task Completion: Auditing Evolving Tool Libraries in Agentic AI}
+\author{Anonymous Author(s)}
+\affiliation{%
+  \institution{Submission \#TBD}
+  \country{}
+}
+\maketitle
+
+This supplement contains reproducibility material referenced from the main
+paper: the per-domain breakdown and the artifact gallery of representative
+synthesised tools. All numbers and artifacts are regenerated from
+\texttt{results\_canonical/} by the scripts described in the main paper
+(\texttt{build\_canonical.py}, \texttt{stats\_report.py},
+\texttt{make\_tables.py}, \texttt{make\_figures.py}).
+
+\section{Baseline Fairness Ledger}
+\label{app:fairness}
+Several baselines are protocol \emph{adaptations} rather than native ports.
+No-Evolution, One-Shot, and Code-Evol are native to this harness and omitted.
+All systems share the identical task stream, seed library, model (Sonnet~4),
+and verification function; only the tool-creation protocol varies.
+
+\begin{table}[h]
+\centering\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{0.10\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}}
+\toprule
+\textbf{Baseline} & \textbf{Native setting} & \textbf{Preserved faithfully} & \textbf{Adapted / fairness note} \\
+\midrule
+Strategy-Only (EvoSkill) & Skill-library agent with NL strategy proposer/prompt generator & Skill Proposer and Prompt Generator prompt templates; strategy-folder structure & Strategies injected as prompt hints, not executed. Characterizes \emph{strategy-level} evolution; not a leaderboard claim against EvoSkill. \\
+CREATOR-style & Decision/execution split tool creation with reference tests & Two-phase create-then-use control flow; per-tool function synthesis & No native reference tests in our open tasks; quality measured post-hoc by our hidden tests, identical to all systems. \\
+ToolCoder-style & Code-generation-centric tool synthesis & Single-pass function generation from the task spec & Runs on Bedrock/Claude rather than the native model; same task stream and verifier as all systems. \\
+ToolMaker-style & Repo-grounded, Docker, OpenAI; diagnose/rewrite loop gated by \emph{provided} reference tests & Two-stage diagnose-then-rewrite prompt structure; sandbox execution of auto-tests & Our open tasks provide no reference tests to gate the loop, so it created zero tools. Reported as a harness--protocol mismatch, not a capability verdict. \\
+\bottomrule
+\end{tabular}
+\caption{Baseline fairness ledger for adapted protocols.}
+\label{tab:baseline_fairness}
+\end{table}
+
+\section{ETS Weight Sensitivity}
+\label{app:ets}
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Weights} & \textbf{No-Evol} & \textbf{One-Shot} & \textbf{Str-Only} & \textbf{CREATOR} & \textbf{Code-Evol} \\
+\midrule
+Original   & .439 & .443 & .442 & \textbf{.576} & .543 \\
+Uniform    & .462 & .469 & .462 & \textbf{.575} & .558 \\
+TC-dom.    & .495 & .500 & .494 & \textbf{.602} & .570 \\
+LH-dom.    & .431 & .431 & .437 & \textbf{.567} & .538 \\
+LH${=}$0   & .460 & .473 & .454 & \textbf{.589} & .559 \\
+\bottomrule
+\end{tabular}
+\caption{ETS under alternative weight configurations (all Sonnet; multi-seed systems $=$ mean of 4 seeds). CREATOR-style ranks first under all five schemes. Weights $(w_{\text{TC}}, w_{\text{TQS}}, w_{\text{RC}}, w_{\text{LH}})$: Original $(.30,.20,.10,.40)$; Uniform $(.25,.25,.25,.25)$; TC-dom. $(.50,.20,.10,.20)$; LH-dom. $(.20,.15,.10,.55)$; LH${=}$0 $(.45,.35,.20,.00)$.}
+\label{tab:ets_sensitivity}
+\end{table}
+
+\section{Skill-Bundle Evaluation}
+\label{app:skill}
+To extend the benchmark from bare-function evaluation to multi-file \emph{skill
+bundles} (the format used by Anthropic Claude Skills and
+CoEvoSkills~\cite{zhang2026coevoskills}), we wrap every preserved tool into a
+4-file bundle (\texttt{SKILL.md}, function, tests, \texttt{metadata.json}) and
+score three bundle-level dimensions: Structure ($S$), Documentation ($D$), and
+Metadata ($M$). Bundle quality averages tool TQS with $S$, $D$, $M$.
+
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabular}{lccccc}
+\toprule
+\textbf{System} & $n$ & \textbf{Bundle Q}$\uparrow$ & $S$ & $D$ & $M$ \\
+\midrule
+Code-Evol (sem.\,Q) & 15 & \textbf{0.85} & 1.00 & 0.84 & 1.00 \\
+CREATOR-style       & 14 & 0.77 & 0.88 & 0.67 & 1.00 \\
+One-Shot/Sonnet (3 seeds) & 9 & 0.69 & 0.88 & 0.50 & 1.00 \\
+\bottomrule
+\end{tabular}
+\caption{Skill-bundle quality (preserved tools only). The documentation dimension separates the systems most.}
+\label{tab:skill_bundles}
+\end{table}
+
+\section{Per-Domain Analysis}
+\label{app:domain}
+Tool-evolution effectiveness varies substantially by problem type, a dimension
+invisible to aggregate TC.
+
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Domain} & \textbf{Model} & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{LH} \\
+\midrule
+Data Trans. & Sonnet & .573 & 14 & .734 & .476 \\
+Data Trans. & Haiku & .600 & 7 & .800 & .500 \\
+\midrule
+API Orch. & Sonnet & .909 & 4 & .667 & .778 \\
+API Orch. & Haiku & 1.00 & 3 & .333 & .667 \\
+\midrule
+Numerical & Sonnet & .651 & 4 & .667 & .500 \\
+Numerical & Haiku & .621 & 3 & .556 & .481 \\
+\bottomrule
+\end{tabular}
+\caption{Code-Evol results by domain. API orchestration yields highest library
+health; data transformation creates the most tools but with lower quality.}
+\label{tab:domain_supp}
+\end{table}
+
+\paragraph{API orchestration: clean, composable problems.} Highest TC (up to 100\%) and library health (77.8\%), though based on a single session ($N{=}11$ tasks). HMAC authentication and pagination are clean, single-responsibility functions well-suited to tool creation.
+
+\paragraph{Data transformation: high tool creation, lower quality.} Creates the most tools (14 on Sonnet) but achieves only 47.6\% library health: many synthesised parsers for proprietary binary formats fail held-out tests while passing self-generated tests.
+
+\paragraph{Numerical computation: consistently difficult.} Both models achieve similar results ($\sim$63--65\% TC, $\sim$48--50\% LH), suggesting these tasks challenge the LLM regardless of model capability.
+
+\input{appendix_gallery.tex}
+
+\end{document}

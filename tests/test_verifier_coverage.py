@@ -63,15 +63,20 @@ def test_task_types_present():
 
 
 def test_verifier_coverage_reported(capsys):
+    total_verified = 0
     for session in _load_all_sessions():
         verified = sum(
             1 for t in session.tasks
             if t.expected is not None or t.verify is not None
         )
+        total_verified += verified
         total = len(session.tasks)
-        assert verified >= 0
         ratio = verified / total if total else 0.0
         print(f"{session.id}: {verified}/{total} verified ({ratio:.2%})")
+
+    # Tracked deterministic-verifier coverage (expected mappings or verify predicates).
+    # Update when adding verifiers; confirm with: python scripts/audit_tasks.py
+    assert total_verified == 51
 
     for mod_path in _DATA_TRANSFORM_MODULES:
         mod = importlib.import_module(mod_path)

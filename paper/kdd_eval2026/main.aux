@@ -1,5 +1,16 @@
 \relax 
 \providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \citation{wang2023voyager}
@@ -41,12 +52,12 @@
 \@writefile{toc}{\contentsline {paragraph}{Concurrent Tool/Skill Benchmarks.}{2}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Gap.}{2}{section*.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {3}Benchmark Design}{2}{section.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Benchmark harness overview. \textbf  {Top:} each session runs 11 tasks in a fixed sequence; annotations show what each task type tests. \textbf  {Middle:} the agent system receives each task as natural language, creates or reuses Python tools in a persistent library, and produces output. After the session, hidden tests and adversarial inputs independently evaluate the library. \textbf  {Bottom:} four metrics are computed: task completion (TC) from outputs, per-tool quality (TQS) from hidden tests, library health (LH) from library state, and the composite EvolveTool Score (ETS).}}{3}{figure.caption.9}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Benchmark harness overview. \textbf  {Top:} each session runs 11 tasks in a fixed sequence; annotations show what each task type tests. \textbf  {Middle:} the agent system receives each task as natural language, creates or reuses Python tools in a persistent library, and produces output. After the session, hidden tests and adversarial inputs independently evaluate the library. \textbf  {Bottom:} four metrics are computed: task completion (TC) from outputs, per-tool quality (TQS) from hidden tests, library health (LH) from library state, and the composite EvolveTool Score (ETS).\relax }}{3}{figure.caption.9}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:overview}{{1}{3}{Benchmark harness overview. \textbf {Top:} each session runs 11 tasks in a fixed sequence; annotations show what each task type tests. \textbf {Middle:} the agent system receives each task as natural language, creates or reuses Python tools in a persistent library, and produces output. After the session, hidden tests and adversarial inputs independently evaluate the library. \textbf {Bottom:} four metrics are computed: task completion (TC) from outputs, per-tool quality (TQS) from hidden tests, library health (LH) from library state, and the composite EvolveTool Score (ETS)}{figure.caption.9}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Task types and their software engineering analogs. Each session follows a fixed sequence enabling controlled measurement of library evolution.}}{3}{table.caption.10}\protected@file@percent }
-\newlabel{tab:task_types}{{1}{3}{Task types and their software engineering analogs. Each session follows a fixed sequence enabling controlled measurement of library evolution}{table.caption.10}{}}
+\newlabel{fig:overview}{{1}{3}{Benchmark harness overview. \textbf {Top:} each session runs 11 tasks in a fixed sequence; annotations show what each task type tests. \textbf {Middle:} the agent system receives each task as natural language, creates or reuses Python tools in a persistent library, and produces output. After the session, hidden tests and adversarial inputs independently evaluate the library. \textbf {Bottom:} four metrics are computed: task completion (TC) from outputs, per-tool quality (TQS) from hidden tests, library health (LH) from library state, and the composite EvolveTool Score (ETS).\relax }{figure.caption.9}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Task Session Structure}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Task types and their software engineering analogs. Each session follows a fixed sequence enabling controlled measurement of library evolution.\relax }}{3}{table.caption.10}\protected@file@percent }
+\newlabel{tab:task_types}{{1}{3}{Task types and their software engineering analogs. Each session follows a fixed sequence enabling controlled measurement of library evolution.\relax }{table.caption.10}{}}
 \@writefile{toc}{\contentsline {paragraph}{What the regress task measures (and what it does not).}{3}{section*.11}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Reuse Detection}{4}{subsection.3.2}\protected@file@percent }
 \newlabel{sec:reuse}{{3.2}{4}{Reuse Detection}{subsection.3.2}{}}
@@ -63,14 +74,14 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Software Quality Metrics}{4}{subsection.3.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Per-Tool: Tool Quality Score (TQS).}{4}{section*.15}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Per-Library: Library Health (LH).}{4}{section*.16}\protected@file@percent }
+\citation{alzubi2026evoskill}
 \@writefile{toc}{\contentsline {paragraph}{Edge cases: empty and seed-only libraries.}{5}{section*.17}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces ETS under alternative weight configurations (all Sonnet; Code-Evol $=$ mean of 4 seeds). The system ordering is stable across five weight schemes, including a stress test in which library health receives zero weight. Weights $(w_{\text  {TC}}, w_{\text  {TQS}}, w_{\text  {RC}}, w_{\text  {LH}}, w_{\text  {SS}})$: Original $(.25,.20,.10,.30,.15)$; Uniform $(.20,.20,.20,.20,.20)$; TC-dom. $(.40,.15,.10,.20,.15)$; LH-dom. $(.15,.15,.10,.50,.10)$; LH${=}$0 $(.30,.25,.15,.00,.30)$.}}{5}{table.caption.19}\protected@file@percent }
-\newlabel{tab:ets_sensitivity}{{2}{5}{ETS under alternative weight configurations (all Sonnet; Code-Evol $=$ mean of 4 seeds). The system ordering is stable across five weight schemes, including a stress test in which library health receives zero weight. Weights $(w_{\text {TC}}, w_{\text {TQS}}, w_{\text {RC}}, w_{\text {LH}}, w_{\text {SS}})$: Original $(.25,.20,.10,.30,.15)$; Uniform $(.20,.20,.20,.20,.20)$; TC-dom. $(.40,.15,.10,.20,.15)$; LH-dom. $(.15,.15,.10,.50,.10)$; LH${=}$0 $(.30,.25,.15,.00,.30)$}{table.caption.19}{}}
 \@writefile{toc}{\contentsline {paragraph}{Composite: EvolveTool Score (ETS).}{5}{section*.18}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Experimental Setup}{5}{section.4}\protected@file@percent }
 \newlabel{sec:exp_setup}{{4}{5}{Experimental Setup}{section.4}{}}
-\citation{alzubi2026evoskill}
 \citation{wolflein2025toolmaker}
+\citation{qian2023creator}
+\@writefile{toc}{\contentsline {paragraph}{Baseline fairness.}{6}{section*.19}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Models.}{6}{section*.20}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Scale.}{6}{section*.21}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Implementation details.}{6}{section*.22}\protected@file@percent }
@@ -79,86 +90,73 @@
 \newlabel{sec:results}{{5}{6}{Results}{section.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1}The Benchmark Reveals Hidden Quality Differences}{6}{subsection.5.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Task completion clusters; library health separates.}{6}{section*.25}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Per-tool correctness is universally low under independent testing.}{6}{section*.26}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Statistical significance.}{6}{section*.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Per-Domain Analysis}{6}{subsection.5.2}\protected@file@percent }
-\newlabel{sec:domain_analysis}{{5.2}{6}{Per-Domain Analysis}{subsection.5.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{API orchestration: clean, composable problems.}{6}{section*.30}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Full results across systems, models, and seeds. $n$ is the seed count. Multi-seed runs report mean$\pm $std; single-seed runs are point estimates. \emph  {Code-Evol (sem.\,Q)} reruns Code-Evol with the semantic $Q$ refinement; not directly comparable to surface-$Q$ rows. $^\dagger $ToolMaker-style created zero tools because our open-task harness lacks pre-defined reference tests to gate the diagnose-and-fix loop (Sec.\nonbreakingspace \ref {sec:limitations}).}}{7}{table.caption.24}\protected@file@percent }
-\newlabel{tab:results}{{3}{7}{Full results across systems, models, and seeds. $n$ is the seed count. Multi-seed runs report mean$\pm $std; single-seed runs are point estimates. \emph {Code-Evol (sem.\,Q)} reruns Code-Evol with the semantic $Q$ refinement; not directly comparable to surface-$Q$ rows. $^\dagger $ToolMaker-style created zero tools because our open-task harness lacks pre-defined reference tests to gate the diagnose-and-fix loop (Sec.~\ref {sec:limitations})}{table.caption.24}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces System comparison across four metrics (\%). TC clusters all systems together (63--68\%); library health separates them (38--52\%). This illustrates the benchmark's discriminative power beyond task completion.}}{7}{figure.caption.28}\protected@file@percent }
-\newlabel{fig:comparison}{{2}{7}{System comparison across four metrics (\%). TC clusters all systems together (63--68\%); library health separates them (38--52\%). This illustrates the benchmark's discriminative power beyond task completion}{figure.caption.28}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Code-Evol results by domain, showing domain-specific quality variation. API orchestration yields highest library health; data transformation creates the most tools but with lower quality.}}{7}{table.caption.29}\protected@file@percent }
-\newlabel{tab:domain}{{4}{7}{Code-Evol results by domain, showing domain-specific quality variation. API orchestration yields highest library health; data transformation creates the most tools but with lower quality}{table.caption.29}{}}
-\@writefile{toc}{\contentsline {paragraph}{Data transformation: high tool creation, lower quality.}{7}{section*.31}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Numerical computation: consistently difficult.}{7}{section*.32}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Per-tool TQS dimensions, averaged over all preserved tools (not session-diluted as in Table\nonbreakingspace \ref {tab:results}). $C$ is essentially zero for every system under independent hidden tests; $Q$ remains high (0.69--0.95), confirming LLM-generated tools are well-structured but rarely semantically correct.}}{7}{table.caption.33}\protected@file@percent }
-\newlabel{tab:tqs_dims}{{5}{7}{Per-tool TQS dimensions, averaged over all preserved tools (not session-diluted as in Table~\ref {tab:results}). $C$ is essentially zero for every system under independent hidden tests; $Q$ remains high (0.69--0.95), confirming LLM-generated tools are well-structured but rarely semantically correct}{table.caption.33}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Per-Dimension TQS: Where Quality Breaks Down}{7}{subsection.5.3}\protected@file@percent }
-\newlabel{sec:tqs_analysis}{{5.3}{7}{Per-Dimension TQS: Where Quality Breaks Down}{subsection.5.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Per-tool correctness is universally low under hidden testing.}{6}{section*.26}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Full results across systems, models, and seeds. $n$ is the seed count. Multi-seed runs report mean$\pm $std; single-seed runs are point estimates. \emph  {Code-Evol (sem.\,Q)} reruns Code-Evol with the semantic $Q$ refinement; not directly comparable to surface-$Q$ rows. $^\dagger $ToolMaker-style created zero tools because our open-task harness lacks pre-defined reference tests to gate the diagnose-and-fix loop (Sec.\nonbreakingspace \ref {sec:limitations}).\relax }}{7}{table.caption.24}\protected@file@percent }
+\newlabel{tab:results}{{2}{7}{Full results across systems, models, and seeds. $n$ is the seed count. Multi-seed runs report mean$\pm $std; single-seed runs are point estimates. \emph {Code-Evol (sem.\,Q)} reruns Code-Evol with the semantic $Q$ refinement; not directly comparable to surface-$Q$ rows. $^\dagger $ToolMaker-style created zero tools because our open-task harness lacks pre-defined reference tests to gate the diagnose-and-fix loop (Sec.~\ref {sec:limitations}).\relax }{table.caption.24}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Library-health contrasts (Sonnet, $n{=}4$ seeds $\times $ 9 sessions). Paired hierarchical bootstrap over (seed, session), 10k resamples; BH-adjusted bootstrap $p$. Generated by \texttt  {scripts/stats\_report.py}.\relax }}{7}{table.caption.28}\protected@file@percent }
+\newlabel{tab:lh_stats}{{3}{7}{Library-health contrasts (Sonnet, $n{=}4$ seeds $\times $ 9 sessions). Paired hierarchical bootstrap over (seed, session), 10k resamples; BH-adjusted bootstrap $p$. Generated by \texttt {scripts/stats\_report.py}.\relax }{table.caption.28}{}}
+\@writefile{toc}{\contentsline {paragraph}{Library-management protocols raise LH significantly (primary claim).}{7}{section*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Raw reuse and correct reuse diverge (primary claim).}{7}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{On CREATOR-style vs.\ Code-Evol.}{7}{section*.30}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces System comparison across four metrics (\%). TC clusters all systems together (63--68\%); library health separates them (38--52\%). This illustrates the benchmark's discriminative power beyond task completion.\relax }}{7}{figure.caption.31}\protected@file@percent }
+\newlabel{fig:comparison}{{2}{7}{System comparison across four metrics (\%). TC clusters all systems together (63--68\%); library health separates them (38--52\%). This illustrates the benchmark's discriminative power beyond task completion.\relax }{figure.caption.31}{}}
+\@writefile{toc}{\contentsline {paragraph}{Domain profiles.}{7}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Per-Dimension TQS: Where Quality Breaks Down}{7}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:tqs_analysis}{{5.2}{7}{Per-Dimension TQS: Where Quality Breaks Down}{subsection.5.2}{}}
 \@writefile{toc}{\contentsline {paragraph}{Code quality $Q$ ranges 0.67--0.92.}{7}{section*.34}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Correctness is universally near zero.}{7}{section*.35}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Robustness clusters at 0.50.}{7}{section*.36}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Code quality remains high (0.69--0.95).}{7}{section*.37}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Reuse paradox, decomposed. CREATOR-style breaks the paradox in a useful direction: lower raw reuse than Code-Evol but nearly $2\times $ the correct-reuse rate. $^*$ToolCoder-style $n{=}1$.}}{8}{table.caption.40}\protected@file@percent }
-\newlabel{tab:reuse}{{6}{8}{Reuse paradox, decomposed. CREATOR-style breaks the paradox in a useful direction: lower raw reuse than Code-Evol but nearly $2\times $ the correct-reuse rate. $^*$ToolCoder-style $n{=}1$}{table.caption.40}{}}
-\@writefile{toc}{\contentsline {paragraph}{Generality tracks correctness.}{8}{section*.38}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Library-level sub-metrics.}{8}{section*.39}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Artifact Gallery (Appendix)}{8}{subsection.5.4}\protected@file@percent }
-\newlabel{sec:artifact_gallery}{{5.4}{8}{Artifact Gallery (Appendix)}{subsection.5.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}The Reuse Paradox}{8}{subsection.5.5}\protected@file@percent }
-\newlabel{sec:reuse_analysis}{{5.5}{8}{The Reuse Paradox}{subsection.5.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Task completion by type (both Sonnet, single run). Code-Evol matches No-Evolution on most task types but scores lower on gap and variant tasks. The identical compose/regress/adversarial totals are a coincidence of small N (9 tasks each); per-session results differ between systems.}}{8}{table.caption.41}\protected@file@percent }
-\newlabel{tab:task_type}{{7}{8}{Task completion by type (both Sonnet, single run). Code-Evol matches No-Evolution on most task types but scores lower on gap and variant tasks. The identical compose/regress/adversarial totals are a coincidence of small N (9 tasks each); per-session results differ between systems}{table.caption.41}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Task-Type Breakdown}{8}{subsection.5.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Tool creation has per-task costs.}{8}{section*.42}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Regression is universally difficult.}{8}{section*.43}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Structured sessions enable causal analysis.}{8}{section*.44}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Does Library Health Predict Task Completion?}{8}{subsection.5.7}\protected@file@percent }
-\newlabel{sec:predictive_validity}{{5.7}{8}{Does Library Health Predict Task Completion?}{subsection.5.7}{}}
-\@writefile{toc}{\contentsline {paragraph}{Setup.}{8}{section*.45}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Result: no correlation.}{8}{section*.46}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Per-tool TQS dimensions, averaged over all preserved tools (not session-diluted as in Table\nonbreakingspace \ref {tab:results}). $C$ is essentially zero for every system under the capability-aligned hidden tests; $Q$ remains high (0.69--0.95), confirming LLM-generated tools are well-structured but rarely semantically correct.\relax }}{8}{table.caption.33}\protected@file@percent }
+\newlabel{tab:tqs_dims}{{4}{8}{Per-tool TQS dimensions, averaged over all preserved tools (not session-diluted as in Table~\ref {tab:results}). $C$ is essentially zero for every system under the capability-aligned hidden tests; $Q$ remains high (0.69--0.95), confirming LLM-generated tools are well-structured but rarely semantically correct.\relax }{table.caption.33}{}}
+\@writefile{toc}{\contentsline {paragraph}{Correctness is universally near zero.}{8}{section*.35}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Robustness clusters at 0.50.}{8}{section*.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Generality tracks correctness.}{8}{section*.37}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Library-level sub-metrics.}{8}{section*.38}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Artifact Gallery (Appendix)}{8}{subsection.5.3}\protected@file@percent }
+\newlabel{sec:artifact_gallery}{{5.3}{8}{Artifact Gallery (Appendix)}{subsection.5.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}The Reuse Paradox}{8}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:reuse_analysis}{{5.4}{8}{The Reuse Paradox}{subsection.5.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Reuse paradox, decomposed. CREATOR-style breaks the paradox in a useful direction: lower raw reuse than Code-Evol but nearly $2\times $ the correct-reuse rate. $^*$ToolCoder-style $n{=}1$.\relax }}{8}{table.caption.39}\protected@file@percent }
+\newlabel{tab:reuse}{{5}{8}{Reuse paradox, decomposed. CREATOR-style breaks the paradox in a useful direction: lower raw reuse than Code-Evol but nearly $2\times $ the correct-reuse rate. $^*$ToolCoder-style $n{=}1$.\relax }{table.caption.39}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Task completion by type (both Sonnet, single run). Code-Evol matches No-Evolution on most task types but scores lower on gap and variant tasks. The identical compose/regress/adversarial totals are a coincidence of small N (9 tasks each); per-session results differ between systems.\relax }}{8}{table.caption.40}\protected@file@percent }
+\newlabel{tab:task_type}{{6}{8}{Task completion by type (both Sonnet, single run). Code-Evol matches No-Evolution on most task types but scores lower on gap and variant tasks. The identical compose/regress/adversarial totals are a coincidence of small N (9 tasks each); per-session results differ between systems.\relax }{table.caption.40}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Task-Type Breakdown}{8}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Tool creation has per-task costs.}{8}{section*.41}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Regression is universally difficult.}{8}{section*.42}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Structured sessions enable causal analysis.}{8}{section*.43}\protected@file@percent }
 \citation{zhang2026coevoskills}
-\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Skill-bundle quality (preserved tools only). Bundle Q is the mean of tool TQS plus three new bundle dimensions ($S$/$D$/$M$). The documentation dimension separates the systems most.}}{9}{table.caption.48}\protected@file@percent }
-\newlabel{tab:skill_bundles}{{8}{9}{Skill-bundle quality (preserved tools only). Bundle Q is the mean of tool TQS plus three new bundle dimensions ($S$/$D$/$M$). The documentation dimension separates the systems most}{table.caption.48}{}}
-\@writefile{toc}{\contentsline {paragraph}{Interpretation.}{9}{section*.47}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}Skill-Bundle Evaluation}{9}{subsection.5.8}\protected@file@percent }
-\newlabel{sec:skill_eval}{{5.8}{9}{Skill-Bundle Evaluation}{subsection.5.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.9}Summary of Key Findings}{9}{subsection.5.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 1: TC is insufficient for skill-generating systems.}{9}{section*.50}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 2: Code-level and strategy-level evolution produce different artifacts.}{9}{section*.51}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 3: Unvalidated code generation is a net negative.}{9}{section*.52}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Tool Quality Score for each synthesized tool across all systems. Green = passes quality gate ($\geq 0.5$). The benchmark reveals wide quality variation across the tool library.}}{9}{figure.caption.49}\protected@file@percent }
-\newlabel{fig:tool_quality}{{3}{9}{Tool Quality Score for each synthesized tool across all systems. Green = passes quality gate ($\geq 0.5$). The benchmark reveals wide quality variation across the tool library}{figure.caption.49}{}}
-\@writefile{toc}{\contentsline {paragraph}{Finding 4: Self-generated tests are insufficient.}{9}{section*.53}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 5: Haiku is competitive with Sonnet.}{9}{section*.54}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 6: Reuse must be decomposed to be meaningful.}{9}{section*.55}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Finding 7: LH and TC measure different things.}{9}{section*.56}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Tool Quality Score for each synthesized tool across all systems. Green = passes quality gate ($\geq 0.5$). The benchmark reveals wide quality variation across the tool library.\relax }}{9}{figure.caption.47}\protected@file@percent }
+\newlabel{fig:tool_quality}{{3}{9}{Tool Quality Score for each synthesized tool across all systems. Green = passes quality gate ($\geq 0.5$). The benchmark reveals wide quality variation across the tool library.\relax }{figure.caption.47}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Does Library Health Predict Task Completion?}{9}{subsection.5.6}\protected@file@percent }
+\newlabel{sec:predictive_validity}{{5.6}{9}{Does Library Health Predict Task Completion?}{subsection.5.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Setup.}{9}{section*.44}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Result: no detectable relationship.}{9}{section*.45}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Interpretation.}{9}{section*.46}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Claims matrix: what the evidence supports, and where each claim sits. We headline only claims whose bootstrap CIs are decisive; protocol \emph  {rankings} among management systems are descriptive at $n{=}4$.\relax }}{9}{table.caption.50}\protected@file@percent }
+\newlabel{tab:claims}{{7}{9}{Claims matrix: what the evidence supports, and where each claim sits. We headline only claims whose bootstrap CIs are decisive; protocol \emph {rankings} among management systems are descriptive at $n{=}4$.\relax }{table.caption.50}{}}
+\@writefile{toc}{\contentsline {paragraph}{Finding 6: Audit traces make evaluation inspectable and reproducible.}{9}{section*.48}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Finding 7: LH and TC measure different, complementary dimensions.}{9}{section*.49}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{9}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Benchmark Design Principles.}{9}{section*.57}\protected@file@percent }
-\newlabel{sec:discussion_tcgap}{{6}{9}{The task-completion / tool-correctness gap}{section*.58}{}}
-\@writefile{toc}{\contentsline {paragraph}{The task-completion / tool-correctness gap.}{9}{section*.58}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Benchmark Design Principles.}{9}{section*.51}\protected@file@percent }
+\newlabel{sec:discussion_tcgap}{{6}{9}{The task-completion / tool-correctness gap}{section*.52}{}}
+\@writefile{toc}{\contentsline {paragraph}{The task-completion / tool-correctness gap.}{9}{section*.52}\protected@file@percent }
 \bibstyle{ACM-Reference-Format}
 \bibdata{references}
 \bibcite{alzubi2026evoskill}{Alzubi et\nonbreakingspace al\mbox  {.}(2026)}
 \bibcite{backlund2025vendingbench}{Backlund and Petersson(2025)}
 \bibcite{bellur2024leroy}{Bellur et\nonbreakingspace al\mbox  {.}(2024)}
+\@writefile{toc}{\contentsline {paragraph}{Where do systems actually differ?}{10}{section*.53}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Implications for Self-Validation.}{10}{section*.54}\protected@file@percent }
+\newlabel{sec:limitations}{{6}{10}{Limitations}{section*.55}{}}
+\@writefile{toc}{\contentsline {paragraph}{Limitations.}{10}{section*.55}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{10}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Task completion alone is insufficient.}{10}{section*.56}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Reuse decomposition is essential.}{10}{section*.57}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Capability-aligned conformance tests reveal the specification gap.}{10}{section*.58}\protected@file@percent }
 \bibcite{berlotattwell2026}{Berlot-Attwell et\nonbreakingspace al\mbox  {.}(2026)}
 \bibcite{bowers2023stitch}{Bowers et\nonbreakingspace al\mbox  {.}(2023)}
 \bibcite{cai2023latm}{Cai et\nonbreakingspace al\mbox  {.}(2023)}
 \bibcite{cao2023babble}{Cao et\nonbreakingspace al\mbox  {.}(2023)}
 \bibcite{ellis2021dreamcoder}{Ellis et\nonbreakingspace al\mbox  {.}(2021)}
 \bibcite{skillsbench2026}{Li et\nonbreakingspace al\mbox  {.}(2026)}
-\@writefile{toc}{\contentsline {paragraph}{Where do systems actually differ?}{10}{section*.59}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Implications for Self-Validation.}{10}{section*.60}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The Reuse Paradox and Metric Design.}{10}{section*.61}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Extensibility.}{10}{section*.62}\protected@file@percent }
-\newlabel{sec:limitations}{{6}{10}{Limitations}{section*.63}{}}
-\@writefile{toc}{\contentsline {paragraph}{Limitations.}{10}{section*.63}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{10}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Task completion overstates tool quality.}{10}{section*.64}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Aggregate reuse is misleading.}{10}{section*.65}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Library health and task completion are orthogonal.}{10}{section*.66}\protected@file@percent }
 \bibcite{liu2024agentbench}{Liu et\nonbreakingspace al\mbox  {.}(2024)}
 \bibcite{toolcomp2025}{Nath et\nonbreakingspace al\mbox  {.}(2025)}
 \bibcite{qian2023creator}{Qian et\nonbreakingspace al\mbox  {.}(2023)}
@@ -170,16 +168,12 @@
 \bibcite{yuan2023craft}{Yuan et\nonbreakingspace al\mbox  {.}(2023)}
 \bibcite{zenkner2024abstractbeam}{Zenkner et\nonbreakingspace al\mbox  {.}(2024)}
 \bibcite{zhang2026coevoskills}{Zhang et\nonbreakingspace al\mbox  {.}(2026)}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Artifact Gallery}{12}{appendix.A}\protected@file@percent }
-\newlabel{app:artifact_gallery}{{A}{12}{Artifact Gallery}{appendix.A}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Code-Evol/Sonnet (semantic $Q$)}{12}{subsection.A.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}CREATOR-style/Sonnet}{13}{subsection.A.2}\protected@file@percent }
 \newlabel{tocindent-1}{0pt}
 \newlabel{tocindent0}{0pt}
-\newlabel{tocindent1}{6.25499pt}
-\newlabel{tocindent2}{12.41998pt}
+\newlabel{tocindent1}{4.185pt}
+\newlabel{tocindent2}{10.34999pt}
 \newlabel{tocindent3}{0pt}
 \newlabel{tocindent4}{0pt}
 \newlabel{tocindent5}{0pt}
-\newlabel{TotPages}{{14}{14}{}{page.14}{}}
-\gdef \@abspage@last{14}
+\newlabel{TotPages}{{11}{11}{}{page.11}{}}
+\gdef \@abspage@last{11}

@@ -30,7 +30,7 @@ Task completion alone is insufficient for tool-evolving agents. Systems with sim
 
 ## Benchmark Structure
 
-**3 domains · 9 sessions · 99 tasks**, each task deterministically verified:
+**3 domains · 9 sessions · 99 tasks.** 51/99 tasks currently carry deterministic verifiers (`expected` mappings or `verify` predicates); the harness fails closed on unverified tasks. Extending deterministic verification to all 99 tasks is in progress (see `scripts/audit_tasks.py`):
 
 | Domain | Sessions | What it probes |
 |--------|----------|----------------|
@@ -79,7 +79,7 @@ Safety is excluded from the composite pending a proper implementation (see Limit
 ```bash
 pip install -e ".[dev]"
 
-# Audit that all tasks have deterministic verifiers
+# Audit verifier coverage (expected/verify predicates per task)
 python scripts/audit_tasks.py
 
 # Run a session against the no-evolution baseline
@@ -146,7 +146,7 @@ evolvetool-bench/
 │   ├── tool_manifest.jsonl
 │   └── aggregate.json
 └── scripts/
-    ├── audit_tasks.py              # Verify all tasks have deterministic verifiers
+    ├── audit_tasks.py              # Audit verifier coverage (expected/verify per task)
     ├── audit_results.py            # Check result file completeness
     ├── make_tables.py              # Regenerate LaTeX tables from results
     └── make_figures.py             # Regenerate figures from results
