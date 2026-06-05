@@ -1,4 +1,4 @@
-"""Drop-in synchronous replacement for litellm.completion using the Anthropic API gateway.
+"""Drop-in synchronous replacement for litellm.completion backed by the Anthropic SDK.
 
 The existing baselines (no_evolution, oneshot, evoskill, creator, etc.) call:
 
@@ -12,7 +12,7 @@ and consume:
 
 This shim reproduces that interface using the Anthropic SDK wired to
 the configured backend (set ANTHROPIC_BASE_URL + ANTHROPIC_API_KEY for custom
-endpoints, or leave defaults to auto-detect via llm_client's USSO integration).
+endpoints, or rely on auto-detection in llm_client via token env vars).
 
 Import pattern in baselines:
     try:
@@ -97,7 +97,7 @@ def completion(
     temperature: float = 0.0,
     **_kwargs: Any,
 ) -> _Response:
-    """Blocking completion using the Anthropic API gateway (or direct Anthropic)."""
+    """Blocking completion using the configured Anthropic backend (gateway or direct)."""
     import asyncio
 
     async def _run() -> _Response:

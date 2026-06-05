@@ -13,7 +13,7 @@ The script:
   4. Writes per-run JSONL + aggregate JSON into --output.
   5. Supports --resume to skip already-completed (system, session, seed) tuples.
 
-Baselines wired to use Anthropic API (claude-haiku-4-5 for speed/cost):
+Baselines wired to use Anthropic claude-haiku-4-5 (set ANTHROPIC_BASE_URL for custom gateway):
   no_evolution, oneshot, creator_style, evoskill, toolmaker
 """
 
@@ -28,7 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-# CRITICAL: patch sys.modules["litellm"] with our Anthropic API shim BEFORE any
+# CRITICAL: patch sys.modules["litellm"] with our shim BEFORE any
 # baseline modules are imported. All baselines do `import litellm` inline, so
 # they will pick up our shim automatically.
 import evolvetool_bench.harness.litellm_shim as _shim  # noqa: E402
