@@ -1,16 +1,7 @@
-"""Anthropic LLM client — optional enterprise gateway or direct Anthropic.
+"""Anthropic LLM client for EvolveTool-Bench.
 
-Auto-selects backend:
-  Enterprise gateway (optional):
-    Set ANTHROPIC_BASE_URL to your gateway URL.
-    Set ANTHROPIC_API_KEY or ANTHROPIC_API_KEY with your Bearer token, OR
-    provide a `usso` CLI that prints a token via `usso -ussh genai-api -print`.
-    Sends token as Authorization: Bearer (Anthropic SDK auth_token parameter).
-    Compatible models: claude-haiku-4-5, claude-sonnet-4-6, etc.
-
-  Direct Anthropic (default if no gateway is configured):
-    Set ANTHROPIC_API_KEY to use the public Anthropic API.
-    Set ANTHROPIC_DIRECT=1 to force direct even if a API key is available.
+Requires ANTHROPIC_API_KEY to be set in the environment.
+Compatible models: claude-haiku-4-5, claude-sonnet-4-6, etc.
 
 Usage:
     from evolvetool_bench.harness.llm_client import LLMClient
@@ -21,74 +12,11 @@ Usage:
 from __future__ import annotations
 
 import os
-import subprocess
-import time
 from dataclasses import dataclass, field
 from typing import Any
 
-import httpx
 from anthropic import AsyncAnthropic, APIError, RateLimitError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
-
-_GATEWAY_BASE_URL = os.environ.get("ANTHROPIC_BASE_URL", "")
-_TOKEN_CACHE: dict[str, tuple[str, float]] = {}   # key -> (token, expires_ts)
-_TOKEN_TTL = 60 * 60  # refresh if < 1h remaining, valid ~20h
-
-
-def _fetch_usso_token() -> str | None:
-    """Fetch token for Anthropic API, with simple in-process caching."""
-    now = time.time()
-    cached = _TOKEN_CACHE.get("genai-api")
-    if cached and cached[1] > now + 60:
-        return cached[0]
-    # Check env first
-    env_token = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
-    if env_token:
-        _TOKEN_CACHE["genai-api"] = (env_token, now + _TOKEN_TTL)
-        return env_token
-    # Fetch via usso CLI (enterprise SSO helper)
-    try:
-        out = subprocess.check_output(
-            ["usso", "-ussh", "genai-api", "-print"],
-            text=True, timeout=30, stderr=subprocess.DEVNULL,
-        )
-        token = out.strip().split("\n")[-1].strip()
-        if token and len(token) > 20:
-            _TOKEN_CACHE["genai-api"] = (token, now + _TOKEN_TTL)
-            return token
-    except Exception:
-        pass
-    return None
-
-
-def _build_gateway_client() -> AsyncAnthropic:
-    token = _fetch_usso_token()
-    if not token:
-        raise RuntimeError(
-            "Cannot obtain API key. Set ANTHROPIC_API_KEY or ensure usso CLI is available."
-        )
-    base_url = _GATEWAY_BASE_URL or "https://api.anthropic.com"
-    return AsyncAnthropic(
-        base_url=base_url,
-        auth_token=token,
-        api_key="gateway-token",
-        max_retries=0,
-        http_client=httpx.AsyncClient(
-            base_url=base_url,
-            timeout=httpx.Timeout(120.0),
-        ),
-    )
-
-
-def _use_gateway() -> bool:
-    if os.environ.get("ANTHROPIC_DIRECT", "").lower() in ("1", "true"):
-        return False
-    if os.environ.get("ANTHROPIC_API_KEY"):
-        return False
-    # Only route through gateway if a base URL or token is explicitly configured
-    if not _GATEWAY_BASE_URL and not os.environ.get("ANTHROPIC_API_KEY") and not os.environ.get("ANTHROPIC_API_KEY"):
-        return False
-    return True
 
 
 @dataclass
@@ -101,7 +29,7 @@ class LLMResponse:
 
 @dataclass
 class LLMClient:
-    """Simple async Anthropic client with enterprise gateway auto-detection and retry."""
+    """Simple async Anthropic client with automatic retry."""
 
     model: str = "claude-haiku-4-5"
     max_retries: int = 3
@@ -110,21 +38,16 @@ class LLMClient:
 
     def __post_init__(self) -> None:
         self._client: AsyncAnthropic | None = None
-        self._is_gateway = False
 
     def _ensure_client(self) -> AsyncAnthropic:
         if self._client is None:
-            if _use_gateway():
-                try:
-                    self._client = _build_gateway_client()
-                    self._is_gateway = True
-                except Exception as e:
-                    print(f"[llm_client] API unavailable ({e}), falling back to direct Anthropic")
-                    self._client = AsyncAnthropic(max_retries=0)
-                    self._is_gateway = False
-            else:
-                self._client = AsyncAnthropic(max_retries=0)
-                self._is_gateway = False
+            api_key = os.environ.get("ANTHROPIC_API_KEY")
+            if not api_key:
+                raise RuntimeError(
+                    "ANTHROPIC_API_KEY is not set. "
+                    "Export your Anthropic API key before running experiments."
+                )
+            self._client = AsyncAnthropic(api_key=api_key, max_retries=0)
         return self._client
 
     async def complete(
@@ -167,14 +90,6 @@ class LLMClient:
             reraise=True,
         )
         async def _do() -> LLMResponse:
-            # Refresh token if using gateway and cache may be stale
-            nonlocal client
-            if self._is_gateway:
-                fresh = _fetch_usso_token()
-                if fresh:
-                    client = _build_gateway_client()
-                    self._client = client
-
             kwargs: dict[str, Any] = {
                 "model": self.model,
                 "max_tokens": self.max_tokens,

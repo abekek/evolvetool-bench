@@ -10,9 +10,8 @@ and consume:
     resp.choices[0].message.tool_calls       # list[ToolCall] or None
     tc.function.name / tc.function.arguments # str JSON
 
-This shim reproduces that interface using the Anthropic SDK wired to
-the configured backend (set ANTHROPIC_BASE_URL + ANTHROPIC_API_KEY for custom
-endpoints, or rely on auto-detection in llm_client via token env vars).
+This shim reproduces that interface using the Anthropic SDK directly.
+Requires ANTHROPIC_API_KEY to be set in the environment.
 
 Import pattern in baselines:
     try:
@@ -97,7 +96,7 @@ def completion(
     temperature: float = 0.0,
     **_kwargs: Any,
 ) -> _Response:
-    """Blocking completion using the configured Anthropic backend (gateway or direct)."""
+    """Blocking completion via the Anthropic API."""
     import asyncio
 
     async def _run() -> _Response:

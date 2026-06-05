@@ -13,7 +13,7 @@ The script:
   4. Writes per-run JSONL + aggregate JSON into --output.
   5. Supports --resume to skip already-completed (system, session, seed) tuples.
 
-Baselines wired to use Anthropic claude-haiku-4-5 (set ANTHROPIC_BASE_URL for custom gateway):
+Baselines use Anthropic claude-haiku-4-5. Set ANTHROPIC_API_KEY before running.
   no_evolution, oneshot, creator_style, evoskill, toolmaker
 """
 
