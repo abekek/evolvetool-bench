@@ -2,7 +2,7 @@
 %%% Do NOT edit. File created by BibTeX with style
 %%% ACM-Reference-Format-Journals [18-Jan-2012].
 
-\begin{thebibliography}{20}
+\begin{thebibliography}{13}
 
 %%% ====================================================================
 %%% NOTE TO THE USER: you can override these defaults by providing
@@ -59,43 +59,6 @@
 \newblock
 
 
-\bibitem[Bellur et~al\mbox{.}(2024)]%
-        {bellur2024leroy}
-\bibfield{author}{\bibinfo{person}{Abhiram Bellur}, \bibinfo{person}{Razan
-  Alghamdi}, \bibinfo{person}{Kidus Workneh}, {and} \bibinfo{person}{Joseph
-  Izraelevitz}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{Leroy: Library Learning for Imperative Programming
-  Languages}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2410.06438}}
-  (\bibinfo{year}{2024}).
-\newblock
-
-
-\bibitem[Berlot-Attwell et~al\mbox{.}(2026)]%
-        {berlotattwell2026}
-\bibfield{author}{\bibinfo{person}{Ian Berlot-Attwell}, \bibinfo{person}{Tobias
-  Sesterhenn}, \bibinfo{person}{Frank Rudzicz}, {and} \bibinfo{person}{Xujie
-  Si}.} \bibinfo{year}{2026}\natexlab{}.
-\newblock \showarticletitle{Is This {LLM} Library Learning? Evaluation Must
-  Account For Compute and Behaviour}. In \bibinfo{booktitle}{\emph{Proceedings
-  of the 19th Conference of the European Chapter of the Association for
-  Computational Linguistics (EACL)}}.
-\newblock
-
-
-\bibitem[Bowers et~al\mbox{.}(2023)]%
-        {bowers2023stitch}
-\bibfield{author}{\bibinfo{person}{Matthew Bowers}, \bibinfo{person}{Theo~X.
-  Olausson}, \bibinfo{person}{Lionel Wong}, \bibinfo{person}{Gabriel Grand},
-  \bibinfo{person}{Joshua~B. Tenenbaum}, \bibinfo{person}{Kevin Ellis}, {and}
-  \bibinfo{person}{Armando Solar-Lezama}.} \bibinfo{year}{2023}\natexlab{}.
-\newblock \showarticletitle{Top-Down Synthesis for Library Learning}.
-\newblock \bibinfo{journal}{\emph{Proceedings of the ACM on Programming
-  Languages (POPL)}}  \bibinfo{volume}{7} (\bibinfo{year}{2023}).
-\newblock
-\href{https://doi.org/10.1145/3571234}{doi:\nolinkurl{10.1145/3571234}}
-
-
 \bibitem[Cai et~al\mbox{.}(2023)]%
         {cai2023latm}
 \bibfield{author}{\bibinfo{person}{Tianle Cai}, \bibinfo{person}{Xuezhi Wang},
@@ -105,22 +68,6 @@
 \newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2305.17126}}
   (\bibinfo{year}{2023}).
 \newblock
-
-
-\bibitem[Cao et~al\mbox{.}(2023)]%
-        {cao2023babble}
-\bibfield{author}{\bibinfo{person}{David Cao}, \bibinfo{person}{Rose Kunkel},
-  \bibinfo{person}{Chandrakana Nandi}, \bibinfo{person}{Max Willsey},
-  \bibinfo{person}{Zachary Tatlock}, {and} \bibinfo{person}{Nadia
-  Polikarpova}.} \bibinfo{year}{2023}\natexlab{}.
-\newblock \showarticletitle{babble: Learning Better Abstractions with E-Graphs
-  and Anti-unification}.
-\newblock \bibinfo{journal}{\emph{Proceedings of the ACM on Programming
-  Languages (POPL)}}  \bibinfo{volume}{7} (\bibinfo{year}{2023}).
-\newblock
-\href{https://doi.org/10.1145/3571207}{doi:\nolinkurl{10.1145/3571207}}
-\newblock
-\shownote{arXiv:2212.04596}.
 
 
 \bibitem[Ellis et~al\mbox{.}(2021)]%
@@ -134,21 +81,16 @@
 \newblock \showarticletitle{DreamCoder: Bootstrapping Inductive Program
   Synthesis with Wake-Sleep Library Learning}. In
   \bibinfo{booktitle}{\emph{Proceedings of the 42nd ACM SIGPLAN International
-  Conference on Programming Language Design and Implementation (PLDI)}}.
+  Conference on Programming Language Design and Implementation}}.
 \newblock
-\href{https://doi.org/10.1145/3453483.3454080}{doi:\nolinkurl{10.1145/3453483.3454080}}
-\newblock
-\shownote{arXiv:2006.08381}.
 
 
 \bibitem[Li et~al\mbox{.}(2026)]%
         {skillsbench2026}
 \bibfield{author}{\bibinfo{person}{Xiangyi Li}, \bibinfo{person}{Wenbo Chen},
   \bibinfo{person}{Yimin Liu}, \bibinfo{person}{Shenghan Zheng},
-  \bibinfo{person}{Xiaokun Chen}, \bibinfo{person}{Yifeng He},
-  \bibinfo{person}{Yubo Li}, \bibinfo{person}{Bingran You},
-  \bibinfo{person}{Haotian Shen}, \bibinfo{person}{Jiankai Sun},
-  {et~al\mbox{.}}} \bibinfo{year}{2026}\natexlab{}.
+  \bibinfo{person}{Xiaokun Chen}, {et~al\mbox{.}}}
+  \bibinfo{year}{2026}\natexlab{}.
 \newblock \showarticletitle{SkillsBench: Benchmarking How Well Agent Skills
   Work Across Diverse Tasks}.
 \newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2602.12670}}
@@ -166,21 +108,7 @@
   \bibinfo{year}{2024}\natexlab{}.
 \newblock \showarticletitle{AgentBench: Evaluating LLMs as Agents}. In
   \bibinfo{booktitle}{\emph{International Conference on Learning
-  Representations (ICLR)}}.
-\newblock
-\newblock
-\shownote{arXiv:2308.03688}.
-
-
-\bibitem[Nath et~al\mbox{.}(2025)]%
-        {toolcomp2025}
-\bibfield{author}{\bibinfo{person}{Vaskar Nath}, \bibinfo{person}{Pranav Raja},
-  \bibinfo{person}{Claire Yoon}, {and} \bibinfo{person}{Sean Hendryx}.}
-  \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{ToolComp: A Multi-Tool Reasoning \& Process
-  Supervision Benchmark}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2501.01290}}
-  (\bibinfo{year}{2025}).
+  Representations}}.
 \newblock
 
 
@@ -202,9 +130,7 @@
 \bibfield{author}{\bibinfo{person}{Yujia Qin}, \bibinfo{person}{Shihao Liang},
   \bibinfo{person}{Yining Ye}, \bibinfo{person}{Kunlun Zhu},
   \bibinfo{person}{Lan Yan}, \bibinfo{person}{Yaxi Lu}, \bibinfo{person}{Yankai
-  Lin}, \bibinfo{person}{Xin Cong}, \bibinfo{person}{Xiangru Tang},
-  \bibinfo{person}{Bill Qian}, {et~al\mbox{.}}}
-  \bibinfo{year}{2023}\natexlab{}.
+  Lin}, {et~al\mbox{.}}} \bibinfo{year}{2023}\natexlab{}.
 \newblock \showarticletitle{ToolLLM: Facilitating Large Language Models to
   Master 16000+ Real-world APIs}.
 \newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2307.16789}}
@@ -237,8 +163,6 @@
 \newblock \bibinfo{journal}{\emph{Advances in Neural Information Processing
   Systems}} (\bibinfo{year}{2023}).
 \newblock
-\newblock
-\shownote{arXiv:2305.16291}.
 
 
 \bibitem[W{\"o}lflein et~al\mbox{.}(2025)]%
@@ -247,12 +171,10 @@
   Ferber}, \bibinfo{person}{Daniel Truhn}, \bibinfo{person}{Ognjen
   Arandjelovi{\'c}}, {and} \bibinfo{person}{Jakob~Nikolas Kather}.}
   \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{LLM Agents Making Agent Tools}. In
-  \bibinfo{booktitle}{\emph{Proceedings of the Annual Meeting of the
-  Association for Computational Linguistics (ACL)}}.
+\newblock \showarticletitle{LLM Agents Making Agent Tools}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2502.11705}}
+  (\bibinfo{year}{2025}).
 \newblock
-\newblock
-\shownote{arXiv:2502.11705}.
 
 
 \bibitem[Xia et~al\mbox{.}(2026)]%
@@ -269,40 +191,12 @@
 \newblock
 
 
-\bibitem[Yuan et~al\mbox{.}(2023)]%
-        {yuan2023craft}
-\bibfield{author}{\bibinfo{person}{Lifan Yuan}, \bibinfo{person}{Yangyi Chen},
-  \bibinfo{person}{Xingyao Wang}, \bibinfo{person}{Yi~R. Fung},
-  \bibinfo{person}{Hao Peng}, {and} \bibinfo{person}{Heng Ji}.}
-  \bibinfo{year}{2023}\natexlab{}.
-\newblock \showarticletitle{CRAFT: Customizing LLMs by Creating and Retrieving
-  from Specialized Toolsets}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2309.17428}}
-  (\bibinfo{year}{2023}).
-\newblock
-
-
-\bibitem[Zenkner et~al\mbox{.}(2024)]%
-        {zenkner2024abstractbeam}
-\bibfield{author}{\bibinfo{person}{Janis Zenkner}, \bibinfo{person}{Lukas
-  Dierkes}, \bibinfo{person}{Tobias Sesterhenn}, {and}
-  \bibinfo{person}{Christian Bartelt}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{AbstractBeam: Enhancing Bottom-Up Program Synthesis
-  using Library Learning}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2405.17514}}
-  (\bibinfo{year}{2024}).
-\newblock
-
-
 \bibitem[Zhang et~al\mbox{.}(2026)]%
         {zhang2026coevoskills}
 \bibfield{author}{\bibinfo{person}{Hanrong Zhang}, \bibinfo{person}{Shicheng
   Fan}, \bibinfo{person}{Henry~Peng Zou}, \bibinfo{person}{Yankai Chen},
   \bibinfo{person}{Zhenting Wang}, \bibinfo{person}{Jiayu Zhou},
-  \bibinfo{person}{Chengze Li}, \bibinfo{person}{Wei-Chieh Huang},
-  \bibinfo{person}{Yifei Yao}, \bibinfo{person}{Kening Zheng},
-  \bibinfo{person}{Xue Liu}, \bibinfo{person}{Xiaoxiao Li}, {and}
-  \bibinfo{person}{Philip~S. Yu}.} \bibinfo{year}{2026}\natexlab{}.
+  {et~al\mbox{.}}} \bibinfo{year}{2026}\natexlab{}.
 \newblock \showarticletitle{CoEvoSkills: Self-Evolving Agent Skills via
   Co-Evolutionary Verification}.
 \newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2604.01687}}
