@@ -1,6 +1,6 @@
 \documentclass[sigconf,anonymous,review,natbib=false]{acmart}
 
-% Supplemental material — reproducibility appendix for the anonymous submission.
+% Supplemental material -- reproducibility appendix for the anonymous submission.
 \settopmatter{printacmref=false}
 \renewcommand\footnotetextcopyrightpermission[1]{}
 \pagestyle{plain}
@@ -30,111 +30,191 @@
 }
 \maketitle
 
-This supplement contains reproducibility material referenced from the main
-paper: the per-domain breakdown and the artifact gallery of representative
-synthesised tools. All numbers and artifacts are regenerated from
-\texttt{results\_canonical/} by the scripts described in the main paper
+This supplement provides reproducibility material for the strict
+verified-subset pilot reported in the main paper. All tables and
+manifest files are regenerated from \texttt{results\_canonical/} by the
+scripts described in Section~4 of the main paper
 (\texttt{build\_canonical.py}, \texttt{stats\_report.py},
 \texttt{make\_tables.py}, \texttt{make\_figures.py}).
 
+\section{Reproducibility Summary}
+\label{app:reproducibility}
+
+\paragraph{Model and decoding.}
+All strict-pilot runs use Claude Haiku~4.5
+(snapshot \texttt{claude-haiku-4-5-20251001}), accessed via the
+Anthropic API with temperature 1.0 and the model default top-$p$.
+Tool execution is sandboxed in-process with a five-second wall-clock
+limit; harness state resets between sessions so library accumulation
+is per-session.
+
+\paragraph{Seeds and sessions.}
+Three integer seeds (\texttt{0, 1, 2}) $\times$ eight verified-subset
+sessions $\times$ five protocols yields 120 session rows. Each session
+contributes a paired observation per protocol in the contrast
+analyses.
+
+\paragraph{Statistics.}
+Per-session paired differences are bootstrap-resampled $B{=}10{,}000$
+times with seed \texttt{20260604}; 95\% confidence intervals are
+percentile CIs over the bootstrap distribution; the three
+pre-specified contrasts (Table~3 in the main paper) are
+Benjamini--Hochberg adjusted.
+
+\paragraph{Canonical artifacts.}
+The release includes the canonical run manifest
+(\texttt{run\_manifest.jsonl}, 120 rows), tool manifest
+(\texttt{tool\_manifest.jsonl}, system-level summary), aggregate
+(\texttt{aggregate.json}), audit report
+(\texttt{audit\_report.json}), statistical report
+(\texttt{statistical\_report.json}), and the pre-specified contrasts
+(\texttt{claims.json}). Every cell in the main-paper tables can be
+derived from these files by the scripts above.
+
+\section{Audit Coverage Detail}
+\label{app:audit}
+
+Table~\ref{tab:audit-detail} shows the per-session decomposition of
+the strict subset. Across the eight verified-subset sessions, 51
+graded task decisions per system pass survive into the strict TC
+denominator. Seed tasks are explicitly excluded from the denominator
+by design: they exist to expose the agent to the seed library before
+any creation and carry no graded outcome.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Per-session strict coverage. Columns are role-level verified/total.
+Seed counts are reported but excluded from TC (no graded outcome).}
+\label{tab:audit-detail}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Session} & \textbf{Seed} & \textbf{Gap} & \textbf{Var.} & \textbf{Comp.} & \textbf{Reg.} & \textbf{Adv.} \\
+\midrule
+data\_transform\_s1 & 0/3 & 2/2 & 2/2 & 0/1 & 1/1 & 1/2 \\
+data\_transform\_s2 & 0/3 & 2/2 & 2/2 & 1/1 & 1/1 & 1/2 \\
+data\_transform\_s3 & 0/3 & 2/2 & 2/2 & 1/1 & 1/1 & 1/2 \\
+data\_transform\_s4 & 0/3 & 2/2 & 2/2 & 1/1 & 1/1 & 2/2 \\
+data\_transform\_s5 & 0/3 & 2/2 & 2/2 & 1/1 & 1/1 & 2/2 \\
+numerical\_s1       & 0/3 & 2/2 & 2/2 & 0/1 & 1/1 & 1/2 \\
+numerical\_s2       & 0/3 & 1/2 & 1/2 & 0/1 & 1/1 & 1/2 \\
+numerical\_s3       & 0/3 & 2/2 & 2/2 & 0/1 & 1/1 & 0/2 \\
+\midrule
+Strict subset       & 0/24 & 15/16 & 15/16 & 4/8 & 8/8 & 9/16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Baseline Fairness Ledger}
 \label{app:fairness}
-Several baselines are protocol \emph{adaptations} rather than native ports.
-No-Evolution, One-Shot, and Code-Evol are native to this harness and omitted.
-All systems share the identical task stream, seed library, model (Sonnet~4),
-and verification function; only the tool-creation protocol varies.
+
+Three of the five protocols evaluated in the strict pilot are
+adaptations of prior published systems to a shared open-task harness;
+No-Evolution and One-Shot are native to this harness.
+Table~\ref{tab:baseline_fairness} lists what was preserved from each
+original design and where the adaptation deviates. The
+\texttt{-style} suffix on EvoSkill-style, ToolMaker-style, and
+CREATOR-style is deliberate: no underperformance in this pilot should
+be read as a verdict on the original methods.
 
 \begin{table}[h]
 \centering\footnotesize
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{p{0.10\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}}
 \toprule
-\textbf{Baseline} & \textbf{Native setting} & \textbf{Preserved faithfully} & \textbf{Adapted / fairness note} \\
+\textbf{Protocol} & \textbf{Native setting} & \textbf{Preserved faithfully} & \textbf{Adapted / fairness note} \\
 \midrule
-Strategy-Only (EvoSkill) & Skill-library agent with NL strategy proposer/prompt generator & Skill Proposer and Prompt Generator prompt templates; strategy-folder structure & Strategies injected as prompt hints, not executed. Characterizes \emph{strategy-level} evolution; not a leaderboard claim against EvoSkill. \\
-CREATOR-style & Decision/execution split tool creation with reference tests & Two-phase create-then-use control flow; per-tool function synthesis & No native reference tests in our open tasks; quality measured post-hoc by our hidden tests, identical to all systems. \\
-ToolCoder-style & Code-generation-centric tool synthesis & Single-pass function generation from the task spec & Runs on Bedrock/Claude rather than the native model; same task stream and verifier as all systems. \\
-ToolMaker-style & Repo-grounded, Docker, OpenAI; diagnose/rewrite loop gated by \emph{provided} reference tests & Two-stage diagnose-then-rewrite prompt structure; sandbox execution of auto-tests & Our open tasks provide no reference tests to gate the loop, so it created zero tools. Reported as a harness--protocol mismatch, not a capability verdict. \\
+EvoSkill-style & Skill-library agent with NL strategy proposer/prompt generator & Skill-proposer and prompt-generator templates; strategy-folder structure & Strategies injected as prompt hints, not executed. Characterises strategy-level evolution, not native EvoSkill performance. \\
+CREATOR-style & Decision/execution split tool creation, with native reference tests & Two-phase decide-then-create-and-use control flow; per-tool function synthesis & Our open tasks supply no native reference tests; identical verifier set for all systems. \\
+ToolMaker-style & Repo-grounded with reference tests; diagnose-and-rewrite loop gated by provided tests & Two-stage diagnose-then-rewrite prompt structure; sandbox execution of auto-tests & Open tasks supply no reference tests to gate the loop; tool creation rate is therefore conservative and reflects the harness regime, not the model. \\
 \bottomrule
 \end{tabular}
-\caption{Baseline fairness ledger for adapted protocols.}
+\caption{Baseline fairness ledger for adapted protocols. All systems
+share the identical task stream, seed library, model
+(Claude Haiku~4.5), decoding parameters, and verifier set; only the
+tool-creation control flow varies.}
 \label{tab:baseline_fairness}
 \end{table}
 
-\section{ETS Weight Sensitivity}
-\label{app:ets}
+\section{Worked Trace Example: a Self-Validating Tool that Fails Hidden Tests}
+\label{app:trace}
+
+The main paper points to a single worked case in
+\texttt{data\_transform\_s1} where the audit layer flags a tool that
+TC scores as successful. This appendix expands the case.
+
+The shared capability \texttt{abr\_binary\_decode} appears in five
+session-1 tasks: \texttt{gap\_1} (which invites creation of the
+capability), \texttt{variant\_1}, \texttt{compose\_1},
+\texttt{regress\_1}, and \texttt{adversarial\_1} (each of which can
+reuse the tool created at \texttt{gap\_1}). In the Code-Evol pilot in
+which per-tool source was preserved, a single tool
+(\texttt{decode\_abr\_format}) was synthesised, alongside an
+agent-written test file. The tool passed its self-tests at $C{=}0.5$;
+the session-level TC reached $0.95$.
+
+When the same tool source is replayed against the held-out conformance
+suite tied to the capability (six unit inputs and six adversarial
+inputs, none seen by the agent), correctness is $0.00$ and
+robustness/generality are $0.50/0.00$. The tool is implementing a
+parser that structurally agrees with its own training-style examples
+but does not implement the capability's contract.
+
+\begin{tcolorbox}[colframe=black!70, colback=gray!5, boxrule=0.5pt]
+\textbf{What the audit layer surfaces.}
+\begin{itemize}[noitemsep,leftmargin=1.2em]
+  \item Session TC: $0.95$ -- a near-perfect session.
+  \item In-session reuse: 1 correct, 1 incorrect -- ambiguous on its own.
+  \item Hidden-test correctness on the same artifact: $0.00$ -- the tool fails every held-out input for the capability it claims to implement.
+\end{itemize}
+\end{tcolorbox}
+
+The header pattern (TC high, in-session reuse mixed, hidden-test
+correctness near zero on the underlying artifact) is exactly the
+failure mode the framework is designed to expose. Per-tool conformance
+testing under the strict pilot regime is the next artifact-hardening
+step (see Limitations in the main paper).
+
+\section{Auxiliary Signal: Library-Health Contrasts under a Sonnet Pilot}
+\label{app:lh-aux}
+
+A separate Code-Evol/Sonnet pilot, in which per-tool source was
+preserved across four seeds and nine sessions, allows the same
+artifact-level signal to be computed for library health (LH). LH
+combines correct reuse, redundancy, utilisation, composition,
+regression, and quality gate (capability-aligned hidden-test
+correctness for the tools the system has created). We report the LH
+contrasts here as a \emph{forward-looking signal} for the framework's
+discriminative power, not as a TC claim: see Limitations on
+single-model and protocol-adaptation scope.
+
 \begin{table}[h]
-\centering\footnotesize
-\begin{tabular}{lccccc}
+\centering\small
+\caption{Library-health contrasts in the Sonnet pilot
+(Sonnet, $n{=}4$ seeds $\times$ 9 sessions; per-tool source preserved).
+Paired hierarchical bootstrap over (seed, session), $10\,000$ resamples;
+BH-adjusted bootstrap $p$. Generated by \texttt{scripts/stats\_report.py}.}
+\label{tab:lh_stats_supp}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Weights} & \textbf{No-Evol} & \textbf{One-Shot} & \textbf{Str-Only} & \textbf{CREATOR} & \textbf{Code-Evol} \\
+\textbf{Contrast (LH)} & \textbf{$\Delta$} & \textbf{95\% CI} & \textbf{$p_{\mathrm{adj}}$} \\
 \midrule
-Original   & .439 & .443 & .442 & \textbf{.576} & .543 \\
-Uniform    & .462 & .469 & .462 & \textbf{.575} & .558 \\
-TC-dom.    & .495 & .500 & .494 & \textbf{.602} & .570 \\
-LH-dom.    & .431 & .431 & .437 & \textbf{.567} & .538 \\
-LH${=}$0   & .460 & .473 & .454 & \textbf{.589} & .559 \\
+Code-Evol $-$ No-Evol           & 12.0$^{*}$ & [6.8, 17.0]  & 0.000 \\
+CREATOR-style $-$ No-Evol       & 15.2$^{*}$ & [8.0, 23.4]  & 0.000 \\
+Code-Evol $-$ Strategy-Only     & 10.4$^{*}$ & [6.4, 14.7]  & 0.000 \\
+CREATOR-style $-$ Strategy-Only & 13.6$^{*}$ & [7.5, 21.3]  & 0.000 \\
 \bottomrule
 \end{tabular}
-\caption{ETS under alternative weight configurations (all Sonnet; multi-seed systems $=$ mean of 4 seeds). CREATOR-style ranks first under all five schemes. Weights $(w_{\text{TC}}, w_{\text{TQS}}, w_{\text{RC}}, w_{\text{LH}})$: Original $(.30,.20,.10,.40)$; Uniform $(.25,.25,.25,.25)$; TC-dom. $(.50,.20,.10,.20)$; LH-dom. $(.20,.15,.10,.55)$; LH${=}$0 $(.45,.35,.20,.00)$.}
-\label{tab:ets_sensitivity}
+\\[2pt]\footnotesize $^{*}$95\% CI excludes 0. LH in percentage points.
 \end{table}
 
-\section{Skill-Bundle Evaluation}
-\label{app:skill}
-To extend the benchmark from bare-function evaluation to multi-file \emph{skill
-bundles} (the format used by Anthropic Claude Skills and
-CoEvoSkills~\cite{zhang2026coevoskills}), we wrap every preserved tool into a
-4-file bundle (\texttt{SKILL.md}, function, tests, \texttt{metadata.json}) and
-score three bundle-level dimensions: Structure ($S$), Documentation ($D$), and
-Metadata ($M$). Bundle quality averages tool TQS with $S$, $D$, $M$.
-
-\begin{table}[h]
-\centering\footnotesize
-\begin{tabular}{lccccc}
-\toprule
-\textbf{System} & $n$ & \textbf{Bundle Q}$\uparrow$ & $S$ & $D$ & $M$ \\
-\midrule
-Code-Evol (sem.\,Q) & 15 & \textbf{0.85} & 1.00 & 0.84 & 1.00 \\
-CREATOR-style       & 14 & 0.77 & 0.88 & 0.67 & 1.00 \\
-One-Shot/Sonnet (3 seeds) & 9 & 0.69 & 0.88 & 0.50 & 1.00 \\
-\bottomrule
-\end{tabular}
-\caption{Skill-bundle quality (preserved tools only). The documentation dimension separates the systems most.}
-\label{tab:skill_bundles}
-\end{table}
-
-\section{Per-Domain Analysis}
-\label{app:domain}
-Tool-evolution effectiveness varies substantially by problem type, a dimension
-invisible to aggregate TC.
-
-\begin{table}[h]
-\centering\footnotesize
-\begin{tabular}{llcccc}
-\toprule
-\textbf{Domain} & \textbf{Model} & \textbf{TC} & \textbf{Tools} & \textbf{Reuse} & \textbf{LH} \\
-\midrule
-Data Trans. & Sonnet & .573 & 14 & .734 & .476 \\
-Data Trans. & Haiku & .600 & 7 & .800 & .500 \\
-\midrule
-API Orch. & Sonnet & .909 & 4 & .667 & .778 \\
-API Orch. & Haiku & 1.00 & 3 & .333 & .667 \\
-\midrule
-Numerical & Sonnet & .651 & 4 & .667 & .500 \\
-Numerical & Haiku & .621 & 3 & .556 & .481 \\
-\bottomrule
-\end{tabular}
-\caption{Code-Evol results by domain. API orchestration yields highest library
-health; data transformation creates the most tools but with lower quality.}
-\label{tab:domain_supp}
-\end{table}
-
-\paragraph{API orchestration: clean, composable problems.} Highest TC (up to 100\%) and library health (77.8\%), though based on a single session ($N{=}11$ tasks). HMAC authentication and pagination are clean, single-responsibility functions well-suited to tool creation.
-
-\paragraph{Data transformation: high tool creation, lower quality.} Creates the most tools (14 on Sonnet) but achieves only 47.6\% library health: many synthesised parsers for proprietary binary formats fail held-out tests while passing self-generated tests.
-
-\paragraph{Numerical computation: consistently difficult.} Both models achieve similar results ($\sim$63--65\% TC, $\sim$48--50\% LH), suggesting these tasks challenge the LLM regardless of model capability.
+These contrasts show that the framework can distinguish
+tool-creating systems from non-creating systems on a measurable
+artifact dimension (LH) when the underlying tool source is preserved
+and per-tool conformance is aligned. Achieving the same alignment
+under the strict Haiku pilot is the next artifact-hardening step. The
+absolute LH levels and the magnitudes of these contrasts are
+provider-specific and should not be transferred to the Haiku strict
+pilot.
 
 \input{appendix_gallery.tex}
 
