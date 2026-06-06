@@ -31,7 +31,7 @@ Agentic AI systems increasingly create and reuse executable tools across tasks. 
 
 We introduce \textsc{EvolveTool-Bench}, a diagnostic framework for evaluating evolving tool libraries as auditable software artifacts. The benchmark organizes tasks into seed, gap, variant, composition, regression, and adversarial phases, and records verified task completion, tool creation, reuse, correct reuse, incorrect reuse, and per-run audit traces. The framework is deliberately not a leaderboard: its purpose is to help researchers see which part of a tool-evolving agent succeeds or fails.
 
-In the current strict pilot, we evaluate five representative protocols over the deterministically verified subset of the benchmark: 8 sessions, 51 verified task decisions per system pass, 3 seeds, and 5 protocols. The strict run does not establish task-completion superiority for any tool-creation protocol; the pre-specified improvement contrasts have confidence intervals that do not support positive TC gains. This negative result is itself informative. It shows why a trustworthy evaluation must report verifier coverage, exclusion accounting, reuse behavior, and artifact traces rather than relying on task completion alone. We release the benchmark design, audit schema, and strict-subset manifests to support reproducible inspection and future extensions.
+In the current strict pilot, we evaluate five representative protocols over the deterministically verified subset of the benchmark: 8 sessions, 51 verified task decisions per system pass, 3 seeds, and 5 protocols. The strict run does not establish task-completion superiority for any tool-creation protocol; the pre-specified improvement contrasts have confidence intervals that do not support positive TC gains. Rather than treating this as a leaderboard outcome, we use it to motivate the benchmark's central design choice: trustworthy evaluation should report verifier coverage, exclusion accounting, reuse behavior, and artifact summaries alongside task completion. We release the benchmark design, audit schema, and strict-subset summary manifests to support reproducible inspection and future extensions.
 \end{abstract}
 
 
@@ -63,7 +63,7 @@ That artifact matters. A generated library can solve the next task while still c
 
 \textsc{EvolveTool-Bench} is built around this distinction. It evaluates agents that may create tools during a session and asks not only ``did the task pass?'' but also ``what happened to the library?'' Each session has known dependency structure: seed tasks test provided tools, gap tasks invite new capabilities, variant tasks test reuse, composition tasks test chaining, regression tasks revisit prior behavior, and adversarial tasks probe edge cases. The resulting traces let a researcher inspect whether a failure came from synthesis, reuse, verification, composition, or regression.
 
-The present submission is intentionally modest. Earlier versions of this project reported broad task-completion and library-health results across all 99 tasks. During artifact hardening, we found that only part of the benchmark currently has deterministic task verifiers. Rather than continue to report numbers computed under a looser regime, this version reports a strict verified-subset pilot. The strict pilot covers the data-transformation and numerical domains, excludes the API-orchestration session from the main TC denominator until its verifiers are complete, and treats unverified tasks as unscored rather than successful. This makes the empirical claim narrower, but the evaluation claim stronger.
+The present submission is deliberately conservative. The benchmark design contains 99 tasks, but artifact hardening showed that only part of the benchmark currently has deterministic task verifiers. Rather than report numbers computed under a looser regime, we report a strict verified-subset pilot. The strict pilot covers the data-transformation and numerical domains, excludes the API-orchestration session from the main TC denominator until its verifiers are complete, and treats unverified tasks as unscored rather than successful. This makes the empirical claim narrower, but the evaluation claim stronger.
 
 Our contributions are:
 \begin{enumerate}[leftmargin=1.2em]
@@ -73,7 +73,7 @@ Our contributions are:
   \item \textbf{An audit-trace view of agent evaluation.} Runs preserve task outcomes, tools created, tools used, reuse outcomes, and verifier status so that aggregate scores can be traced back to concrete artifacts.
 \end{enumerate}
 
-The main result is not that one protocol wins. On the current strict subset, it does not. The result is that a benchmark for tool-evolving agents must make the state of the tool library visible, including when the immediate TC comparison is inconclusive.
+The main result is not a protocol ranking. On the current strict subset, the task-completion comparison is inconclusive. The result is that a benchmark for tool-evolving agents must make the state of the tool library visible even when immediate pass rates differ by only a few points.
 
 \section{Related Work}
 
@@ -139,7 +139,7 @@ This distinction is important because raw reuse can mean either useful abstracti
 The broader framework also supports redundancy, utilization, composition, regression stability, and capability-aligned hidden conformance tests. These diagnostics are part of the benchmark design and audit schema. In this strict-subset submission, we report only the signals that are aligned with the current verified manifests: TC, tools created, correct reuse, incorrect reuse, and reuse precision. We deliberately do not headline a full library-health or tool-quality ranking until the remaining verifier and conformance-test mappings are complete.
 
 \paragraph{Audit trace.}
-Each run is intended to emit a trace containing the task id, task role, verifier status, model, seed, pass/fail outcome, tools available before the task, tools used, tools created, source hashes, and LLM-call counts. The trace makes the benchmark inspectable: a reader can move from a table entry to the task and artifact that produced it.
+Each run is intended to emit a trace containing the task id, task role, verifier status, model, seed, pass/fail outcome, tools available before the task, tools used, tools created, artifact summaries, and LLM-call counts. The trace makes the benchmark inspectable: a reader can move from a table entry to the task and artifact that produced it.
 
 \section{Experimental Setup}
 
@@ -161,13 +161,13 @@ All strict-subset runs use Claude Haiku 4.5. Each protocol is run with 3 seeds o
 
 \subsection{Strict TC does not support a protocol winner}
 
-Table~\ref{tab:strict-results} is intentionally less dramatic than earlier versions of the paper. One-Shot has the highest point estimate on strict TC (0.358), followed by No-Evolution (0.337) and EvoSkill-style (0.332). ToolMaker-style and CREATOR-style are lower in this pilot. The spread is small relative to the uncertainty and session heterogeneity.
+Table~\ref{tab:strict-results} is intentionally conservative. One-Shot has the highest point estimate on strict TC (0.358), followed by No-Evolution (0.337) and EvoSkill-style (0.332). ToolMaker-style and CREATOR-style are lower in this pilot. The spread is small relative to the uncertainty and session heterogeneity.
 
-The pre-specified improvement tests also do not support a positive task-completion claim (Table~\ref{tab:strict-claims}). One-Shot is not distinguishable from No-Evolution in the expected positive direction. ToolMaker-style does not improve over One-Shot. CREATOR-style is lower than One-Shot in this strict pilot, so it certainly should not be described as a TC improvement.
+The pre-specified improvement tests also do not support a positive task-completion claim (Table~\ref{tab:strict-claims}). One-Shot is not distinguishable from No-Evolution in the expected positive direction. ToolMaker-style does not improve over One-Shot. CREATOR-style is lower than One-Shot in this strict pilot, so the current evidence does not support a task-completion improvement claim for it.
 
 \input{auto_claims_table.tex}
 
-This is the central correction made in this version of the paper: we do not claim that tool-creation protocols improve task completion on the current strict subset. The statistical result is inconclusive for TC improvement, and the prose should say so plainly.
+This is the central empirical constraint in the current submission: the strict subset does not justify a claim that tool-creation protocols improve task completion. The benchmark contribution therefore rests on measurement, traceability, and artifact-level diagnostics rather than on a method win.
 
 \subsection{The audit view remains informative}
 
@@ -185,14 +185,14 @@ The cost is clear: the API-orchestration domain is currently not part of the mai
 
 \section{Discussion}
 
-\paragraph{What this paper does and does not claim.}
-The paper does not claim that a particular tool-evolution protocol wins. It claims that evaluating such protocols requires an audit layer beyond task completion. The strict pilot is useful precisely because it prevents an overclaim: the data do not show a robust TC improvement, so the paper should not pretend otherwise.
+\paragraph{Interpreting the pilot.}
+The strict pilot should be read as an audit of an evaluation setting, not as a final ranking of agent designs. Its most important outcome is that the immediate TC comparison is not decisive. That makes the artifact layer more, not less, important: if several protocols land in the same TC range, researchers need to know whether those protocols created reusable code, accumulated unused artifacts, or relied on inline reasoning without leaving a library behind.
 
-\paragraph{Why this is still publishable.}
-A benchmark paper need not show that one method wins. It must show that the evaluation object is important, that existing metrics miss something, and that the proposed measurement protocol gives researchers a reusable way to inspect it. Evolving tool libraries satisfy that standard. They are persistent artifacts, they can break, and they can affect future agent behavior. A framework that records creation, reuse, verifier status, and artifact traces gives future work a sharper target.
+\paragraph{Implications for evaluation design.}
+A benchmark for tool-evolving agents should make the evolving artifact inspectable. Generated tools are persistent objects: they can be reused, duplicated, retired, or accidentally made into dependencies for later failures. Recording creation, reuse, verifier status, and artifact summaries gives future work a sharper target than a single pass-rate column.
 
 \paragraph{Design lessons for tool-evolving agents.}
-The strict pilot suggests three concrete design lessons. First, tool creation alone is not evidence of progress; many tools can be created without improving verified task completion. Second, reuse needs a quality signal; raw reuse is ambiguous without correct/incorrect decomposition. Third, verifier coverage is a first-class benchmark property. A tool-evolving system is only as trustworthy as the tests and traces used to decide what it has learned.
+The strict pilot suggests three concrete design lessons. First, tool creation alone is not evidence of progress; many tools can be created without improving verified task completion. Second, reuse needs a quality signal; raw reuse is ambiguous without correct/incorrect decomposition. Third, verifier coverage is a first-class benchmark property. A tool-evolving system is only as trustworthy as the tests and records used to decide what it has learned.
 
 \paragraph{Using the benchmark constructively.}
 The benchmark is most useful as a debugging instrument. A future method can use it to test a new promotion gate, deduplication policy, regression guard, or capability-specific verifier. The result to optimize is not only TC, but also whether the generated library becomes easier to reuse and safer to carry forward.
@@ -213,7 +213,7 @@ The benchmark is most useful as a debugging instrument. A future method can use 
 
 Tool-evolving agents create a new evaluation target: the library they leave behind. A task-completion score remains necessary, but it is not enough to judge whether that library is reusable, stable, or auditable. \textsc{EvolveTool-Bench} provides a structured way to inspect this artifact through task roles, verifier-aware TC, reuse decomposition, and trace preservation.
 
-The strict verified-subset pilot does not support a claim that any tested protocol improves task completion. That is not a failure of the paper; it is a useful constraint on what the paper should say. The contribution is a diagnostic framework and a set of reusable practices for future research on tool-creating agents.
+The strict verified-subset pilot does not support a claim that any tested protocol improves task completion. It does, however, show why a TC-only view is too thin for this class of systems. The contribution is a diagnostic framework and a set of reusable practices for future research on tool-creating agents.
 
 \begin{tcolorbox}[title=Reusable Evaluation Practices, colframe=black!70, colback=gray!5, boxrule=0.5pt]
 We recommend that future benchmarks for tool-evolving agents:
@@ -221,7 +221,7 @@ We recommend that future benchmarks for tool-evolving agents:
   \item separate task success from generated-artifact behavior;
   \item report verifier coverage and exclude unverified tasks from TC claims;
   \item distinguish correct reuse from incorrect reuse;
-  \item preserve generated artifacts, source hashes, and per-task traces;
+  \item preserve generated artifacts, artifact summaries, and task/session traces;
   \item include regression and composition probes after library growth;
   \item evaluate library-management policies such as promotion, deduplication, and retirement.
 \end{enumerate}
