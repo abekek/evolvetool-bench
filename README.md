@@ -10,13 +10,13 @@ EvolveTool-Bench evaluates agents that create and accumulate tools at runtime. T
 |----------|-------------------|
 | Did the agent solve the task? | Verified task completion (TC) |
 | Was the task actually verified? | Verifier coverage and unverified-task accounting |
-| Did the agent create reusable artifacts? | Tools created and tool-source hashes |
+| Did the agent create reusable artifacts? | Tools created and artifact summaries |
 | Did reuse help or hurt? | Correct reuse vs. incorrect reuse |
 | Is the library accumulating duplicates? | Redundancy diagnostics |
 | Are created tools used later? | Utilization |
 | Can tools be chained across tasks? | Composition success |
 | Did library growth break earlier behavior? | Regression probes |
-| Can the run be inspected? | Per-task audit trace |
+| Can the run be inspected? | Audit traces and summary manifests |
 
 The contribution is a diagnostic methodology and a set of reusable evaluation practices, not a leaderboard.
 
@@ -30,7 +30,7 @@ Unverified tasks are not credited as successes. In the strict analysis, they are
 
 The strict verified-subset pilot does **not** establish task-completion superiority for any tool-creation protocol. That is the point of the pivot: task completion alone is not a sufficient trustworthiness metric for tool-evolving agents.
 
-The benchmark remains useful because it exposes artifact-level behavior that TC does not show: how many tools were created, whether they were reused, whether reuse coincided with success or failure, and whether the run can be audited from traces.
+The benchmark remains useful because it exposes artifact-level behavior that TC does not show: how many tools were created, whether they were reused, whether reuse coincided with success or failure, and whether the run can be audited from summary manifests and, in future full releases, per-task traces.
 
 ## Strict pilot table
 
@@ -65,8 +65,8 @@ EvolveTool-Bench is intended less as a fixed leaderboard than as a set of reusab
 2. report verifier coverage and exclude unverified tasks from TC claims;
 3. report correct and incorrect reuse rather than raw reuse alone;
 4. include explicit regression tasks after library growth;
-5. preserve generated artifacts and source hashes;
-6. publish per-task traces sufficient to reproduce decisions;
+5. preserve generated artifacts, summaries, and source hashes when available;
+6. publish task/session traces sufficient to reproduce decisions;
 7. evaluate library-management policies such as promotion, deduplication, and retirement.
 
 ## Quick start
@@ -78,7 +78,8 @@ pip install -e ".[dev]"
 python scripts/audit_tasks.py
 
 # Regenerate paper tables from canonical results.
-python scripts/make_tables.py --results-dir results_canonical/ --output paper/kdd_eval2026/
+python scripts/build_from_run.py --input results_strict_run --output results_canonical/
+# or use the included canonical strict-subset tables in paper/kdd_eval2026/.
 ```
 
 ## Citation

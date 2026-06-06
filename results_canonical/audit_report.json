@@ -1,18 +1,23 @@
 {
-  "verifier_coverage": {
-    "verified": 51,
-    "total": 99,
-    "fraction": 0.5152
+  "benchmark_design": {
+    "domains": 3,
+    "sessions": 9,
+    "tasks": 99
   },
-  "capability_coverage": {
-    "non_seed_with_capability_id": 72,
-    "non_seed_total": 72,
-    "all_covered": true
-  },
-  "hidden_test_coverage": {
-    "gaps_with_hidden_tests": 18,
-    "gap_total": 18,
-    "all_covered": true
-  },
-  "strict_tc_policy": "fail-closed: unverified tasks marked FAIL, never lenient-pass"
+  "excluded_from_main_tc": [
+    "api_orchestration_s1"
+  ],
+  "interpretation": "Strict TC is computed only over deterministic verifiers. Unverified tasks are reported separately and excluded from TC claims.",
+  "model": "claude-haiku-4-5",
+  "strict_submission_scope": {
+    "domains": [
+      "data_transform",
+      "numerical"
+    ],
+    "seeds": 3,
+    "sessions": 8,
+    "systems": 5,
+    "unverified_excluded_per_system_pass": 13,
+    "verified_task_decisions_per_system_pass": 51
+  }
 }
