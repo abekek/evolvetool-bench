@@ -210,6 +210,44 @@ def run_all(
                     scores = score_session_result(result, session=session)
                     elapsed = round(time.time() - t0, 1)
 
+                    # Per-tool source preservation. Without this, ./bench_skills/skills.db
+                    # is wiped between sessions and tool source is lost — making in-regime
+                    # held-out conformance replay impossible. Mirrors run_full_matrix.py
+                    # lines 86-108. Backward-compatible: emits to tools/ subdir only.
+                    tools_created_meta: list[dict] = []
+                    if getattr(result, "tools_created", None):
+                        tools_dir = output_dir / "tools" / system_name / session.id / f"seed_{seed}"
+                        tools_dir.mkdir(parents=True, exist_ok=True)
+                        for t in result.tools_created:
+                            with open(tools_dir / f"{t.name}.py", "w") as f:
+                                f.write(t.implementation)
+                            if getattr(t, "test_suite", None):
+                                with open(tools_dir / f"{t.name}_tests.py", "w") as f:
+                                    f.write(t.test_suite)
+                            meta = {
+                                "name": t.name,
+                                "system": system_name,
+                                "session_id": session.id,
+                                "seed": seed,
+                                "model": model,
+                                "created_at_task": getattr(t, "created_at_task", None),
+                                "version": getattr(t, "version", 1),
+                                "scores_in_session": {
+                                    "tqs": getattr(t, "quality_score", None),
+                                    "correctness": getattr(t, "correctness", None),
+                                    "robustness": getattr(t, "robustness", None),
+                                    "generality": getattr(t, "generality", None),
+                                    "code_quality": getattr(t, "code_quality", None),
+                                },
+                            }
+                            with open(tools_dir / f"{t.name}.meta.json", "w") as f:
+                                json.dump(meta, f, indent=2)
+                            tools_created_meta.append({
+                                "name": t.name,
+                                "path": str(tools_dir / f"{t.name}.py"),
+                                "meta_path": str(tools_dir / f"{t.name}.meta.json"),
+                            })
+
                     run_record = {
                         "system": system_name,
                         "session_id": session.id,
@@ -226,6 +264,7 @@ def run_all(
                         "total_tasks": len(session.tasks),
                         "elapsed_s": elapsed,
                         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                        "tools_preserved": tools_created_meta,
                     }
                     runs_fh.write(json.dumps(run_record) + "\n")
                     runs_fh.flush()
