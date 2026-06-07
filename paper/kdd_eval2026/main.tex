@@ -18,7 +18,7 @@
 
 \begin{document}
 
-\title{Beyond Task Completion: A Verification-vs.-Conformance Gap in Tool-Evolving Agents}
+\title{Beyond Task Completion: Auditing Verification and Conformance in Tool-Evolving Agents}
 
 \author{Anonymous Author(s)}
 \affiliation{%
@@ -27,11 +27,11 @@
 }
 
 \begin{abstract}
-Agents that synthesize their own tools ship a second artifact alongside each answer: a software library that future tasks reuse, compose, and depend on. Task completion certifies the answer; it does not certify the library. We show that this matters. In a worked trace, one synthesized tool drives session TC to $0.95$ while failing every held-out input for the capability it claims to implement -- a verification-vs.-conformance gap a pass-rate benchmark cannot see.
+Agents that synthesize their own tools ship a second artifact alongside each answer: a software library that future tasks reuse, compose, and depend on. Task completion (TC) certifies the answer; it does not certify the library. We show that this matters. In a preserved-source trace from a separate pilot, one synthesized tool drives session TC to $0.95$ while failing every held-out input for the capability it claims to implement -- a verification-vs.-conformance gap a pass-rate benchmark cannot see.
 
-\textsc{EvolveTool-Bench} makes that gap measurable. Sessions are structured into seed, gap, variant, composition, regression, and adversarial roles; runs emit per-tool manifests, verified-subset task completion, correct-vs.-incorrect reuse, and audit traces designed to be re-emitted as a post-deployment monitoring schema. In a verified-subset pilot over five protocols (Claude Haiku~4.5, 3 seeds, 8 sessions, 51 verified decisions per pass), TC alone does not separate the protocols; the audit layer does. One pre-specified contrast shows unvalidated synthesis can \emph{reduce} verified completion ($-7.1$~pp, CI $[-13.9,-0.1]$).
+\textsc{EvolveTool-Bench} is built to make that gap measurable. Sessions are structured into seed, gap, variant, composition, regression, and adversarial roles; runs emit per-tool manifests, verified-subset TC, correct-vs.-incorrect reuse, and audit traces designed to be re-emitted as a post-deployment monitoring schema. In a verified-subset Haiku 4.5 pilot over five protocols (3 seeds, 8 sessions, 51 verified decisions per pass), TC alone does not separate the protocols; the audit layer does. One pre-specified contrast shows unvalidated synthesis can \emph{reduce} verified completion ($-7.1$~pp, CI $[-13.9,-0.1]$).
 
-We release the harness, verifier definitions, and reproducibility manifests, and argue that an audit schema of this shape -- verifier coverage, reuse decomposition, held-out conformance -- is the minimum a deployed tool-evolving agent should emit between releases.
+The strict pilot does not yet preserve per-tool source, so we illustrate the verification-conformance gap rather than measure it in-regime; aligning per-tool conformance under the strict pilot is the framework's next artifact-hardening step. We release the harness, verifier definitions, and reproducibility manifests, and argue that an audit schema of this shape -- verifier coverage, reuse decomposition, held-out conformance -- is the minimum a deployed tool-evolving agent should emit between releases.
 \end{abstract}
 
 
@@ -73,7 +73,7 @@ Our contributions are:
   \item \textbf{An audit-trace view of agent evaluation.} Runs preserve task outcomes, tools created, tools used, reuse outcomes, and verifier status so that aggregate scores can be traced back to concrete artifacts.
 \end{enumerate}
 
-The headline empirical finding is that TC alone fails to separate the protocols on the verified subset, while the audit layer does -- and one pre-registered contrast surfaces a directional cost of unvalidated synthesis. The headline conceptual finding is the verification-vs.-conformance gap: a tool can pass every in-session verifier call and still fail every held-out input for the capability it claims to implement (\S\ref{sec:results}). Together these argue that benchmarks for tool-evolving agents must make the state of the tool library visible -- not only the pass rate.
+The headline empirical finding is that TC alone fails to separate the protocols on the verified-subset Haiku pilot, while the audit layer does (\S\ref{sec:results}); one pre-registered contrast also surfaces a directional cost of unvalidated synthesis. The headline conceptual finding is the verification-vs.-conformance gap, which we define and illustrate with a preserved-source trace from a separate pilot: a tool can pass every in-session verifier call and still fail every held-out input for the capability it claims to implement. The strict-pilot harness does not yet preserve per-tool source, so the gap is illustrated rather than measured in-regime; closing that loop is the framework's next artifact-hardening step. Together these argue that benchmarks for tool-evolving agents must make the state of the tool library visible -- not only the pass rate.
 
 \section{Related Work}
 
