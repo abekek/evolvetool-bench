@@ -1,0 +1,16 @@
+{
+  "creator": {
+    "system": "creator",
+    "n_runs": 1,
+    "mean_tc": 0.5,
+    "tc_values": [
+      0.5
+    ],
+    "per_session_tc": {
+      "data_transform_s1": 0.5
+    },
+    "tools_created": 3,
+    "reuse_correct": 1,
+    "reuse_incorrect": 0
+  }
+}

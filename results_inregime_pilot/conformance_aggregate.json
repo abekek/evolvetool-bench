@@ -1,0 +1,11 @@
+{
+  "creator": {
+    "n_tools_preserved": 2,
+    "n_tools_with_capability_tests": 2,
+    "mean_held_out_correctness": 0.0,
+    "mean_held_out_robustness": 0.625,
+    "mean_held_out_generality": 0.5,
+    "n_tools_with_zero_correctness": 2,
+    "pct_silent_rot": 100.0
+  }
+}
