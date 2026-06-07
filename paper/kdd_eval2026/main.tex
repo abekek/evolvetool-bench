@@ -18,7 +18,7 @@
 
 \begin{document}
 
-\title{Beyond Task Completion: Auditing Evolving Tool Libraries in Agentic AI}
+\title{Beyond Task Completion: A Verification-vs.-Conformance Gap in Tool-Evolving Agents}
 
 \author{Anonymous Author(s)}
 \affiliation{%
@@ -27,11 +27,11 @@
 }
 
 \begin{abstract}
-Agentic AI systems increasingly create and reuse executable tools across tasks. Once such tools persist, the object being evaluated is no longer only a single model response; it is also a growing software artifact that can be reused, duplicated, composed, or broken by later actions. Standard task-completion benchmarks observe only the immediate answer and therefore miss a central trustworthiness question: is the tool library left behind reliable enough to support future work?
+Agents that synthesize their own tools ship a second artifact alongside each answer: a software library that future tasks reuse, compose, and depend on. Task completion certifies the answer; it does not certify the library. We show that this matters. In a worked trace, one synthesized tool drives session TC to $0.95$ while failing every held-out input for the capability it claims to implement -- a verification-vs.-conformance gap a pass-rate benchmark cannot see.
 
-We introduce \textsc{EvolveTool-Bench}, a diagnostic framework for evaluating evolving tool libraries as auditable software artifacts. The benchmark organizes tasks into seed, gap, variant, composition, regression, and adversarial phases, and records verified task completion, tool creation, reuse, correct reuse, incorrect reuse, and per-run audit traces. The framework is deliberately not a leaderboard: its purpose is to help researchers see which part of a tool-evolving agent succeeds or fails.
+\textsc{EvolveTool-Bench} makes that gap measurable. Sessions are structured into seed, gap, variant, composition, regression, and adversarial roles; runs emit per-tool manifests, verified-subset task completion, correct-vs.-incorrect reuse, and audit traces designed to be re-emitted as a post-deployment monitoring schema. In a verified-subset pilot over five protocols (Claude Haiku~4.5, 3 seeds, 8 sessions, 51 verified decisions per pass), TC alone does not separate the protocols; the audit layer does. One pre-specified contrast shows unvalidated synthesis can \emph{reduce} verified completion ($-7.1$~pp, CI $[-13.9,-0.1]$).
 
-In the current strict pilot, we evaluate five representative protocols over the deterministically verified subset of the benchmark: 8 sessions, 51 verified task decisions per system pass, 3 seeds, and 5 protocols. The strict run does not establish task-completion superiority for any tool-creation protocol; the pre-specified improvement contrasts have confidence intervals that do not support positive TC gains. Rather than treating this as a leaderboard outcome, we use it to motivate the benchmark's central design choice: trustworthy evaluation should report verifier coverage, exclusion accounting, reuse behavior, and artifact summaries alongside task completion. We release the benchmark design, audit schema, and strict-subset summary manifests to support reproducible inspection and future extensions.
+We release the harness, verifier definitions, and reproducibility manifests, and argue that an audit schema of this shape -- verifier coverage, reuse decomposition, held-out conformance -- is the minimum a deployed tool-evolving agent should emit between releases.
 \end{abstract}
 
 
@@ -59,7 +59,7 @@ In the current strict pilot, we evaluate five representative protocols over the 
 
 A growing class of agents does more than call a fixed tool set. These systems write Python functions, API clients, parsers, analysis scripts, or richer skill bundles, and then carry those artifacts forward into later tasks. VOYAGER learns reusable code skills in Minecraft~\cite{wang2023voyager}; CREATOR separates tool creation from tool use~\cite{qian2023creator}; LLMs as Tool Makers and ToolMaker study agents that construct tools for other agents to call~\cite{cai2023latm,wolflein2025toolmaker}; EvoSkill and CoEvoSkills treat skills as evolving units of agent knowledge~\cite{alzubi2026evoskill,zhang2026coevoskills}. In all of these settings, the agent leaves behind a software artifact.
 
-That artifact matters. A generated library can solve the next task while still containing brittle parsing logic, redundant functions, untested assumptions, or changed behavior that breaks earlier capabilities. A task-completion score tells us whether an answer was accepted. It does not tell us whether the agent created a reusable tool, reused the right tool, duplicated an existing one, or propagated a bug through reuse. For deployed or long-running agents, those differences are not cosmetic; they are the difference between a one-off success and an auditable system.
+A task-completion score tells us whether the answer was accepted; it does not tell us what the agent left behind. A generated library can solve the next task while still containing brittle parsing logic, redundant functions, or behavior changes that silently break earlier capabilities. For deployed or long-running agents, those differences are not cosmetic: they are the difference between a one-off success and an auditable system.
 
 \textsc{EvolveTool-Bench} is built around this distinction. It evaluates agents that may create tools during a session and asks not only ``did the task pass?'' but also ``what happened to the library?'' Each session has known dependency structure: seed tasks test provided tools, gap tasks invite new capabilities, variant tasks test reuse, composition tasks test chaining, regression tasks revisit prior behavior, and adversarial tasks probe edge cases. The resulting traces let a researcher inspect whether a failure came from synthesis, reuse, verification, composition, or regression.
 
@@ -73,7 +73,7 @@ Our contributions are:
   \item \textbf{An audit-trace view of agent evaluation.} Runs preserve task outcomes, tools created, tools used, reuse outcomes, and verifier status so that aggregate scores can be traced back to concrete artifacts.
 \end{enumerate}
 
-The main result is not a protocol ranking. On the current strict subset, the task-completion comparison is inconclusive. The result is that a benchmark for tool-evolving agents must make the state of the tool library visible even when immediate pass rates differ by only a few points.
+The headline empirical finding is that TC alone fails to separate the protocols on the verified subset, while the audit layer does -- and one pre-registered contrast surfaces a directional cost of unvalidated synthesis. The headline conceptual finding is the verification-vs.-conformance gap: a tool can pass every in-session verifier call and still fail every held-out input for the capability it claims to implement (\S\ref{sec:results}). Together these argue that benchmarks for tool-evolving agents must make the state of the tool library visible -- not only the pass rate.
 
 \section{Related Work}
 
@@ -118,11 +118,11 @@ The benchmark contains three domains and nine sessions: five data-transformation
 
 \subsection{Verification policy}
 
-Verification is part of the contribution, not a footnote. A task contributes to strict TC only if it has an explicit expected output or a custom verifier. If a task lacks deterministic verification, it is reported as unverified and excluded from the strict TC denominator. It is not counted as passed because the agent produced a long or plausible answer. This policy avoids the common failure mode in agent benchmarks where format-looking output is mistaken for correctness.
+Verification is part of the contribution, not a footnote. A task contributes to strict TC only if it has an explicit expected output or a custom verifier; tasks without deterministic verification are reported separately, never credited because the answer was long or plausible. This avoids the common failure mode in agent benchmarks where format-looking output is mistaken for correctness.
 
-The current strict pilot covers 8 sessions and 51 verified task decisions per complete system pass. The API-orchestration session is excluded from the main strict TC analysis because its task verifiers are not yet complete. We keep the API session in the benchmark design because it is an important tool-use domain, but we do not use it to support the main numerical claims in this submission.
+The API-orchestration session is excluded from the main strict TC analysis because its task verifiers are not yet complete. The verified-subset pilot therefore covers 8 sessions and 51 verified task decisions per complete system pass. The API session remains in the benchmark design as an important tool-use domain, but is not used to support the numerical claims in this submission.
 
-Table~\ref{tab:role-coverage} shows how that 51-task verified subset is distributed across task roles. Two facts matter here. First, seed tasks carry no graded outcome by design: they exist to expose the agent to the provided library before any creation, so they have no expected output or verifier. Second, the diagnostic-critical roles -- gap, variant, regress -- are essentially fully covered (94--100\%); compose and adversarial are partially covered. The strict subset therefore exercises the roles the framework relies on for its substantive claims, while remaining honest about where verifier work is still needed.
+Table~\ref{tab:role-coverage} shows how the 51-task verified subset is distributed across task roles. Seed tasks carry no graded outcome by design: they exist to expose the agent to the provided library before any creation, so they have no expected output or verifier. The diagnostic-critical roles -- gap, variant, regress -- are near-fully covered ($93.8$--$100\%$); compose and adversarial are partially covered. The verified subset therefore exercises the roles the framework leans on for its claims, while remaining honest about where verifier work is still needed.
 
 \begin{table}[t]
 \centering
@@ -148,21 +148,39 @@ Strict-subset total (graded) & 51 & 64 & 79.7\% \\
 \subsection{Metrics and audit trace}
 
 \paragraph{Verified task completion (TC).}
-TC is the fraction of verified tasks whose outputs satisfy the task verifier. It measures user-visible success on the verified subset and remains a necessary metric. We do not treat it as sufficient.
+TC is the fraction of verified tasks whose outputs satisfy the task verifier. It measures user-visible success on the verified subset: necessary but not sufficient.
 
 \paragraph{Tool creation and reuse.}
-Before each task, the harness records the current library. After the task, it records newly created tools and tools used. Reuse is counted when a task invokes a tool that existed before the task began. We decompose reuse into:
+Before each task, the harness records the current library; after the task, it records newly created tools and tools used. Reuse is counted when a task invokes a tool that existed before the task began. We decompose reuse into:
 \begin{itemize}[leftmargin=1.2em,noitemsep]
   \item \textbf{correct reuse}: a prior tool was used and the task passed;
   \item \textbf{incorrect reuse}: a prior tool was used and the task failed.
 \end{itemize}
-This distinction is important because raw reuse can mean either useful abstraction or repeated reliance on a defective artifact.
+We report the \emph{correct-reuse rate} as the fraction of reuse calls that coincide with a passing task; we avoid the term ``precision'' because no false-positive denominator is defined. This distinction is important because raw reuse can mean either useful abstraction or repeated reliance on a defective artifact.
 
 \paragraph{Library-health diagnostics.}
-The broader framework also supports redundancy, utilization, composition, regression stability, and capability-aligned hidden conformance tests. These diagnostics are part of the benchmark design and audit schema. In this strict-subset submission, we report only the signals that are aligned with the current verified manifests: TC, tools created, correct reuse, incorrect reuse, and reuse precision. We deliberately do not headline a full library-health or tool-quality ranking until the remaining verifier and conformance-test mappings are complete.
+The broader framework also supports redundancy, utilization, composition, regression stability, and capability-aligned hidden conformance tests. These diagnostics are part of the benchmark design and audit schema. The verified-subset submission reports only the signals aligned with the current verified manifests: TC, tools created, correct reuse, incorrect reuse, and the correct-reuse rate. A composite library-health ranking is held back until the conformance-test alignment is complete (Supplement~\S E reports it on a separate Sonnet pilot where source preservation made the alignment possible).
 
 \paragraph{Audit trace.}
-Each run is intended to emit a trace containing the task id, task role, verifier status, model, seed, pass/fail outcome, tools available before the task, tools used, tools created, artifact summaries, and LLM-call counts. The trace makes the benchmark inspectable: a reader can move from a table entry to the task and artifact that produced it.
+Each run emits a per-task record so aggregate scores can be traced to concrete artifacts. Figure~\ref{fig:trace-schema} shows the schema for one task record from \texttt{data\_transform\_s1}: a reader can move from any cell in Table~\ref{tab:strict-results} to the task, seed, tool, and pass/fail decision that produced it.
+
+\begin{figure}[t]
+\small
+\begin{tcolorbox}[colframe=black!70, colback=gray!5, boxrule=0.5pt, fontupper=\ttfamily\footnotesize]
+\{"task\_id": "data\_transform\_s1/gap\_1",\\
+~"role": "gap", "verifier\_status": "verified",\\
+~"model": "claude-haiku-4-5", "seed": 0,\\
+~"outcome": "pass",\\
+~"tools\_available\_before": ["parse\_header", ...],\\
+~"tools\_used": ["decode\_abr\_format"],\\
+~"tools\_created": ["decode\_abr\_format"],\\
+~"reuse\_outcome": null,\\
+~"artifact\_summary": \{"loc": 47, "imports": ["base64"]\},\\
+~"llm\_calls": 3\}
+\end{tcolorbox}
+\caption{One audit-trace record (schema, redacted). The same schema is the unit of post-deployment monitoring discussed in \S\ref{sec:deploy}.}
+\label{fig:trace-schema}
+\end{figure}
 
 \section{Experimental Setup}
 
@@ -176,79 +194,79 @@ The strict pilot evaluates five representative protocols. They are not meant to 
   \item \textbf{CREATOR-style.} A decision/execution split inspired by CREATOR, where the system explicitly decides whether a tool should be created before executing the task.
 \end{enumerate}
 
-All strict-subset runs use Claude Haiku~4.5 (snapshot \texttt{claude-haiku-4-5-20251001}) accessed via the Anthropic API with temperature 1.0 and the model default top-$p$. Each protocol is executed with three integer seeds (\texttt{0, 1, 2}) over eight verified-subset sessions, producing 24 session rows per protocol. Synthesised tools execute in an in-process sandbox with a five-second wall-clock limit; harness state is reset between sessions so library accumulation is per-session, not cross-session. The same Anthropic API key, decoding parameters, task stream, and verifier set are used for all protocols; only the tool-creation control flow varies. This is a pilot-scale analysis: it is adequate for exposing whether the current evidence supports a task-completion improvement claim; it is not adequate for declaring stable protocol rankings across models or domains.
+All verified-subset runs use Claude Haiku~4.5 (snapshot \texttt{claude-haiku-4-5-20251001}) via the Anthropic API with temperature 1.0 and the model default top-$p$. Each protocol is executed with three integer seeds (\texttt{0, 1, 2}) over eight verified-subset sessions, producing 24 session rows per protocol. Synthesised tools execute in an in-process sandbox with a five-second wall-clock limit; harness state resets between sessions so library accumulation is per-session, not cross-session. The same Anthropic API key, decoding parameters, task stream, and verifier set are used for all protocols; only the tool-creation control flow varies. We scope this pilot to a single model snapshot on purpose: varying the model would conflate protocol effects with model-evolution effects -- the latter is a separate evaluation question the same harness is built to ask, and we surface it in Supplement~\S E as a same-schema-different-model probe.
+
+\paragraph{Pre-registration.}
+The three contrasts in Table~\ref{tab:strict-claims}, the bootstrap parameters ($B{=}10{,}000$, seed \texttt{20260604}), the BH correction, and the verified-subset definition were specified before running the Haiku pilot, and are stored in \texttt{claims.json} and \texttt{statistical\_report.json} in the released artifact. No contrasts were added, removed, or redirected after results were observed. The decision to report verifier coverage, reuse decomposition, and audit traces was part of the framework design, not a response to the TC outcome.
 
 \paragraph{Statistical procedure.}
-For each pre-specified contrast we form per-session paired differences across the 24 strict-subset session rows (3 seeds $\times$ 8 sessions), bootstrap-resample those pairs $B{=}10{,}000$ times with seed 20260604, and report the bootstrap point estimate and 95\% percentile CI. The three pre-specified contrasts in Table~\ref{tab:strict-claims} are Benjamini--Hochberg adjusted. A contrast is marked \emph{supported} only if its CI lies strictly above zero in the pre-specified positive direction.
+For each pre-specified contrast we form per-session paired differences across the 24 verified-subset session rows (3 seeds $\times$ 8 sessions), bootstrap-resample those pairs $B{=}10{,}000$ times with seed \texttt{20260604}, and report the bootstrap point estimate and 95\% percentile CI. The three pre-specified contrasts in Table~\ref{tab:strict-claims} are Benjamini--Hochberg adjusted at $\alpha{=}0.05$. A contrast is marked \emph{supported} only if its CI lies strictly above zero in the pre-specified positive direction. Per-session outcomes are largely seed-stable in this pilot, so the effective number of independent units sits between 8 and 24; the bootstrap resamples (seed, session) pairs without assuming seed-independence.
 
 \paragraph{Artifacts.}
 The benchmark sources, harness, verifier definitions, canonical manifests (\texttt{run\_manifest.jsonl}, \texttt{tool\_manifest.jsonl}, \texttt{aggregate.json}, \texttt{audit\_report.json}, \texttt{statistical\_report.json}, \texttt{claims.json}), and the scripts that regenerate every table in this paper from disk are included in the anonymised supplement and will be released under an open licence on acceptance.
 
 \section{Results}
+\label{sec:results}
 
 \input{auto_results_table.tex}
 
-\subsection{Strict TC does not support a protocol winner}
+\subsection{TC alone does not separate the protocols}
 
-Across the five protocols, strict TC ranges from $0.287$ (CREATOR-style) to $0.358$ (One-Shot), with No-Evolution ($0.337$) and EvoSkill-style ($0.332$) in between (Table~\ref{tab:strict-results}). The spread is small relative to the per-session standard errors and the heterogeneity across sessions.
+Verified-subset TC differences are small relative to per-session standard errors and cross-session heterogeneity. Across the five protocols TC ranges from $0.287$ (CREATOR-style) to $0.358$ (One-Shot), with No-Evolution ($0.337$) and EvoSkill-style ($0.332$) in between (Table~\ref{tab:strict-results}).
 
-The pre-specified improvement tests also do not support a positive task-completion claim (Table~\ref{tab:strict-claims}). One-Shot is not distinguishable from No-Evolution in the expected positive direction. ToolMaker-style does not improve over One-Shot. The Creator $-$ One-Shot contrast is the only pre-specified comparison whose 95\% CI excludes zero: $-7.1$~pp with CI $[-13.9,\,-0.1]$. Under the pre-specified positive test this does not support a TC-improvement claim for CREATOR-style; in the opposite direction, it is a weak but real signal that unvalidated tool creation can \emph{reduce} task completion when the synthesis loop is not gated by a verification step. We treat this as a forward-looking signal rather than a verdict on the original CREATOR design; see Limitations on protocol adaptation.
+The pre-specified improvement tests do not support a positive TC claim (Table~\ref{tab:strict-claims}). One-Shot is not distinguishable from No-Evolution in the expected positive direction. ToolMaker-style does not improve over One-Shot. The Creator $-$ One-Shot contrast is the only pre-specified comparison whose 95\% CI excludes zero: $-7.1$~pp with CI $[-13.9,\,-0.1]$, just brushing zero from below. The CI is consistent with -- but does not establish -- a synthesis-loop cost in the adapted-baseline regime. We do not draw a method claim about the original CREATOR design from an adapted protocol; we report this only as a hypothesis-generating signal worth a powered follow-up.
 
 \input{auto_claims_table.tex}
 
-This is the central empirical constraint in the current submission: the strict subset does not justify a claim that tool-creation protocols improve task completion. The benchmark contribution therefore rests on measurement, traceability, and artifact-level diagnostics rather than on a method win.
+\paragraph{Power.} With 24 paired session rows and the observed within-session standard deviation of TC ($\approx 0.30$), and accounting for the seed-stability above, the verified-subset pilot is powered (80\%, $\alpha{=}0.05$) to detect paired TC differences of roughly $8$--$13$~pp depending on whether effective $n$ is treated as 24 or as 8 sessions. The largest observed $|\Delta|$ in Table~\ref{tab:strict-claims} is $7.1$~pp. The null TC result should therefore be read as ``no large protocol effect at this scale'' rather than ``no effect.'' Smaller true effects -- below $\sim 7$~pp -- remain compatible with these CIs and motivate the larger multi-model pilots that the released harness is built to support.
 
-\subsection{The audit view remains informative}
+\subsection{The audit view separates what TC does not}
 
-The lack of a TC winner does not make the benchmark uninformative. It changes what the benchmark is showing. One-Shot and CREATOR-style create many tools (114 and 111 respectively), while No-Evolution and EvoSkill-style create none. ToolMaker-style creates fewer tools (18), consistent with a more conservative validation loop. These differences are invisible in a TC-only table. The reuse denominators in Table~\ref{tab:strict-results} are non-zero even for the zero-tools systems: reuse counts include calls to provided seed tools (the seed library each session starts from), not only to tools the agent itself created.
+The lack of a TC winner is precisely when the audit layer matters most. One-Shot and CREATOR-style create many tools (114 and 111 respectively), while No-Evolution and EvoSkill-style create none. ToolMaker-style creates fewer tools (18), consistent with a more conservative validation loop. These differences are invisible in a TC-only table. The reuse denominators in Table~\ref{tab:strict-results} are non-zero even for the zero-tools systems: reuse counts include calls to provided seed tools (the seed library each session starts from), not only to tools the agent itself created.
 
-Reuse precision also carries information that raw pass rates do not. The underlying counts are small but informative: One-Shot has 18 correct vs.\ 36 incorrect reuses out of 54 total ($0.333$), No-Evolution 9/18 out of 27 ($0.333$), EvoSkill-style 9/27 out of 36 ($0.250$), CREATOR-style 12/24 out of 36 ($0.333$), and ToolMaker-style 9/15 out of 24 ($0.375$). The denominators are tiny --- this is why we present them as a directional signal, not a ranking --- but they show the kind of decomposition the harness exposes: when a system uses prior artifacts, does that reuse coincide with success or with failure?
+The correct-reuse rate -- the fraction of reuse calls that coincide with a passing task -- adds a second axis. One-Shot has 18 correct vs.\ 36 incorrect reuses out of 54 ($0.33$), No-Evolution 9/18 out of 27 ($0.33$), EvoSkill-style 9/27 out of 36 ($0.25$), CREATOR-style 12/24 out of 36 ($0.33$), and ToolMaker-style 9/15 out of 24 ($0.38$). At this scale the differences are not powered to discriminate between protocols, and we report them only for trace inspection and protocol design. What they show is the kind of decomposition the harness exposes: when a system uses prior artifacts, does that reuse coincide with success or with failure?
 
-The positive contribution is therefore methodological. A TC-only benchmark would encourage a reader to rank five systems by a few percentage points of pass rate. \textsc{EvolveTool-Bench} instead asks what library state produced those pass rates. Did the system create tools? Did it reuse them? Did reuse help? Were unverified tasks excluded? Can the reader inspect the artifact? These questions are closer to the trustworthiness problem faced by long-running agents.
+\subsection{A verification-vs.-conformance gap that TC cannot see}
+\label{sec:gap}
 
-\paragraph{Why TC alone is insufficient: a verification-vs.-conformance gap.}
-A task verifier checks whether a particular call produces an acceptable output. A capability-aligned conformance suite asks a different question: does the tool the agent built actually implement the capability it claims to implement, on inputs the agent never saw? These two questions can disagree. A tool can pass a deterministic in-session verifier on one well-formed call (because the call structurally agrees with the example the agent used to write itself) and still fail held-out inputs for the same capability. That gap is invisible to TC and is what motivates the per-tool conformance layer the framework defines.
+A tool can pass every in-session verifier call and still fail every held-out input for the same capability -- and TC will not see it. The verifier asks whether one particular call produced an acceptable output; a capability-aligned conformance suite asks whether the tool implements the capability on inputs the agent never saw. These two questions routinely disagree: a tool that structurally matches the example the agent used to write itself will pass the verifier and fail held-out conformance. That gap is what motivates the per-tool conformance layer the framework defines, and it is the failure mode an audit schema for a deployed tool-evolving agent has to surface.
 
-\paragraph{Illustrative cross-pilot trace.}
-To make the gap concrete we point to a preserved-source pilot from a separate run.\footnote{The trace below is from a Code-Evol/Sonnet pilot in which the harness wrote per-tool source to disk; the Haiku strict pilot reported in Tables~\ref{tab:strict-results}--\ref{tab:strict-claims} records session/system summaries only. The numbers in this paragraph are therefore not in the strict-pilot regime and should not be read against Table~\ref{tab:strict-results}. Adding per-tool source preservation to the strict harness so the same trace can be produced in-regime is the next artifact-hardening step.} In \texttt{data\_transform\_s1}, the system synthesises a single tool, \texttt{decode\_abr\_format}, in response to a gap task for the \texttt{abr\_binary\_decode} capability. Five subsequent tasks in the same session are tied to that capability (variant, compose, regress, and two adversarials) and can reuse the tool. The tool's agent-written self-tests pass at $C{=}0.50$; the in-session reuse decomposition shows one correct and one incorrect reuse, with the incorrect reuse falling on the regress task -- already a signal that the tool's behaviour is not stable across the contract's full surface. When the same source is replayed against a held-out conformance suite for the capability (six unit inputs and six adversarial inputs the agent never saw), per-tool correctness is $C{=}0.00$: every held-out input fails. The tool passes some in-session verifier calls by structurally agreeing with its own examples; it does not implement the capability. That is the audit signal the framework is built to surface, and the conceptual reason the strict-pilot TC numbers should be read as a floor on tool quality rather than as a measure of it.
+\paragraph{Illustrative trace.} We make the gap concrete with a preserved-source pilot from a separate run.\footnote{The trace below comes from a preserved-source Sonnet pilot, included as design-motivating evidence rather than as a verified-subset result; the Haiku pilot in Tables~\ref{tab:strict-results}--\ref{tab:strict-claims} records session/system summaries only. Adding per-tool source preservation to the strict harness so the same trace can be produced in-regime is the next artifact-hardening step (Supplement~\S D).} In \texttt{data\_transform\_s1}, the system synthesises one tool, \texttt{decode\_abr\_format}, for the \texttt{abr\_binary\_decode} gap task. Five subsequent tasks in the same session (variant, compose, regress, two adversarials) can reuse it. The tool's agent-written self-tests pass at $C{=}0.50$; in-session reuse splits one correct and one incorrect, with the incorrect reuse on the regress task.
 
-\subsection{Verifier coverage changes the interpretation}
+When the same source is replayed against a held-out conformance suite for the capability -- six unit inputs and six adversarial inputs the agent never saw -- per-tool correctness is $C{=}0.00$: every held-out input fails. The tool passes in-session verifier calls by structurally matching its own examples; it does not implement the capability. This is the audit signal the framework is built to surface, and the conceptual reason the verified-subset TC numbers should be read as a floor on tool quality, not as a measure of it.
 
-The strict pilot also illustrates why verifier coverage must be reported. If unverified tasks are credited by a length or plausibility heuristic, absolute TC can be inflated and protocol comparisons can move for the wrong reason. By restricting the main analysis to deterministic verifiers, we sacrifice benchmark coverage but gain measurement credibility.
+\subsection{Verifier coverage is a first-class benchmark property}
 
-The cost is clear: the API-orchestration domain is currently not part of the main strict TC analysis. That should be read as a limitation of the current release, not as a limitation of the benchmark idea. The framework already identifies what must be done next: complete API verifiers, align hidden tests by capability, and regenerate the same tables from the full manifest. Adversarial probes are part of the design (Table~\ref{tab:role-coverage} reports $56.2$\% coverage of the role), but the strict-pilot run records adversarial outcomes only at the session level; we therefore do not isolate adversarial pass rates in this submission and treat that decomposition as part of the same coverage-and-trace work above.
+If unverified tasks are credited by a length or plausibility heuristic, absolute TC can be inflated and protocol comparisons move for the wrong reason. Restricting the main analysis to deterministic verifiers sacrifices benchmark coverage but buys measurement credibility. The cost is clear: the API-orchestration domain is not part of the verified-subset TC analysis. The framework already identifies what to do next: complete API verifiers, align hidden tests by capability, and regenerate the same tables from the full manifest. Adversarial probes are part of the design (Table~\ref{tab:role-coverage} reports $56.2$\% coverage). The current pilot records pass/fail at session level rather than per role, so per-role adversarial pass rates are not isolated in this submission; closing that gap is part of the same coverage-and-trace work as the API verifiers.
 
 \section{Discussion}
 
-\paragraph{Interpreting the pilot.}
-The strict pilot should be read as an audit of an evaluation setting, not as a final ranking of agent designs. Its most important outcome is that the immediate TC comparison is not decisive. That makes the artifact layer more, not less, important: if several protocols land in the same TC range, researchers need to know whether those protocols created reusable code, accumulated unused artifacts, or relied on inline reasoning without leaving a library behind.
-
-\paragraph{Implications for evaluation design.}
-A benchmark for tool-evolving agents should make the evolving artifact inspectable. Generated tools are persistent objects: they can be reused, duplicated, retired, or accidentally made into dependencies for later failures. Recording creation, reuse, verifier status, and artifact summaries gives future work a sharper target than a single pass-rate column.
-
 \paragraph{Design lessons for tool-evolving agents.}
-The strict pilot suggests three concrete design lessons. First, tool creation alone is not evidence of progress; many tools can be created without improving verified task completion. Second, reuse needs a quality signal; raw reuse is ambiguous without correct/incorrect decomposition. Third, verifier coverage is a first-class benchmark property. A tool-evolving system is only as trustworthy as the tests and records used to decide what it has learned.
+Tool creation alone is not evidence of progress: many tools can be created without improving verified task completion. Reuse needs a quality signal; raw reuse is ambiguous without correct/incorrect decomposition. Verifier coverage is a first-class benchmark property -- a tool-evolving system is only as trustworthy as the tests and records used to decide what it has learned. Generated tools are persistent objects that can be reused, duplicated, retired, or accidentally made into load-bearing dependencies for later failures; a benchmark that ignores this treats every run as independent and loses the audit trail the deployment setting needs.
 
-\paragraph{Using the benchmark constructively.}
-The benchmark is most useful as a debugging instrument. A future method can use it to test a new promotion gate, deduplication policy, regression guard, or capability-specific verifier. The result to optimize is not only TC, but also whether the generated library becomes easier to reuse and safer to carry forward.
+\paragraph{Model evolution as audit signal.}
+\label{sec:model-evo}
+The same harness, manifests, and verifier set apply equally to a Sonnet pilot reported in Supplement~\S E, where per-tool source preservation made the capability-aligned conformance layer computable. Library-Health contrasts that are statistically supported under Sonnet are not powered under Haiku, not because the framework fails but because synthesis quality at the smaller model is below the floor where reuse decomposition becomes informative. The audit schema thus doubles as a model-evolution monitor: re-emitting the same schema after a model swap reveals whether tool quality has tracked the model, and the comparison is the exact ``model evolution and API risk'' question that motivates monitoring deployed agents.
+
+\paragraph{From benchmark to post-deployment monitor.}
+\label{sec:deploy}
+We see the audit schema as a CI artifact, not only a research instrument. A tool-evolving agent shipped behind an API can re-emit \texttt{run\_manifest.jsonl} and \texttt{tool\_manifest.jsonl} on every release; a regression gate can then require that the correct-reuse rate and capability-aligned hidden-test conformance do not drop below the prior release on a frozen task slice. Per-task audit overhead is dominated by the LLM calls themselves -- manifest emission, reuse decomposition, and per-tool source dumping add millisecond-scale latency and bounded disk I/O, so the layer is cheap enough to leave on in production. Concretely, three monitoring signals fall out of the schema with no extra instrumentation: (i) \emph{silent rot} -- session TC stays high while held-out conformance for a re-used capability drops between releases; (ii) \emph{reuse trap} -- raw reuse rises but the correct-reuse rate falls, indicating an emerging defective dependency; (iii) \emph{regression delta} -- a regress-role task fails after the same capability's gap-role task passes, identifying which release crossed the regression. Each signal is a thresholded check that can sit behind a release gate.
 
 \section{Limitations}
 
 \textbf{Verified subset.} The strict statistical analysis covers 8 sessions and 51 verified task decisions per system pass, not the full 99-task benchmark. The API-orchestration session is excluded from main TC until deterministic verifiers are complete.
 
-\textbf{Pilot scale and single-model setting.} The strict pilot uses one model (Claude Haiku~4.5) and three integer seeds. Several per-session outcomes are repeated across seeds, so standard errors primarily reflect session heterogeneity rather than broad model stochasticity. A smaller model is also where tool-creation protocols are most stress-tested: it is plausible that the absence of a TC improvement reflects synthesis quality at Haiku scale rather than a property of the protocols themselves. The strict pilot should therefore be read as evidence that the framework discriminates and that current TC differences are small, not as a verdict on tool-creation protocols in general. Larger multi-model runs are required before making stable protocol-ranking claims.
+\textbf{Pilot scale and single-model setting.} The verified-subset pilot uses one model (Claude Haiku~4.5) and three integer seeds; per-session outcomes are partly seed-stable so standard errors mainly reflect session heterogeneity. A smaller model is where tool-creation protocols are most stress-tested, so the null TC result is consistent with synthesis quality at Haiku scale being below the floor where protocol differences become powered. The pilot should be read as exposing what the framework decomposes and what minimum effect size it can rule out (\S\ref{sec:results}), not as a verdict on tool-creation protocols in general. Multi-model runs are the natural next step the released harness is built for, and are the lens through which the model-evolution monitoring story in \S\ref{sec:model-evo} can be operationalized.
 
 \textbf{Protocol adaptations.} EvoSkill-style, ToolMaker-style, and CREATOR-style are adaptations to a shared open-task harness, not native reproductions of the original systems. The original CREATOR and ToolMaker pipelines assume reference test suites or repository-grounded inputs that our open synthesis tasks do not supply; the \texttt{-style} suffix is deliberate, and the paper does not treat any underperformance in this pilot as a verdict on the original methods.
 
 \textbf{Hidden conformance tests.} The benchmark design includes capability-aligned hidden tests for tool conformance. The main strict-subset results in this submission do not yet use a fully aligned conformance manifest, so we do not headline per-tool correctness numbers. Completing this alignment is the next artifact-hardening step.
 
-\textbf{Composite library-health score.} A composite library-health or EvolveTool-Score ranking can be useful as a dashboard, but the current submission emphasises decomposed metrics. A full composite ranking is premature until the conformance and verifier maps are complete.
+\textbf{Composite library-health score.} A composite library-health score (or \emph{EvolveTool-Score}) is useful as a dashboard but premature until conformance and verifier maps are complete; the current submission reports decomposed metrics.
 
 \section{Conclusion}
 
-Tool-evolving agents create a new evaluation target: the library they leave behind. A task-completion score remains necessary, but it is not enough to judge whether that library is reusable, stable, or auditable. \textsc{EvolveTool-Bench} provides a structured way to inspect this artifact through task roles, verifier-aware TC, reuse decomposition, and trace preservation.
-
-The strict verified-subset pilot does not support a claim that any tested protocol improves task completion. It does, however, show why a TC-only view is too thin for this class of systems. The contribution is a diagnostic framework and a set of reusable practices for future research on tool-creating agents.
+Tool-evolving agents create a new evaluation target: the library they leave behind. A task-completion score is necessary but not sufficient. \textsc{EvolveTool-Bench} provides a structured way to inspect this artifact through task roles, verifier-aware TC, reuse decomposition, capability-aligned conformance, and trace preservation. The verified-subset pilot does not support a TC-improvement claim for any tested protocol, but it makes the verification-vs.-conformance gap concrete and surfaces three thresholded monitoring signals that a deployed tool-evolving agent can re-emit between releases.
 
 \begin{tcolorbox}[title=Reusable Evaluation Practices, colframe=black!70, colback=gray!5, boxrule=0.5pt]
 We recommend that future benchmarks for tool-evolving agents:

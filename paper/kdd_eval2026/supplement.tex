@@ -138,19 +138,18 @@ tool-creation control flow varies.}
 \section{Worked Trace Example: a Self-Validating Tool that Fails Hidden Tests}
 \label{app:trace}
 
-The main paper points to a single worked case in
-\texttt{data\_transform\_s1} where the audit layer flags a tool that
-TC scores as successful. This appendix expands the case.
+The main paper points to a worked case in \texttt{data\_transform\_s1}
+where the audit layer flags a tool that TC scores as successful. This
+appendix expands the case.
 
 The shared capability \texttt{abr\_binary\_decode} appears in five
 session-1 tasks: \texttt{gap\_1} (which invites creation of the
 capability), \texttt{variant\_1}, \texttt{compose\_1},
 \texttt{regress\_1}, and \texttt{adversarial\_1} (each of which can
-reuse the tool created at \texttt{gap\_1}). In the Code-Evol pilot in
-which per-tool source was preserved, a single tool
-(\texttt{decode\_abr\_format}) was synthesised, alongside an
-agent-written test file. The tool passed its self-tests at $C{=}0.5$;
-the session-level TC reached $0.95$.
+reuse the tool created at \texttt{gap\_1}). In the preserved-source
+Sonnet pilot, a single tool (\texttt{decode\_abr\_format}) was
+synthesised alongside an agent-written test file. The tool passed
+its self-tests at $C{=}0.50$; the session-level TC reached $0.95$.
 
 When the same tool source is replayed against the held-out conformance
 suite tied to the capability (six unit inputs and six adversarial
@@ -177,15 +176,26 @@ step (see Limitations in the main paper).
 \section{Auxiliary Signal: Library-Health Contrasts under a Sonnet Pilot}
 \label{app:lh-aux}
 
-A separate Code-Evol/Sonnet pilot, in which per-tool source was
-preserved across four seeds and nine sessions, allows the same
-artifact-level signal to be computed for library health (LH). LH
-combines correct reuse, redundancy, utilisation, composition,
-regression, and quality gate (capability-aligned hidden-test
-correctness for the tools the system has created). We report the LH
-contrasts here as a \emph{forward-looking signal} for the framework's
-discriminative power, not as a TC claim: see Limitations on
-single-model and protocol-adaptation scope.
+A separate preserved-source Sonnet pilot (four seeds, nine sessions)
+applies the same harness, manifests, and verifier set as the
+verified-subset Haiku pilot in the main paper. Per-tool source
+preservation makes the capability-aligned conformance layer
+computable, so library health (LH) -- combining correct reuse,
+redundancy, utilisation, composition, regression, and the
+hidden-test quality gate -- can be measured at the artifact level.
+This is the same audit schema as the main pilot; only the model
+snapshot and the source-preservation setting differ, which makes
+the contrasts here a same-schema-different-model probe of the
+framework's discriminative power, not a TC claim against the
+verified-subset pilot.
+
+\paragraph{Internal manifest labels.} The released \texttt{statistical\_report.json}
+uses the project's internal names; the table below uses the public
+naming from the main paper. The mapping is: \texttt{arise} $\rightarrow$
+``Code-Evol'' (an internal preserved-source pilot lineage);
+\texttt{evoskill} $\rightarrow$ ``Strategy-Only'' in the LH analysis
+because LH does not depend on whether the strategy was executed;
+\texttt{creator-style} and \texttt{no-evolution} keep the same labels.
 
 \begin{table}[h]
 \centering\small
