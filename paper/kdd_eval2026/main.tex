@@ -251,7 +251,13 @@ Total            & 222 & 0.018 & 96.4\% \\
 \end{tabular}
 \end{table}
 
-\paragraph{Supporting trace.} A preserved-source Sonnet pilot reproduces the same pattern at session granularity (Supplement~\S D): one tool, \texttt{decode\_abr\_format} for the \texttt{abr\_binary\_decode} capability, drives session TC to $0.95$ while recording $C{=}0.00$ on the same held-out conformance suite. The pattern -- in-session verifier calls satisfied, every held-out input failed -- holds across the model swap.
+\paragraph{Calibration: the 96.4\% is a discriminator, not a floor.}
+A natural concern is that conformance suites might simply be too hard. Three lines of evidence rule that out. (i)~Tests are authored alongside the gap task that introduces a capability, before any tool exists; they are not adversarial against any specific synthesis. (ii)~They are passable: 7 of 84 CREATOR-style tools ($8.3\%$) achieve non-zero held-out correctness, and one capability (\texttt{rosetta\_schema\_validate}, synthesised in \texttt{data\_transform\_s2/gap\_2}) reaches $C{=}1.00$ on all three seeds independently -- same model, same harness, same conformance machinery. (iii)~Tools are syntactically valid: $C{=}0.00$ means \emph{wrong on every held-out input}, not \emph{crashed on every held-out input}. Mean held-out robustness across the 222 tools is positive in all three systems, so silent-rot tools execute cleanly and return values; the values are simply incorrect for the capability they claim to implement.
+
+\paragraph{Two anchored examples (same regime).}
+The contrast between a silent-rot tool and a working tool is sharp. CREATOR-style on \texttt{data\_transform\_s1/gap\_1} synthesises \texttt{decode\_arise\_binary\_records} for the \texttt{abr\_binary\_decode} capability; the tool passes in-session reuse calls but its held-out conformance is $C{=}0.00$ across 12 inputs the agent never saw ($R{=}0.50$, code-quality~$0.78$ -- it executes cleanly on half of inputs and returns wrong values). The same protocol on the next session synthesises \texttt{validate\_records\_against\_schema} for the \texttt{rosetta\_schema\_validate} capability and hits $C{=}1.00$ on 11 held-out inputs ($R{=}0.83$, generality~$1.00$), reproduced identically across seeds 0, 1, and 2. Same model snapshot, same harness, same conformance pipeline. The framework discriminates working tool synthesis from silent rot at the per-tool level.
+
+\paragraph{Cross-model supporting trace.} A preserved-source Sonnet pilot reproduces the same pattern at session granularity (Supplement~\S D): one tool, \texttt{decode\_abr\_format} for the \texttt{abr\_binary\_decode} capability, drives session TC to $0.95$ while recording $C{=}0.00$ on the same held-out conformance suite. The pattern -- in-session verifier calls satisfied, every held-out input failed -- holds across the model swap.
 
 \subsection{Verifier coverage is a first-class benchmark property}
 
